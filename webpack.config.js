@@ -14,14 +14,14 @@ module.exports = {
      new HtmlWebpackPlugin({
        title: 'Output Management',
          // output this layout2 template
-         filename: '../pyramid_scaffold/templates/layout2.jinja2',
+         filename: '../templates/layout2.jinja2',
         // here is the source asset
          template: 'src/assets/layout2.html'
      })
    ],
     output: {
 	filename: '[name].bundle.js',
-	path: path.resolve(__dirname, 'static')
+	path: path.resolve(__dirname, 'pyramid_scaffold/static')
     },
      module: {
      rules: [
