@@ -3,6 +3,7 @@ from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
 
+from pyramid_scaffold.models.mymodel import Entity
 from ..models import MyModel
 
 
@@ -11,9 +12,10 @@ def my_view(request):
     try:
         query = request.dbsession.query(MyModel)
         one = query.filter(MyModel.name == 'one').first()
+        entities = request.dbsession.query(Entity).all();
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
-    return {'one': one, 'project': 'Pyramid Scaffold'}
+    return {'entities': entities, 'project': 'Pyramid Scaffold'}
 
 
 db_err_msg = """\

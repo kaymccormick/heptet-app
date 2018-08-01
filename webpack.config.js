@@ -13,7 +13,9 @@ module.exports = {
     plugins: [
      new HtmlWebpackPlugin({
        title: 'Output Management',
-         filename: '../templates/layout2.html',
+         // output this layout2 template
+         filename: '../pyramid_scaffold/templates/layout2.jinja2',
+        // here is the source asset
          template: 'src/assets/layout2.html'
      })
    ],
