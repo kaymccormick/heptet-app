@@ -9,7 +9,7 @@ from pyramid.paster import (
 
 from pyramid.scripts.common import parse_vars
 
-from pyramid_scaffold.models.mymodel import Domain, Entity
+from pyramid_scaffold.models.mymodel import Domain, Entity, Person
 from ..models.meta import Base
 from ..models import (
     get_engine,
@@ -40,9 +40,14 @@ def main(argv=sys.argv):
 
     with transaction.manager:
         dbsession = get_tm_session(session_factory, transaction.manager)
+        p = Person()
+        p.entity = Entity()
+        p.entity.name = "Administrator"
+
         d = Domain()
         d.entity = Entity()
         d.name = "test domain"
+        d.entity.owner = p
         dbsession.add(d)
 
 

@@ -24,8 +24,8 @@ class Entity(Base):
     domain = relationship('Domain', uselist=False, back_populates='entity', foreign_keys='[Domain.id]')
     host = relationship('Host', uselist=False, back_populates='entity')
 
-    owned_entities = relationship('Entity', back_populates='owner')
-    owner = relationship('Entity', back_populates='owned_entities', foreign_keys=[owner_id], remote_side=[id])
+    owned_entities = relationship('Entity', back_populates='owner', remote_side=[owner_id])
+    owner = relationship('Entity', back_populates='owned_entities', remote_side=[id])
 
 class Person(Base):
     __tablename__ = 'person'
