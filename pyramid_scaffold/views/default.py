@@ -1,10 +1,34 @@
+from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
 
-from pyramid_scaffold.models.mymodel import Entity
+from pyramid_scaffold.models.mymodel import Entity, Domain
 from ..models import MyModel
+
+
+def host_form_defs(request):
+    return { "action": request.route_path('host_create') }
+
+def munge_dict(request, indict: dict) -> dict:
+    if not "form" in indict.keys():
+        indict["form"] = {}
+
+    if not "host_form" in indict["form"].keys():
+        indict["form"]["host_form"] = host_form_defs(request)
+
+    return indict
+
+@view_config(route_name='host_create', renderer='../templates/mytemplate.jinja2')
+def host_create_view(request: Request):
+    hostname_ = request.POST['hostname'] # type: str
+    split = hostname_.split('.')
+    reverse = reversed(split)
+    tld = next(reverse)
+    domain = next(reverse) + "." + tld
+    the_domain = request.dbsession.query(Domain).filter(Domain.name == domain).first()
+    return munge_dict(request, { domain: the_domain })
 
 
 @view_config(route_name='home', renderer='../templates/mytemplate.jinja2')
@@ -15,21 +39,7 @@ def my_view(request):
         entities = request.dbsession.query(Entity).all();
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
-    return {'entities': entities, 'project': 'Pyramid Scaffold'}
+    return munge_dict(request, {'entities': entities, 'project': 'Pyramid Scaffold'})
 
 
-db_err_msg = """\
-Pyramid is having a problem using your SQL database.  The problem
-might be caused by one of the following things:
-
-1.  You may need to run the "initialize_pyramid_scaffold_db" script
-    to initialize your database tables.  Check your virtual
-    environment's "bin" directory for this script and try to run it.
-
-2.  Your database server may not be running.  Check that the
-    database server referred to by the "sqlalchemy.url" setting in
-    your "development.ini" file is running.
-
-After you fix the problem, please restart the Pyramid application to
-try it again.
-"""
+db_err_msg = "Pyramid is having a problem using your SQL database."
