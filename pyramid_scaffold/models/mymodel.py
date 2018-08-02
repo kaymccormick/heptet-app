@@ -15,7 +15,6 @@ def entity_listener(target, value, oldvalue, initiator):
 
 sequence = Sequence('entity_id_seq', metadata=metadata)
 class Entity(Base):
-    __table_args__ = (ForeignKeyConstraint(['owner_id']))
     __tablename__ = 'entity'
     id = Column(Integer, sequence, server_default=sequence.next_value(), primary_key=True)
     name = Column(Text)
@@ -24,9 +23,9 @@ class Entity(Base):
     person = relationship('Person', uselist=False, back_populates='entity')
     domain = relationship('Domain', uselist=False, back_populates='entity', foreign_keys='[Domain.id]')
     host = relationship('Host', uselist=False, back_populates='entity')
-    owned_entities = relationship('Entity', back_populates='owner', foreign_keys='[Entity.id]')
 
-    owner = relationship('Entity', back_populates='owned_entities', foreign_keys='[Entity.id]', remote_side=[owner_id])
+    owned_entities = relationship('Entity', back_populates='owner')
+    owner = relationship('Entity', back_populates='owned_entities', foreign_keys=[owner_id], remote_side=[id])
 
 class Person(Base):
     __tablename__ = 'person'
