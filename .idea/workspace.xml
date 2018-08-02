@@ -1,38 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="attempts to fix relationships to no avail">
-      <change beforePath="$PROJECT_DIR$/.coveragerc" beforeDir="false" afterPath="$PROJECT_DIR$/.coveragerc" afterDir="false" />
+    <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MANIFEST.in" beforeDir="false" afterPath="$PROJECT_DIR$/MANIFEST.in" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/README.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/development.ini" beforeDir="false" afterPath="$PROJECT_DIR$/development.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/production.ini" beforeDir="false" afterPath="$PROJECT_DIR$/production.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/models/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/models/meta.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/models/meta.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/models/mymodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/scripts/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/scripts/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/scripts/initializedb.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/static/pyramid-16x16.png" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/static/pyramid-16x16.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/static/pyramid.png" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/static/pyramid.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/static/theme.css" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/static/theme.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/templates/404.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/404.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/templates/form2.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/form2.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/templates/host_create.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host_create.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/templates/host_form.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host_form.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/templates/layout.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/layout.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/templates/mytemplate.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/mytemplate.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/views/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/views/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/views/default.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/views/default.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold/views/notfound.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/views/notfound.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pytest.ini" beforeDir="false" afterPath="$PROJECT_DIR$/pytest.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/views/default.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/views/default.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/static/" />
     <ignored path="$PROJECT_DIR$/node_modules/" />
@@ -45,7 +16,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/email_pyr$initializedb.coverage" NAME="initializedb Coverage Results" MODIFIED="1533187882997" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pyramid_scaffold/scripts" />
-    <SUITE FILE_PATH="coverage/email_pyr$email_pyr.coverage" NAME="email-pyr Coverage Results" MODIFIED="1533188383913" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/email_pyr$email_pyr.coverage" NAME="email-pyr Coverage Results" MODIFIED="1533195289293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FUSProjectUsageTrigger">
     <session id="202846095">
@@ -83,8 +54,8 @@
           <entry key="html" value="14" />
           <entry key="jinja2" value="543" />
           <entry key="js" value="24" />
-          <entry key="py" value="2494" />
-          <entry key="txt" value="205" />
+          <entry key="py" value="2644" />
+          <entry key="txt" value="241" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
@@ -92,8 +63,8 @@
           <entry key="HTML" value="14" />
           <entry key="JavaScript" value="24" />
           <entry key="Jinja2" value="543" />
-          <entry key="PLAIN_TEXT" value="231" />
-          <entry key="Python" value="2494" />
+          <entry key="PLAIN_TEXT" value="267" />
+          <entry key="Python" value="2644" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -110,16 +81,16 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="203">
-              <caret line="26" column="19" selection-start-line="26" selection-start-column="19" selection-end-line="26" selection-end-column="19" />
+            <state relative-caret-position="188">
+              <caret line="43" column="32" selection-start-line="43" selection-start-column="32" selection-end-line="43" selection-end-column="32" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
-                <marker date="1533192602555" expanded="true" signature="238:299" ph="..." />
-                <marker date="1533192602555" expanded="true" signature="345:542" ph="..." />
-                <marker date="1533192602555" expanded="true" signature="664:1115" ph="..." />
+                <marker date="1533195287722" expanded="true" signature="230:291" ph="..." />
+                <marker date="1533195287722" expanded="true" signature="337:534" ph="..." />
+                <marker date="1533195287722" expanded="true" signature="656:1107" ph="..." />
               </folding>
             </state>
           </provider>
@@ -137,11 +108,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="329">
-              <caret line="53" selection-start-line="53" selection-end-line="53" />
+            <state relative-caret-position="140">
+              <caret line="44" column="24" lean-forward="true" selection-start-line="44" selection-start-column="24" selection-end-line="44" selection-end-column="24" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -152,8 +123,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="131">
-              <caret line="21" column="33" selection-start-line="21" selection-start-column="33" selection-end-line="21" selection-end-column="33" />
+            <state relative-caret-position="227">
+              <caret line="28" column="40" lean-forward="true" selection-start-line="28" selection-start-column="40" selection-end-line="28" selection-end-column="40" />
               <folding>
                 <element signature="e#0#25#0" expanded="true" />
               </folding>
@@ -198,6 +169,9 @@
       <find>pyramid_scaffold</find>
       <find>pyramid-scaffol</find>
       <find>pyramid-scaffold</find>
+      <find>def</find>
+      <find>entity</find>
+      <find>entit</find>
     </findStrings>
     <replaceStrings>
       <replace>email_mgmt_app</replace>
@@ -225,9 +199,11 @@
         <option value="$PROJECT_DIR$/pyramid_scaffold/views/default.py" />
         <option value="$PROJECT_DIR$/pyramid_scaffold/scripts/initializedb.py" />
         <option value="$PROJECT_DIR$/pyramid_scaffold/models/mymodel.py" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/views/default.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app.egg-info/PKG-INFO" />
         <option value="$PROJECT_DIR$/venv/Scripts/initialize_pyramid_scaffold_db-script.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/views/default.py" />
       </list>
     </option>
   </component>
@@ -426,14 +402,28 @@
       <option name="project" value="LOCAL" />
       <updated>1533192180884</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Rename all kinda stuff">
+      <created>1533194134577</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1533194134577</updated>
+    </task>
+    <task id="LOCAL-00009" summary="simplify model">
+      <created>1533195129101</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1533195129101</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="16" y="73" width="1496" height="679" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2534819" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2534819" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -448,7 +438,7 @@
       <window_info anchor="bottom" id="Messages" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="11" weight="0.32824427" />
-      <window_info anchor="bottom" id="Terminal" order="12" weight="0.33206108" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="12" visible="true" weight="0.33206108" />
       <window_info anchor="bottom" id="Python Console" order="13" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -483,7 +473,9 @@
     <MESSAGE value="various fixups for db and such" />
     <MESSAGE value="Relationship fix" />
     <MESSAGE value="attempts to fix relationships to no avail" />
-    <option name="LAST_COMMIT_MESSAGE" value="attempts to fix relationships to no avail" />
+    <MESSAGE value="Rename all kinda stuff" />
+    <MESSAGE value="simplify model" />
+    <option name="LAST_COMMIT_MESSAGE" value="simplify model" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -604,33 +596,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="131">
-          <caret line="21" column="33" selection-start-line="21" selection-start-column="33" selection-end-line="21" selection-end-column="33" />
-          <folding>
-            <element signature="e#0#25#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/email_mgmt_app/templates/host_form.jinja2">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="168">
           <caret line="7" column="30" selection-start-line="7" selection-start-column="30" selection-end-line="7" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="203">
-          <caret line="26" column="19" selection-start-line="26" selection-start-column="19" selection-end-line="26" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-            <marker date="1533192602555" expanded="true" signature="238:299" ph="..." />
-            <marker date="1533192602555" expanded="true" signature="345:542" ph="..." />
-            <marker date="1533192602555" expanded="true" signature="664:1115" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -655,12 +624,35 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="28" column="40" lean-forward="true" selection-start-line="28" selection-start-column="40" selection-end-line="28" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="329">
-          <caret line="53" selection-start-line="53" selection-end-line="53" />
+        <state relative-caret-position="140">
+          <caret line="44" column="24" lean-forward="true" selection-start-line="44" selection-start-column="24" selection-end-line="44" selection-end-column="24" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="188">
+          <caret line="43" column="32" selection-start-line="43" selection-start-column="32" selection-end-line="43" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+            <marker date="1533195287722" expanded="true" signature="230:291" ph="..." />
+            <marker date="1533195287722" expanded="true" signature="337:534" ph="..." />
+            <marker date="1533195287722" expanded="true" signature="656:1107" ph="..." />
           </folding>
         </state>
       </provider>

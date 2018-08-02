@@ -4,7 +4,7 @@ from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
 
-from email_mgmt_app.models.mymodel import Entity, Domain
+from email_mgmt_app.models.mymodel import Domain
 
 
 def host_form_defs(request):
@@ -26,7 +26,7 @@ def host_create_view(request: Request):
     reverse = reversed(split)
     tld = next(reverse)
     domain_name = next(reverse) + "." + tld
-    domain = request.dbsession.query(Domain).filter(Entity.name == domain_name).first()
+    domain = request.dbsession.query(Domain).filter(Domain.name == domain_name).first()
     if domain is None:
         domain = Domain()
         domain.name = domain_name;
@@ -38,10 +38,10 @@ def host_create_view(request: Request):
 @view_config(route_name='home', renderer='../templates/mytemplate.jinja2')
 def my_view(request):
     try:
-        entities = request.dbsession.query(Entity).all();
+        pass
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
-    return munge_dict(request, {'entities': entities, 'project': 'Pyramid Scaffold'})
+    return munge_dict(request, {'project': 'Pyramid Scaffold'})
 
 
 db_err_msg = "Pyramid is having a problem using your SQL database."
