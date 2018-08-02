@@ -5,7 +5,7 @@ from sqlalchemy import (
     Index,
     Integer,
     Text,
-    ForeignKey, Sequence, event)
+    ForeignKey, Sequence, event, ForeignKeyConstraint)
 from sqlalchemy.orm import relationship
 
 from .meta import Base, metadata
@@ -15,6 +15,7 @@ def entity_listener(target, value, oldvalue, initiator):
 
 sequence = Sequence('entity_id_seq', metadata=metadata)
 class Entity(Base):
+    __table_args__ = (ForeignKeyConstraint(['owner_id']))
     __tablename__ = 'entity'
     id = Column(Integer, sequence, server_default=sequence.next_value(), primary_key=True)
     name = Column(Text)
@@ -24,7 +25,8 @@ class Entity(Base):
     domain = relationship('Domain', uselist=False, back_populates='entity', foreign_keys='[Domain.id]')
     host = relationship('Host', uselist=False, back_populates='entity')
     owned_entities = relationship('Entity', back_populates='owner', foreign_keys='[Entity.id]')
-    owner = relationship('Entity', back_populates='owned_entities', foreign_keys='[Entity.owner_id]', remote_side=[id])
+
+    owner = relationship('Entity', back_populates='owned_entities', foreign_keys='[Entity.id]', remote_side=[owner_id])
 
 class Person(Base):
     __tablename__ = 'person'
