@@ -29,7 +29,7 @@ tests_require = [
 ]
 
 setup(
-    name='pyramid_scaffold',
+    name='email_mgmt_app',
     version='0.0',
     description='Pyramid Scaffold',
     long_description=README + '\n\n' + CHANGES,
@@ -52,10 +52,10 @@ setup(
     install_requires=requires,
     entry_points={
         'paste.app_factory': [
-            'main = pyramid_scaffold:main',
+            'main = email_mgmt_app:main',
         ],
         'console_scripts': [
-            'initialize_pyramid_scaffold_db = pyramid_scaffold.scripts.initializedb:main',
+            'initialize_email_mgmt_app_db = email_mgmt_app.scripts.initializedb:main',
         ],
     },
 )

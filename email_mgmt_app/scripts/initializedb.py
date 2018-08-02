@@ -9,7 +9,7 @@ from pyramid.paster import (
 
 from pyramid.scripts.common import parse_vars
 
-from pyramid_scaffold.models.mymodel import Domain, Entity, Person
+from email_mgmt_app.models.mymodel import Domain, Entity, Person
 from ..models.meta import Base
 from ..models import (
     get_engine,

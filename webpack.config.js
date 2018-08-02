@@ -21,7 +21,7 @@ module.exports = {
    ],
     output: {
 	filename: '[name].bundle.js',
-	path: path.resolve(__dirname, 'pyramid_scaffold/static')
+	path: path.resolve(__dirname, 'email_mgmt_app/static')
     },
      module: {
      rules: [

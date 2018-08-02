@@ -6,7 +6,7 @@ Getting Started
 
 - Change directory into your newly created project.
 
-    cd pyramid_scaffold
+    cd email_mgmt_app
 
 - Create a Python virtual environment.
 
@@ -22,7 +22,7 @@ Getting Started
 
 - Configure the database.
 
-    env/bin/initialize_pyramid_scaffold_db development.ini
+    env/bin/initialize_email_mgmt_app_db development.ini
 
 - Run your project's tests.
 

@@ -4,7 +4,7 @@ from pyramid.view import view_config
 
 from sqlalchemy.exc import DBAPIError
 
-from pyramid_scaffold.models.mymodel import Entity, Domain
+from email_mgmt_app.models.mymodel import Entity, Domain
 
 
 def host_form_defs(request):
