@@ -1,0 +1,11 @@
+{% extends "layout2.jinja2" %}
+{% block content %}
+    <div class="content">
+        {% if domain is defined %}
+            Domain id = {{  domain.id }}
+        {{ domain.name }}
+        {% else %}
+        Domain is undefined.
+        {% endif %}
+    </div>
+{% endblock content %}
