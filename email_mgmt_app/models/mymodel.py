@@ -5,58 +5,26 @@ from sqlalchemy import (
     Index,
     Integer,
     Text,
-    ForeignKey, Sequence, event, ForeignKeyConstraint)
+    ForeignKey, Sequence, event, ForeignKeyConstraint, String)
 from sqlalchemy.orm import relationship
 
 from .meta import Base, metadata
 
-def entity_listener(target, value, oldvalue, initiator):
-    value.kind = "domain"
-
-sequence = Sequence('entity_id_seq', metadata=metadata)
-class Entity(Base):
-    __tablename__ = 'entity'
-    id = Column(Integer, sequence, server_default=sequence.next_value(), primary_key=True)
-    name = Column(Text)
-    kind = Column(Text)
-    owner_id = Column(Integer, ForeignKey('entity.id'))
-    person = relationship('Person', uselist=False, back_populates='entity')
-    domain = relationship('Domain', uselist=False, back_populates='entity', foreign_keys='[Domain.id]')
-    host = relationship('Host', uselist=False, back_populates='entity')
-
-    owned_entities = relationship('Entity', back_populates='owner', remote_side=[owner_id])
-    owner = relationship('Entity', back_populates='owned_entities', remote_side=[id])
-
 class Person(Base):
     __tablename__ = 'person'
-    id = Column(Integer, ForeignKey('entity.id'), sequence, primary_key=True)
-    entity = relationship('Entity', uselist=False, back_populates='person')
+    id = Column(Integer, primary_key=True)
 
 class Domain(Base):
     __tablename__ = 'domain'
 
-    id = Column(Integer, ForeignKey('entity.id'), sequence, primary_key=True)
-    entity = relationship('Entity', uselist=False, back_populates='domain', foreign_keys=[id])
-
-    @property
-    def name(self):
-        if self.entity is not None and isinstance(self.entity, Entity):
-            return self.entity.name
-        return None
-
-    @name.setter
-    def name(self, name: AnyStr) -> None:
-        assert self.entity is not None and isinstance(self.entity, Entity)
-        self.entity.name = name
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
 
 class Host(Base):
     __tablename__ = 'host'
-    id = Column(Integer, ForeignKey('entity.id'), sequence, primary_key=True)
-    entity = relationship('Entity', uselist=False, back_populates='host')
+    id = Column(Integer, primary_key=True)
 
-#Index('my_index', MyModel.name, unique=True, mysql_length=25)
-event.listen(Domain.entity, 'set', entity_listener)
+    name = Column(String)
+    domain_id = Column(Integer, ForeignKey('domain.id'))
+    domain = relationship('Domain', backref='hosts')
 
-@event.listens_for(Domain, 'init')
-def domain_init(target, args, kwargs):
-    target.entity = Entity()
