@@ -26,7 +26,7 @@ def host_create_view(request: Request):
     reverse = reversed(split)
     tld = next(reverse)
     domain_name = next(reverse) + "." + tld
-    domain = request.dbsession.query(Domain).filter(Domain.name == domain_name).first()
+    domain = request.dbsession.query(Domain).filter(Entity.name == domain_name).first()
     if domain is None:
         domain = Domain()
         domain.name = domain_name;
@@ -45,3 +45,4 @@ def my_view(request):
 
 
 db_err_msg = "Pyramid is having a problem using your SQL database."
+
