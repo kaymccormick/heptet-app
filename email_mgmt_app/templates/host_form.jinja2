@@ -1,4 +1,4 @@
-<form method="post" action="{{ form.host_form.action }}">
+<form method="post" action="{{ r.route_path('host_create') }}">
     <div class="form-group">
         <label for="hostname">Hostname</label>
         <input type="text" class="form-control" id="hostname" aria-describedby="hostnameHelp"

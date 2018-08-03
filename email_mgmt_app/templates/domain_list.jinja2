@@ -1,0 +1,11 @@
+{% extends "main.jinja2" %}
+{% block content %}
+<table class="table">
+<thead>
+<tr><th>Name</th><th>No. of Hosts</th></tr>
+</thead>
+{% for domain in domains %}
+    <tr><td><a href="{{ r.route_path('domain', id=domain.id) }}">{{ domain.name }}</a></td><td>{{ domain.hosts|length }}</tr>
+{% endfor %}
+</table>
+{% endblock %}

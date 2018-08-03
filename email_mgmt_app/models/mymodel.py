@@ -5,7 +5,7 @@ from sqlalchemy import (
     Index,
     Integer,
     Text,
-    ForeignKey, Sequence, event, ForeignKeyConstraint, String)
+    ForeignKey, Sequence, event, ForeignKeyConstraint, String, Boolean, Float)
 from sqlalchemy.orm import relationship
 
 from .meta import Base, metadata
@@ -19,6 +19,17 @@ class Domain(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+
+
+
+class ServiceEntry(Base):
+    __tablename__ = 'service_entry'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    port_num = Column(Integer)
+    protocol_name = Column(String)
+    weight = Column(Float, default=0)
+    description = Column(String, default="")
 
 class Host(Base):
     __tablename__ = 'host'

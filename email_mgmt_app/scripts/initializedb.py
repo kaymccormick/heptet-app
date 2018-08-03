@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import transaction
 
@@ -9,7 +10,7 @@ from pyramid.paster import (
 
 from pyramid.scripts.common import parse_vars
 
-from email_mgmt_app.models.mymodel import Domain, Person
+from email_mgmt_app.models.mymodel import Domain, Person, ServiceEntry
 from ..models.meta import Base
 from ..models import (
     get_engine,
@@ -40,6 +41,27 @@ def main(argv=sys.argv):
 
     with transaction.manager:
         dbsession = get_tm_session(session_factory, transaction.manager)
+        f = open("services")
+        re_compile = re.compile("[ \t]*([^ \t#]*)[ \t]*([0-9]+)/(tcp|udp)")
+        while True:
+            s = f.readline()
+            if s == "":
+                break
+            m = re_compile.search(s)
+            if m is None:
+                print(s)
+                continue
+
+            name = m.group(1)
+
+            port = int(m.group(2))
+            proto = m.group(3)
+            sv = ServiceEntry()
+            sv.name = name
+            sv.port_num = port
+            sv.protocol_name = proto
+            dbsession.add(sv)
+
         d = Domain()
         d.name = "test.domain"
         dbsession.add(d)

@@ -1,0 +1,60 @@
+{% extends "layout2.jinja2" %}
+{% block main %}
+{% include "nav.jinja2" %}
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link active" href="#">
+                  <span data-feather="home"></span>
+                  Main <span class="sr-only">(current)</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ r.route_path('domain_list') }}">
+                  <span data-feather="file"></span>
+                  Domains
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{  r.route_path('host_list') }}">
+                  <span data-feather="shopping-cart"></span>
+                  Hosts
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ r.route_path('service_list') }}">
+                  <span data-feather="users"></span>
+                  Services
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <span data-feather="bar-chart-2"></span>
+                  Email addresses
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ r.route_path('host_form') }}">
+                  <span data-feather="bar-chart-2"></span>
+                  Add Host
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ r.route_path('domain_form') }}">
+                  <span data-feather="bar-chart-2"></span>
+                  Add Domain
+                </a>
+              </li>
+            </ul>
+	    </div>
+	    </nav>
+
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+{% block content %}{% endblock %}
+</main>
+</div>
+</div>
+{% endblock main %}

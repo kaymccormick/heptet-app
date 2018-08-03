@@ -6,20 +6,70 @@ from pyramid.response import Response
 from pyramid.security import remember, forget, Allow, Authenticated
 from pyramid.view import view_config, forbidden_view_config
 from pyramid_ldap import get_ldap_connector
+from sqlalchemy import desc, func
 
 from sqlalchemy.exc import DBAPIError
+from sqlalchemy.orm import Query
 
-from email_mgmt_app.models.mymodel import Domain, Host
+from email_mgmt_app.models.mymodel import Domain, Host, ServiceEntry
+
+@view_config(route_name='domain_list', renderer='../templates/domain_list.jinja2')
+def domain_list_view(request: Request) -> dict:
+    domains = request.dbsession.query(Domain).all()
 
 
-@view_config(route_name='main', renderer='../templates/main.jinja2')
+@view_config(route_name='host_form', renderer='../templates/host_form_main.jinja2')
+def host_form_view(request: Request) -> dict:
+    hosts = request.dbsession.query(Host).all()
+    return { 'hosts': hosts, 'r': request }
+
+@view_config(route_name='domain_form', renderer='../templates/domain_form_main.jinja2')
+def domain_form_view(request: Request) -> dict:
+    hosts = request.dbsession.query(Host).all()
+    return { 'hosts': hosts, 'r': request }
+
+
+@view_config(route_name='service', renderer='../templates/service.jinja2')
+def service_view(request: Request) -> dict:
+    service = request.dbsession.query(ServiceEntry).filter(ServiceEntry.id == request.matchdict['id']).first()
+    hosts = request.dbsession.query(Host).all()
+    return { 'service': service, 'hosts': hosts, 'r': request }
+
+@view_config(route_name='service_list', renderer='../templates/service_list.jinja2')
+def service_list_view(request: Request) -> dict:
+    entry__all = request.dbsession.query(ServiceEntry).order_by(ServiceEntry.port_num, ServiceEntry.protocol_name).all()
+    hosts = request.dbsession.query(Host).all()
+    return { 'services': entry__all , 'hosts': hosts, 'r': request }
+
+
+@view_config(route_name='host_list', renderer='../templates/host_list_main.jinja2')
+def host_list_view(request: Request) -> dict:
+    hosts = request.dbsession.query(Host).all()
+    return { 'hosts': hosts, 'r': request }
+
+@view_config(route_name='main', renderer='../templates/main_child.jinja2')
 def main_view(request: Request) -> dict:
-    pass
+    q = request.dbsession.query(Host) # type: Query
+    need_paths_for = ['service_list']
+    paths = { }
+    for path in need_paths_for:
+        paths[path] = request.route_path("service_list")
+
+    if q.count() == 0:
+        hosts = [ ]
+    else:
+        hosts = q.all()
+    return { 'hosts': hosts, 'paths': paths, 'r': request }
 
 @view_config(route_name='host', renderer='../templates/host.jinja2')
 def host_view(request: Request):
     host = request.dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
-    return { "host": host }
+    return munge_dict(request, { "host": host })
+
+@view_config(route_name='domain', renderer='../templates/domain_view.jinja2')
+def domain_view(request: Request):
+    domain = request.dbsession.query(Domain).filter(Domain.id == request.matchdict["id"]).first()
+    return munge_dict(request, {"domain": domain })
 
 
 # @view_config(route_name='port_register_form', renderer='../templates/port_registeR_form.jinja2')
@@ -35,6 +85,8 @@ def munge_dict(request, indict: dict) -> dict:
 
     if not "host_form" in indict["form"].keys():
         indict["form"]["host_form"] = host_form_defs(request)
+
+    indict["r"] = request
 
     return indict
 
@@ -52,12 +104,23 @@ def host_create_view(request: Request):
     if domain is None:
         domain = Domain()
         domain.name = domain_name;
-        request.dbsession.add(domain)
-        request.dbsession.flush()
+
+    host = Host()
+    host.domain = domain
+    host.name = hostname_
+    request.dbsession.add(host)
+    request.dbsession.flush()
+
+    return munge_dict(request, { 'host': host, 'domain': domain })
+
+@view_config(route_name='domain_create', renderer='../templates/domain_create.jinja2')
+def domain_create_view(request: Request):
+    domain = Domain()
+    domain.name = request.POST['domain_name']
+    request.dbsession.add(domain)
+    request.dbsession.flush()
 
     return munge_dict(request, { 'domain': domain })
-
-
 
 db_err_msg = "Pyramid is having a problem using your SQL database."
 

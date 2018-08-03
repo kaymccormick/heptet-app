@@ -1,0 +1,11 @@
+{% extends "main.jinja2" %}
+{% block content %}
+<table class="table">
+<thead>
+<tr><th>Name</th></tr>
+</thead>
+{% for host in hosts %}
+    <tr><td><a href="{{ r.route_path('host', id=host.id) }}">{{ host.name }}</a></td></tr>
+{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "layout2.jinja2" %}
+{% block content %}
+<div class="container">
+  <div class="row align-items-baseline">
+    <div class="col-sm-1">
+      <span class="lead">Register Port Use</span>
+    </div>
+    <div class="col-sm-8">
+      <span class="display-4">{{ host.name }}</span>
+      <span style="margin-left: 2em;"><em>[ {{ host.id }} ]</em></span></div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12">
+      {% include "host_list.jinja2" with context %}
+    </div>
+  </div>
+
+</div>
+
+</div>
+{% endblock content %}
