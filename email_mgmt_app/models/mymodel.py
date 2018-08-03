@@ -28,3 +28,9 @@ class Host(Base):
     domain_id = Column(Integer, ForeignKey('domain.id'))
     domain = relationship('Domain', backref='hosts')
 
+class EmailAddress(Base):
+    __tablename__ = 'email_address'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    host_id = Column(Integer, ForeignKey('host.id'))
+    host = relationship('Host', backref='email_addresses')

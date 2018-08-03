@@ -1,0 +1,15 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th>Hostname</th>
+        <th>Email address count</th>
+    </tr>
+    </thead>
+    {% for host in domain.hosts %}
+
+        <tr>
+            <td>{{ host.name }}</td>
+            <td>{{ host.email_addresses|length }}</td>
+        </tr>
+    {% endfor %}
+</table>
