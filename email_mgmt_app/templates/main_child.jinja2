@@ -1,4 +1,12 @@
-{% extends "main.jinja2" %}
-{% block content %}
-Hello.
-{% endblock content %}
+{% extends "main_template.jinja2" %}
+{% block main %}
+{% include "nav.jinja2" %}
+<div class="container-fluid">
+  <div class="row">
+    {% include "left_sidebar.jinja2" %}
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock main %}

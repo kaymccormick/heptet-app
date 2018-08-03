@@ -1,6 +1,11 @@
-{% extends "main.jinja2" %}
+{% extends "main_child.jinja2" %}
+{% block extra_head %}
+<script>
+engage()
+</script>
+{% endblock %}
 {% block content %}
-<table class="table">
+<table class="table" id="domain-table">
 <thead>
 <tr><th>Name</th><th>No. of Hosts</th></tr>
 </thead>

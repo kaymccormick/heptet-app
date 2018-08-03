@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!--[if lt IE 7 ]> <html lang="en" class="ie6" > <![endif]-->
 <!--[if IE 7 ]>    <html lang="en" class="ie7" > <![endif]-->
@@ -7,7 +8,7 @@
 <head>
   <meta charset="utf-8">
   <title>Output Management</title>
-
+  {% block extra_head %}{% endblock %}
   
   
 
@@ -27,10 +28,10 @@
     {% endblock %}
 </div>
 
+{% block injected_script %}
 
 
 
-<!-- z -->
 <script src="../static/app.bundle.js"></script>
 
 

@@ -3,11 +3,28 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const PugLoader = require('pug-loader');
 
+function p(compilation, assets, options)
+{
+    return {
+        compilation: compilation,
+        webpack: compilation.getStats().toJson(),
+        webpackConfig: compilation.options,
+        htmlWebpackPlugin: {
+            files: assets,
+            options: options
+        },
+        'mine': {'extends_temlate_filename': 'layout2.jinja'}
+
+    };
+}
+
+
 module.exports = {
     mode: 'development',
     entry:
         {
-            app: './src/index.js'
+            app: './src/index.js',
+            domainList: './src/domain_list.js'
             //testcode: './src/testcode/index.js'
         },
     devtool: 'inline-source-map',
@@ -16,10 +33,21 @@ module.exports = {
             title: 'Output Management',
             template: 'src/assets/layout2.html',
             // output this layout2 template
-            filename: '../templates/layout2.jinja2',
+            filename: '../templates/main_template.jinja2',
+//                templateParameters: p,
+            chunks: ['app'],
 	    inject: false
         })
-    ],
+,
+            new HtmlWebpackPlugin({
+            title: 'Output Management',
+            template: 'src/assets/domain_list_layout.html',
+                filename: '../templates/domain_list_layout.jinja2',
+            // output this layout2 template
+//               templateParameters: function() { x = p(a, b, c); x.data = { extends: 'layout2.jinja2' }; return x; },
+	    inject: false
+        })
+],
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'email_mgmt_app/static')

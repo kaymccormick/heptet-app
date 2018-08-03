@@ -16,7 +16,7 @@ from email_mgmt_app.models.mymodel import Domain, Host, ServiceEntry
 @view_config(route_name='domain_list', renderer='../templates/domain_list.jinja2')
 def domain_list_view(request: Request) -> dict:
     domains = request.dbsession.query(Domain).all()
-
+    return munge_dict(request, {'domains': domains})
 
 @view_config(route_name='host_form', renderer='../templates/host_form_main.jinja2')
 def host_form_view(request: Request) -> dict:
