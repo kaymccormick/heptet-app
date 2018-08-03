@@ -2,9 +2,9 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const PugLoader = require('pug-loader');
+const webpack = require('webpack');
 
-function p(compilation, assets, options)
-{
+function p(compilation, assets, options) {
     return {
         compilation: compilation,
         webpack: compilation.getStats().toJson(),
@@ -21,6 +21,7 @@ function p(compilation, assets, options)
 
 module.exports = {
     mode: 'development',
+
     entry:
         {
             app: './src/index.js',
@@ -29,6 +30,12 @@ module.exports = {
         },
     devtool: 'inline-source-map',
     plugins: [
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery",
+            'window.jQuery': 'jquery',
+            'window.$': 'jquery'
+        }),
         new HtmlWebpackPlugin({
             title: 'Output Management',
             template: 'src/assets/layout2.html',
@@ -36,18 +43,18 @@ module.exports = {
             filename: '../templates/main_template.jinja2',
 //                templateParameters: p,
             chunks: ['app'],
-	    inject: false
+            inject: false
         })
-,
-            new HtmlWebpackPlugin({
+        ,
+        new HtmlWebpackPlugin({
             title: 'Output Management',
             template: 'src/assets/domain_list_layout.html',
-                filename: '../templates/domain_list_layout.jinja2',
+            filename: '../templates/domain_list_layout.jinja2',
             // output this layout2 template
 //               templateParameters: function() { x = p(a, b, c); x.data = { extends: 'layout2.jinja2' }; return x; },
-	    inject: false
+            inject: false
         })
-],
+    ],
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'email_mgmt_app/static')
@@ -57,7 +64,7 @@ module.exports = {
     },
     module: {
         rules: [
-            {parser: {amd: false}},
+            //{parser: {amd: false}},
             {
                 test: /\.css$/,
                 use: [
@@ -84,6 +91,8 @@ module.exports = {
                     // See options section below
                 },
             }
+            ,
+
         ]
 
     }
