@@ -9,8 +9,22 @@ from pyramid_ldap import get_ldap_connector
 
 from sqlalchemy.exc import DBAPIError
 
-from email_mgmt_app.models.mymodel import Domain
+from email_mgmt_app.models.mymodel import Domain, Host
 
+
+@view_config(route_name='main', renderer='../templates/main.jinja2')
+def main_view(request: Request) -> dict:
+    pass
+
+@view_config(route_name='host', renderer='../templates/host.jinja2')
+def host_view(request: Request):
+    host = request.dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
+    return { "host": host }
+
+
+# @view_config(route_name='port_register_form', renderer='../templates/port_registeR_form.jinja2')
+# def port_register_form(request):
+#     pass
 
 def host_form_defs(request):
     return { "action": request.route_path('host_create') }

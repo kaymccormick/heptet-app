@@ -52,5 +52,7 @@ def main(global_config, **settings):
         cache_period=600,
     )
 
+    # config.add_renderer('host', 'email_mgmt_app.renderer.HostRenderer')
+
     config.scan()
     return config.make_wsgi_app()
