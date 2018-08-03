@@ -30,12 +30,12 @@ module.exports = {
         },
     devtool: 'inline-source-map',
     plugins: [
-        new webpack.ProvidePlugin({
-            $: "jquery",
-            jQuery: "jquery",
-            'window.jQuery': 'jquery',
-            'window.$': 'jquery'
-        }),
+        // new webpack.ProvidePlugin({
+        //     $: "jquery",
+        //     jQuery: "jquery",
+        //     'window.jQuery': 'jquery',
+        //     'window.$': 'jquery'
+        // }),
         new HtmlWebpackPlugin({
             title: 'Output Management',
             template: 'src/assets/layout2.html',

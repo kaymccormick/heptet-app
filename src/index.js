@@ -1,3 +1,3 @@
-import 'bootstrap'
-import 'script-loader!../node_modules/datatables.net/js/jquery.dataTables.min';
+import 'bootstrap';
+import 'script-loader!jquery';
 import '../node_modules/bootstrap/dist/css/bootstrap.css'
