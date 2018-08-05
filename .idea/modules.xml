@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/email-pyr.iml" filepath="$PROJECT_DIR$/.idea/email-pyr.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../heptet-py/.idea/heptet-py.iml" filepath="$PROJECT_DIR$/../heptet-py/.idea/heptet-py.iml" />
     </modules>
   </component>
 </project>

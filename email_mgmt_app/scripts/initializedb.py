@@ -10,7 +10,7 @@ from pyramid.paster import (
 
 from pyramid.scripts.common import parse_vars
 
-from email_mgmt_app.models.mymodel import Domain, Person, ServiceEntry
+from email_mgmt_app.entity.model import Person, Domain, ServiceEntry
 from ..models.meta import Base
 from ..models import (
     get_engine,

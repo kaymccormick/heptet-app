@@ -2,38 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/email_mgmt_app/base/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/email_mgmt_app/route/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/left_sidebar.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/entity/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/entity/domain/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/entity/domain/view/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/entity/host/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/entity/host/view/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/email-pyr.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/email-pyr.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/domain_create.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/domain_form.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/domain_form_main.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/domain_form_main.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/domain_list.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/domain_view.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host_create.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host_form.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host_form_main.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host_list.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host_list_main.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host_select.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/host_select.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/layout.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/layout2.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/main.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/main_child.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/main_child.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/service.jinja2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/service_list.jinja2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/route/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/route/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/email_mgmt_app/views/default.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/views/default.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyramid_scaffold.sqlite" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.config.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/static/" />
     <ignored path="$PROJECT_DIR$/node_modules/" />
@@ -69,9 +50,9 @@
           <entry key="droplog" value="1" />
           <entry key="html" value="4" />
           <entry key="ini" value="1" />
-          <entry key="jinja2" value="21" />
+          <entry key="jinja2" value="22" />
           <entry key="js" value="9" />
-          <entry key="py" value="39" />
+          <entry key="py" value="49" />
           <entry key="rnc" value="1" />
           <entry key="services" value="1" />
           <entry key="twig" value="1" />
@@ -83,9 +64,9 @@
           <entry key="HTML" value="4" />
           <entry key="Ini" value="1" />
           <entry key="JavaScript" value="9" />
-          <entry key="Jinja2" value="21" />
+          <entry key="Jinja2" value="22" />
           <entry key="PLAIN_TEXT" value="5" />
-          <entry key="Python" value="39" />
+          <entry key="Python" value="49" />
           <entry key="RNG Compact" value="1" />
         </counts>
       </usages-collector>
@@ -97,9 +78,9 @@
           <entry key="ini" value="10" />
           <entry key="jinja2" value="1754" />
           <entry key="js" value="1085" />
-          <entry key="py" value="7214" />
+          <entry key="py" value="7359" />
           <entry key="twig" value="6" />
-          <entry key="txt" value="350" />
+          <entry key="txt" value="385" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
@@ -108,8 +89,8 @@
           <entry key="Ini" value="10" />
           <entry key="JavaScript" value="1085" />
           <entry key="Jinja2" value="1754" />
-          <entry key="PLAIN_TEXT" value="382" />
-          <entry key="Python" value="7234" />
+          <entry key="PLAIN_TEXT" value="417" />
+          <entry key="Python" value="7379" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -120,26 +101,40 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="227">
-              <caret line="202" lean-forward="true" selection-start-line="202" selection-end-line="202" />
+            <state relative-caret-position="236">
+              <caret line="30" selection-start-line="30" selection-end-line="30" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
-                <marker date="1533442480526" expanded="true" signature="580:746" ph="..." />
-                <marker date="1533442480526" expanded="true" signature="929:934" ph="..." />
-                <marker date="1533442480526" expanded="true" signature="1142:1147" ph="..." />
-                <marker date="1533442480526" expanded="true" signature="1273:1278" ph="..." />
-                <marker date="1533442480526" expanded="true" signature="1526:1531" ph="..." />
-                <marker date="1533442480526" expanded="true" signature="1676:1681" ph="..." />
+                <marker date="1533454544686" expanded="true" signature="484:650" ph="..." />
+                <marker date="1533454544686" expanded="true" signature="833:838" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/host/__init__.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/netra.ini">
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/host/view/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="163">
-              <caret line="31" column="21" selection-start-line="31" selection-start-column="21" selection-end-line="31" selection-end-column="21" />
+            <state relative-caret-position="216">
+              <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+                <marker date="1533454545053" expanded="true" signature="270:282" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../heptet-py/heptet/web/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="72">
+              <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
             </state>
           </provider>
         </entry>
@@ -147,6 +142,15 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/webpack.config.js">
           <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/templates/left_sidebar.jinja2">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="139">
+              <caret line="10" column="38" selection-start-line="10" selection-start-column="38" selection-end-line="10" selection-end-column="38" />
+            </state>
+          </provider>
         </entry>
       </file>
       <file pinned="true" current-in-tab="false">
@@ -159,51 +163,25 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.PyCharm2018.2/system/remote_sources/-459217641/776459870/pyramid/config/views.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="139">
-              <caret line="1730" column="8" selection-start-line="1730" selection-start-column="8" selection-end-line="1730" selection-end-column="8" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/email_mgmt_app/templates/main_child.jinja2">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="34" selection-start-column="34" selection-end-column="34" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/route/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="5" selection-start-line="5" selection-end-line="5" />
+            <state relative-caret-position="96">
+              <caret line="4" selection-start-line="4" selection-end-line="4" />
               <folding>
-                <marker date="1533437463564" expanded="true" signature="85:90" ph="..." />
+                <marker date="1533453736660" expanded="true" signature="84:89" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.PyCharm2018.2/system/python_stubs/-2109864235/builtins.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="130">
-              <caret line="731" column="6" selection-start-line="731" selection-start-column="6" selection-end-line="731" selection-end-column="6" />
-            </state>
-          </provider>
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/__init__.py">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/email_mgmt_app/base/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="72">
-              <caret line="3" column="12" selection-start-line="3" selection-start-column="12" selection-end-line="3" selection-end-column="12" />
-            </state>
-          </provider>
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/domain/__init__.py">
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
     </leaf>
@@ -217,8 +195,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>firs</find>
-      <find>==</find>
       <find>port_reg</find>
       <find>.all</find>
       <find>create</find>
@@ -247,6 +223,8 @@
       <find>outpu</find>
       <find>if.*name</find>
       <find>wait0ress</find>
+      <find>r.route_</find>
+      <find>domain</find>
     </findStrings>
     <replaceStrings>
       <replace>email_mgmt_app</replace>
@@ -296,17 +274,21 @@
         <option value="$PROJECT_DIR$/src/assets/layout2.twig" />
         <option value="$PROJECT_DIR$/node_modules/datatables.net/js/jquery.dataTables.js" />
         <option value="$PROJECT_DIR$/src/index.js" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/__init__.py" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/route/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/base/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/domain_list_child.jinja2" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/main_child.jinja2" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/domain_form_main.html" />
         <option value="$PROJECT_DIR$/email_mgmt_app/routes.py" />
         <option value="$PROJECT_DIR$/webpack.config.js" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/views/default.py" />
         <option value="$PROJECT_DIR$/netra.ini" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/route/__init__.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" />
+        <option value="$PROJECT_DIR$/../heptet-py/heptet/web/__init__.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/entity/__init__.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/entity/domain/view/__init__.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/views/default.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/entity/host/view/__init__.py" />
       </list>
     </option>
   </component>
@@ -354,24 +336,63 @@
             <path>
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
               <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
-              <item name="build" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
-              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
               <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
               <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
               <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
-              <item name="templates" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
               <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
               <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
-              <item name="views" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
+              <item name="domain" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
+              <item name="domain" type="462c0819:PsiDirectoryNode" />
+              <item name="view" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
+              <item name="host" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
+              <item name="host" type="462c0819:PsiDirectoryNode" />
+              <item name="view" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app.egg-info" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="heptet-py" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="heptet-py" type="462c0819:PsiDirectoryNode" />
+              <item name="heptet" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="heptet-py" type="462c0819:PsiDirectoryNode" />
+              <item name="heptet" type="462c0819:PsiDirectoryNode" />
+              <item name="web" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -382,7 +403,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/node_modules" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../heptet-py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -632,7 +653,14 @@
       <option name="project" value="LOCAL" />
       <updated>1533321883223</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="commiting many changes">
+      <created>1533453646908</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1533453646908</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -699,21 +727,12 @@
     <MESSAGE value="rename templates" />
     <MESSAGE value="MORE ATTEMPTS" />
     <MESSAGE value="fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix" />
+    <MESSAGE value="commiting many changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="commiting many changes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>137</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>145</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/../pyramid_ldap/pyramid_ldap/__init__.py</url>
           <line>108</line>
@@ -731,62 +750,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>99</line>
+          <line>55</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>121</line>
+          <line>64</line>
           <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>55</line>
-          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/venv/Scripts/initialize_pyramid_scaffold_db-script.py" />
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1560">
-          <caret line="68" selection-start-line="68" selection-end-line="68" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/tests.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="254">
-          <caret line="55" column="21" selection-start-line="55" selection-start-column="21" selection-end-line="55" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/templates/host_create.jinja2">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="254">
-          <caret line="14" column="29" selection-start-line="14" selection-start-column="29" selection-end-line="14" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/templates/host_list.jinja2">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="4" column="24" selection-start-line="4" selection-start-column="24" selection-end-line="4" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/scripts/__init__.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../pyramid_ldap/pyramid_ldap/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="38">
-          <caret line="190" column="11" lean-forward="true" selection-start-line="190" selection-start-column="11" selection-end-line="190" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/email_mgmt_app/templates/host_form.jinja2">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="168">
@@ -958,17 +933,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="22" column="19" selection-start-line="22" selection-start-column="19" selection-end-line="22" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#25#0" expanded="true" />
-            <marker date="1533323027538" expanded="true" signature="1084:1089" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/assets/layout2.twig">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="264">
@@ -991,19 +955,6 @@
             <element signature="e#0#11#0" expanded="true" />
             <marker date="1533436417912" expanded="true" signature="358:364" ph="..." />
             <marker date="1533436417912" expanded="true" signature="870:915" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/__init__.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/route/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="5" selection-start-line="5" selection-end-line="5" />
-          <folding>
-            <marker date="1533437463564" expanded="true" signature="85:90" ph="..." />
           </folding>
         </state>
       </provider>
@@ -1077,29 +1028,93 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webpack.config.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="227">
-          <caret line="202" lean-forward="true" selection-start-line="202" selection-end-line="202" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-            <marker date="1533442480526" expanded="true" signature="580:746" ph="..." />
-            <marker date="1533442480526" expanded="true" signature="929:934" ph="..." />
-            <marker date="1533442480526" expanded="true" signature="1142:1147" ph="..." />
-            <marker date="1533442480526" expanded="true" signature="1273:1278" ph="..." />
-            <marker date="1533442480526" expanded="true" signature="1526:1531" ph="..." />
-            <marker date="1533442480526" expanded="true" signature="1676:1681" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/netra.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="163">
           <caret line="31" column="21" selection-start-line="31" selection-start-column="21" selection-end-line="31" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webpack.config.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/templates/left_sidebar.jinja2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="139">
+          <caret line="10" column="38" selection-start-line="10" selection-start-column="38" selection-end-line="10" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/domain/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/route/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+          <folding>
+            <marker date="1533453736660" expanded="true" signature="84:89" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../heptet-py/heptet/web/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/domain/view/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="227">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+          <folding>
+            <element signature="e#0#36#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="236">
+          <caret line="30" selection-start-line="30" selection-end-line="30" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+            <marker date="1533454544686" expanded="true" signature="484:650" ph="..." />
+            <marker date="1533454544686" expanded="true" signature="833:838" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/host/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/host/view/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+            <marker date="1533454545053" expanded="true" signature="270:282" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
