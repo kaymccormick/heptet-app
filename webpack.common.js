@@ -1,10 +1,12 @@
 const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
     plugins: [
         new CleanWebpackPlugin(['dist']),
+        new CopyWebpackPlugin(['src/__init__.py', path.resolve(__dirname, build, )])
         new HtmlWebpackPlugin({
             title: '',
             template: 'src/assets/main_layout.html',
