@@ -61,7 +61,7 @@ module.exports = {
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'build/dist'),
-        publicPath: '/dist/',
+        publicPath: '../dist/',
     },
     node: {
         fs: "empty" // avoids error messages
