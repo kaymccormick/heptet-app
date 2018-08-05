@@ -6,7 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 module.exports = {
     plugins: [
         new CleanWebpackPlugin(['dist']),
-        new CopyWebpackPlugin(['src/__init__.py', path.resolve(__dirname, build, )])
+        new CopyWebpackPlugin(['src/__init__.py', path.resolve(__dirname, 'build/templates')]),
         new HtmlWebpackPlugin({
             title: '',
             template: 'src/assets/main_layout.html',
