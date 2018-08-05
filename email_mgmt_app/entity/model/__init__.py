@@ -1,5 +1,3 @@
-import zope.sqlachemy
-
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import sessionmaker, configure_mappers
 
