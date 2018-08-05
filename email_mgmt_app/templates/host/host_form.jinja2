@@ -1,0 +1,9 @@
+<form method="post" action="{{ r.route_path('host_create') }}">
+    <div class="form-group">
+        <label for="hostname">Hostname</label>
+        <input type="text" class="form-control" id="hostname" aria-describedby="hostnameHelp"
+               placeholder="fqdn.domain.com" name="hostname">
+        <small id="hostnameHelp" class="form-text text-muted">Enter the new hostname as its fully-qualified domain name (FQDN), please.</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>

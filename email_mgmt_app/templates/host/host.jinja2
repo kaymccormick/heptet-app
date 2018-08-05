@@ -1,0 +1,14 @@
+{% extends "../main_child.jinja2" %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-2">Host</div>
+        <div class="col-sm-1">ID: {{ host.id }}</div>
+        <div class="col-sm-6">{{ host.name }}</div>
+    </div>
+    <table class="table">
+    {% for add in host.email_addresses %}
+    <tr><td>{{add.name}}@{{add.host.name}}</td></tr>
+    {% endfor %}
+    </table>
+    
+{% endblock content %}

@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="add config">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/email-pyr.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/email-pyr.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_create.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_form.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_form_main.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_form_main.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_list.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_list_child.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_view.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host_create.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host_form.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host_form_main.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host_list.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host_list_main.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host_select.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/host/host_select.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/service/service.jinja2" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email_mgmt_app/templates/service/service_list.jinja2" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webpack.common.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.common.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webpack.dev.js" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/static/" />
     <ignored path="$PROJECT_DIR$/node_modules/" />
@@ -49,7 +59,7 @@
           <entry key="PKG-INFO" value="1" />
           <entry key="droplog" value="1" />
           <entry key="html" value="4" />
-          <entry key="in" value="1" />
+          <entry key="in" value="2" />
           <entry key="ini" value="5" />
           <entry key="jinja2" value="28" />
           <entry key="js" value="26" />
@@ -58,7 +68,7 @@
           <entry key="rnc" value="1" />
           <entry key="services" value="1" />
           <entry key="twig" value="1" />
-          <entry key="txt" value="1" />
+          <entry key="txt" value="2" />
           <entry key="wsgi" value="1" />
         </counts>
       </usages-collector>
@@ -69,7 +79,7 @@
           <entry key="JSON" value="1" />
           <entry key="JavaScript" value="26" />
           <entry key="Jinja2" value="28" />
-          <entry key="PLAIN_TEXT" value="7" />
+          <entry key="PLAIN_TEXT" value="9" />
           <entry key="Python" value="87" />
           <entry key="RNG Compact" value="1" />
         </counts>
@@ -106,19 +116,28 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/netra.ini">
+        <entry file="file://$PROJECT_DIR$/setup.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-4">
-              <caret line="19" column="18" selection-start-line="19" selection-start-column="18" selection-end-line="19" selection-end-column="18" />
+            <state relative-caret-position="72">
+              <caret line="5" column="19" selection-start-line="5" selection-start-column="19" selection-end-line="5" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app.egg-info/SOURCES.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="24">
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/setup.py">
+        <entry file="file://$PROJECT_DIR$/MANIFEST.in">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="96">
-              <caret line="46" column="65" selection-start-line="46" selection-start-column="65" selection-end-line="46" selection-end-column="65" />
+            <state relative-caret-position="48">
+              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
             </state>
           </provider>
         </entry>
@@ -189,9 +208,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>layou2.jinja2</find>
-      <find>layout2</find>
-      <find>outpu</find>
       <find>if.*name</find>
       <find>wait0ress</find>
       <find>domain</find>
@@ -215,10 +231,13 @@
       <find>`</find>
       <find>zope</find>
       <find>zope.</find>
-      <find>find_pac</find>
       <find>output</find>
       <find>find_</find>
       <find>main_</find>
+      <find>find_pac</find>
+      <find>*.js</find>
+      <find>js</find>
+      <find>MANI</find>
     </findStrings>
     <replaceStrings>
       <replace>email_mgmt_app</replace>
@@ -351,6 +370,12 @@
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
               <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
               <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+              <item name="templates" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
@@ -764,7 +789,28 @@
       <option name="project" value="LOCAL" />
       <updated>1533508480017</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="add config">
+      <created>1533510587028</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1533510587028</updated>
+    </task>
+    <task id="LOCAL-00025" summary="add config">
+      <created>1533510599166</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1533510599166</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Merge branch 'clone' of git+ssh://10.8.0.1/home/kay/email-pyr into clone&#10;&#10;# Conflicts:&#10;#&#9;package-lock.json">
+      <created>1533510657389</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1533510657389</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -802,8 +848,8 @@
   <component name="ToolWindowManager">
     <frame x="89" y="68" width="1312" height="634" extended-state="0" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4948097" visible="true" weight="0.3186901" />
-      <window_info id="Structure" order="1" sideWeight="0.5051903" side_tool="true" visible="true" weight="0.3186901" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49382716" visible="true" weight="0.3186901" />
+      <window_info id="Structure" order="1" sideWeight="0.50617284" side_tool="true" visible="true" weight="0.3186901" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="File Transfer" order="0" sideWeight="0.49760383" weight="0.32914045" />
       <window_info anchor="bottom" id="Message" order="1" />
@@ -816,8 +862,8 @@
       <window_info anchor="bottom" id="Docker" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
       <window_info anchor="bottom" id="Messages" order="10" />
-      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.5079872" side_tool="true" visible="true" weight="0.3966597" />
-      <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.4968051" weight="0.32359082" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.50399363" side_tool="true" visible="true" weight="0.32359082" />
+      <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.4960064" visible="true" weight="0.32359082" />
       <window_info anchor="bottom" id="Terminal" order="13" sideWeight="0.7140575" weight="0.29853863" />
       <window_info anchor="bottom" id="Python Console" order="14" sideWeight="0.4993036" weight="0.32980332" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -896,7 +942,8 @@
     <MESSAGE value="commiting with various changes" />
     <MESSAGE value="slight refactor" />
     <MESSAGE value="add config" />
-    <option name="LAST_COMMIT_MESSAGE" value="add config" />
+    <MESSAGE value="Merge branch 'clone' of git+ssh://10.8.0.1/home/kay/email-pyr into clone&#10;&#10;# Conflicts:&#10;#&#9;package-lock.json" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'clone' of git+ssh://10.8.0.1/home/kay/email-pyr into clone&#10;&#10;# Conflicts:&#10;#&#9;package-lock.json" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -945,13 +992,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/webpack.dev.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="7" selection-start-line="7" selection-end-line="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.PyCharm2018.2/system/remote_sources/-459217641/776459870/jinja2/environment.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9768">
@@ -1246,9 +1286,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/MANIFEST.in">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/netra.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-4">
@@ -1298,8 +1335,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/setup.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="96">
-          <caret line="46" column="65" selection-start-line="46" selection-start-column="65" selection-end-line="46" selection-end-column="65" />
+        <state relative-caret-position="72">
+          <caret line="5" column="19" selection-start-line="5" selection-start-column="19" selection-end-line="5" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app.egg-info/SOURCES.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="24">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MANIFEST.in">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
         </state>
       </provider>
     </entry>
