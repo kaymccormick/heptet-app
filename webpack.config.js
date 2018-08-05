@@ -13,7 +13,11 @@ function p(compilation, assets, options) {
             files: assets,
             options: options
         },
-        'mine': {'extends_temlate_filename': 'layout2.jinja'}
+        // TODO retry this
+        // this isnt used but i thinj because extendS_template_filename
+        // used to be misspelled as extends_temlate_filename. whoops
+        // i should try again
+        'mine': {'extends_template_filename': 'layout2.jinja'}
 
     };
 }
@@ -21,7 +25,6 @@ function p(compilation, assets, options) {
 
 module.exports = {
     mode: 'development',
-
     entry:
         {
             app: './src/index.js',
@@ -40,7 +43,7 @@ module.exports = {
             title: 'Output Management',
             template: 'src/assets/layout2.html',
             // output this layout2 template
-            filename: '../templates/main_template.jinja2',
+            filename: path.resolve(__dirname, 'build/templates/main_template.jinja2'),
 //                templateParameters: p,
             chunks: ['app'],
             inject: false
@@ -49,7 +52,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: 'Output Management',
             template: 'src/assets/domain_list_layout.html',
-            filename: '../templates/domain_list_layout.jinja2',
+            filename: path.resolve(__dirname, 'build/templates/domain_list_layout.jinja2'),
             // output this layout2 template
 //               templateParameters: function() { x = p(a, b, c); x.data = { extends: 'layout2.jinja2' }; return x; },
             inject: false
@@ -57,7 +60,8 @@ module.exports = {
     ],
     output: {
         filename: '[name].bundle.js',
-        path: path.resolve(__dirname, 'email_mgmt_app/static')
+        path: path.resolve(__dirname, 'build/dist'),
+        publicPath: '/dist/',
     },
     node: {
         fs: "empty" // avoids error messages

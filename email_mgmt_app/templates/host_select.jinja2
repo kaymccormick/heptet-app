@@ -1,9 +1,0 @@
-<form>
-  {% if hosts|length > 0 %}
-  <select id="host-select">
-    <% for host in hosts %>
-    <option value="{{ host.id }}">{{ host.name }}</option>
-    <% endfor %>
-  </select>
-  {% endif %}
-</form>

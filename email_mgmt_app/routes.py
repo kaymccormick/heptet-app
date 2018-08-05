@@ -1,5 +1,6 @@
 def includeme(config):
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('dist', '../build/dist')
     config.add_route('host_create', '/host_create')
     config.add_route('host_form', '/host/form')
     config.add_route('main', '/')

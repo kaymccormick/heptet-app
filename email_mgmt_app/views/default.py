@@ -1,3 +1,5 @@
+from typing import TypeVar, Generic
+
 import ldap
 from ldap.ldapobject import LDAPObject
 from pyramid.httpexceptions import HTTPFound
@@ -13,37 +15,72 @@ from sqlalchemy.orm import Query
 
 from email_mgmt_app.models.mymodel import Domain, Host, ServiceEntry
 
-@view_config(route_name='domain_list', renderer='../templates/domain_list.jinja2')
+
+class BaseView(object):
+    def __init__(self, request: Request=None) -> None:
+        self._request = request
+
+    @property
+    def request(self) -> Request:
+        return self._request
+
+
+BaseEntityRelatedView_RelatedEntityType = TypeVar('BaseEntityRelatedView_RelatedEntityType')
+class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], BaseView):
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+
+EntityView_EntityType = TypeVar('EntityView_EntityType')
+class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+
+
+class DomainView(EntityView[Domain]):
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+
+EntityCollectionView_EntityType = TypeVar('EntityCollectionView_EntityType')
+class EntityCollectionView(BaseEntityRelatedView[EntityCollectionView_EntityType]):
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+
+class DomainCollectionView(EntityCollectionView[Domain]):
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+
+
+@view_config(route_name='domain_list', renderer='../templates/domain/domain_list.jinja2')
 @view_config(route_name='domain_list_json', renderer='json')
 def domain_list_view(request: Request) -> dict:
     domains = request.dbsession.query(Domain).all()
     return munge_dict(request, {'domains': domains})
 
-@view_config(route_name='host_form', renderer='../templates/host_form_main.jinja2')
+@view_config(route_name='host_form', renderer='../templates/host/host_form_main.jinja2')
 def host_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'r': request }
 
-@view_config(route_name='domain_form', renderer='../templates/domain_form_main.jinja2')
+@view_config(route_name='domain_form', renderer='../templates/domain/domain_form_main.jinja2')
 def domain_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'r': request }
 
 
-@view_config(route_name='service', renderer='../templates/service.jinja2')
+@view_config(route_name='service', renderer='../templates/service/service.jinja2')
 def service_view(request: Request) -> dict:
     service = request.dbsession.query(ServiceEntry).filter(ServiceEntry.id == request.matchdict['id']).first()
     hosts = request.dbsession.query(Host).all()
     return { 'service': service, 'hosts': hosts, 'r': request }
 
-@view_config(route_name='service_list', renderer='../templates/service_list.jinja2')
+@view_config(route_name='service_list', renderer='../templates/service/service_list.jinja2')
 def service_list_view(request: Request) -> dict:
     entry__all = request.dbsession.query(ServiceEntry).order_by(ServiceEntry.port_num, ServiceEntry.protocol_name).all()
     hosts = request.dbsession.query(Host).all()
     return { 'services': entry__all , 'hosts': hosts, 'r': request }
 
 
-@view_config(route_name='host_list', renderer='../templates/host_list_main.jinja2')
+@view_config(route_name='host_list', renderer='../templates/host/host_list_main.jinja2')
 def host_list_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'r': request }
@@ -62,12 +99,12 @@ def main_view(request: Request) -> dict:
         hosts = q.all()
     return { 'hosts': hosts, 'paths': paths, 'r': request }
 
-@view_config(route_name='host', renderer='../templates/host.jinja2')
+@view_config(route_name='host', renderer='../templates/host/host.jinja2')
 def host_view(request: Request):
     host = request.dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
     return munge_dict(request, { "host": host })
 
-@view_config(route_name='domain', renderer='../templates/domain_view.jinja2')
+@view_config(route_name='domain', renderer='../templates/domain/domain_view.jinja2')
 def domain_view(request: Request):
     domain = request.dbsession.query(Domain).filter(Domain.id == request.matchdict["id"]).first()
     return munge_dict(request, {"domain": domain })
@@ -93,7 +130,7 @@ def munge_dict(request: Request, indict: dict) -> dict:
 
     return indict
 
-@view_config(route_name='host_create', renderer='../templates/host_create.jinja2')
+@view_config(route_name='host_create', renderer='../templates/host/host_create.jinja2')
 def host_create_view(request: Request):
     conn = ldap.initialize("ldap://10.8.0.1") # type: LDAPObject
     # r = conn.search_s("dc=heptet,dc=us", ldap.SCOPE_SUBTREE, '(objectClass=posixAccount)')
@@ -116,7 +153,7 @@ def host_create_view(request: Request):
 
     return munge_dict(request, { 'host': host, 'domain': domain })
 
-@view_config(route_name='domain_create', renderer='../templates/domain_create.jinja2')
+@view_config(route_name='domain_create', renderer='../templates/domain/domain_create.jinja2')
 def domain_create_view(request: Request):
     domain = Domain()
     domain.name = request.POST['domain_name']
