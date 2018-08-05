@@ -7,7 +7,7 @@ from pyramid_ldap import get_ldap_connector
 
 import json
 
-from email_mgmt_app.models.meta import Base
+from email_mgmt_app.entity.model.meta import Base
 
 
 class Encoder(json.JSONEncoder):

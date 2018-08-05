@@ -8,7 +8,7 @@ from pyramid_ldap import get_ldap_connector
 from sqlalchemy.orm import Query
 
 from email_mgmt_app.entity.host.view import host_form_defs
-from email_mgmt_app.entity.model import ServiceEntry, Host
+from email_mgmt_app.entity.model.email_mgmt import ServiceEntry, Host
 
 
 @view_config(route_name='service', renderer='../templates/service/service.jinja2')

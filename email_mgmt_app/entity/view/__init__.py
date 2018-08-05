@@ -7,6 +7,9 @@ class BaseView(object):
     def __init__(self, request: Request=None) -> None:
         self._request = request
 
+    def __call__(self, *args, **kwargs):
+        return None
+
     @property
     def request(self) -> Request:
         return self._request

@@ -1,13 +1,13 @@
 from pyramid.view import view_config
 
-from email_mgmt_app.entity.model import Domain, Host
+from email_mgmt_app.entity.model.email_mgmt import Domain, Host
 from email_mgmt_app.entity import EntityView, EntityCollectionView
 from email_mgmt_app.views.default import munge_dict
 from heptet.web import Request
 
 class DomainView(EntityView[Domain]):
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
+    def __init__(self, request: Request = None, id: int=None) -> None:
+        super().__init__(request, id)
 
 
 class DomainCollectionView(EntityCollectionView[Domain]):

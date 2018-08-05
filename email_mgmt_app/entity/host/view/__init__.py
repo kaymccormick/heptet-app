@@ -3,7 +3,8 @@ from pyramid.request import Request
 from pyramid.view import view_config
 
 from email_mgmt_app.entity import EntityView
-from email_mgmt_app.entity.model import Host, Domain
+from email_mgmt_app.entity.model.email_mgmt import Domain, Host
+
 
 class HostView(EntityView[Host]):
     pass
