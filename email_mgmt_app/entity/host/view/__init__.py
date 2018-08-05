@@ -4,7 +4,6 @@ from pyramid.view import view_config
 
 from email_mgmt_app.entity import EntityView
 from email_mgmt_app.entity.model import Host, Domain
-from email_mgmt_app.views.default import munge_dict
 
 class HostView(EntityView[Host]):
     pass

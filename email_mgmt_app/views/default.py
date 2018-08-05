@@ -95,5 +95,3 @@ def logged_in(request):
 def logout(request):
     headers = forget(request)
     return Response('Logged out', headers=headers)
-
-
