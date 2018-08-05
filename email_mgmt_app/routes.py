@@ -6,6 +6,7 @@ def includeme(config):
     config.add_route('host', '/host/{id}')
     config.add_route('host_list', '/host')
     config.add_route('domain_list', '/domain')
+    config.add_route('domain_list_json', '/domains.json')
     config.add_route('domain', '/domain/{id}')
     config.add_route('domain_form', '/domain_form')
     config.add_route('domain_create', '/domain_create')

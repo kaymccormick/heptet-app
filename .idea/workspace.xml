@@ -3,11 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/templates/domain_list.jinja2" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/templates/domain_list.jinja2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/views/default.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/views/default.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/static/" />
     <ignored path="$PROJECT_DIR$/node_modules/" />
@@ -20,7 +19,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/email_pyr$initializedb.coverage" NAME="initializedb Coverage Results" MODIFIED="1533187882997" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pyramid_scaffold/scripts" />
-    <SUITE FILE_PATH="coverage/email_pyr$email_pyr.coverage" NAME="email-pyr Coverage Results" MODIFIED="1533309446930" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/email_pyr$email_pyr.coverage" NAME="email-pyr Coverage Results" MODIFIED="1533323491611" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/email_pyr$ldap_sample.coverage" NAME="ldap-sample Coverage Results" MODIFIED="1533199705938" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FUSProjectUsageTrigger">
@@ -40,7 +39,7 @@
           <entry key="html" value="2" />
           <entry key="jinja2" value="17" />
           <entry key="js" value="8" />
-          <entry key="py" value="30" />
+          <entry key="py" value="32" />
           <entry key="rnc" value="1" />
           <entry key="services" value="1" />
           <entry key="twig" value="1" />
@@ -53,7 +52,7 @@
           <entry key="JavaScript" value="8" />
           <entry key="Jinja2" value="17" />
           <entry key="PLAIN_TEXT" value="4" />
-          <entry key="Python" value="30" />
+          <entry key="Python" value="32" />
           <entry key="RNG Compact" value="1" />
         </counts>
       </usages-collector>
@@ -63,9 +62,9 @@
           <entry key="html" value="14" />
           <entry key="jinja2" value="1704" />
           <entry key="js" value="851" />
-          <entry key="py" value="5951" />
+          <entry key="py" value="6400" />
           <entry key="twig" value="6" />
-          <entry key="txt" value="327" />
+          <entry key="txt" value="350" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
@@ -73,8 +72,8 @@
           <entry key="HTML" value="14" />
           <entry key="JavaScript" value="851" />
           <entry key="Jinja2" value="1704" />
-          <entry key="PLAIN_TEXT" value="359" />
-          <entry key="Python" value="5951" />
+          <entry key="PLAIN_TEXT" value="382" />
+          <entry key="Python" value="6400" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -85,26 +84,38 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="258">
-              <caret line="19" selection-start-line="19" selection-end-line="19" />
+            <state relative-caret-position="272">
+              <caret line="90" column="20" selection-start-line="90" selection-start-column="20" selection-end-line="90" selection-end-column="20" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
-                <marker date="1533300862673" expanded="true" signature="1859:2149" ph="..." />
-                <marker date="1533300862673" expanded="true" signature="2700:3108" ph="..." />
-                <marker date="1533300862673" expanded="true" signature="3282:3343" ph="..." />
-                <marker date="1533300862673" expanded="true" signature="3389:3613" ph="..." />
+                <marker date="1533323491307" expanded="true" signature="1920:2210" ph="..." />
+                <marker date="1533323491307" expanded="true" signature="2761:3169" ph="..." />
+                <marker date="1533323491307" expanded="true" signature="3343:3404" ph="..." />
+                <marker date="1533323491307" expanded="true" signature="3460:3738" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/../iptables-drop.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="168">
+              <caret line="7" column="5" selection-start-line="7" selection-start-column="5" selection-end-line="7" selection-end-column="5" />
+              <folding>
+                <element signature="e#29#129#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/index.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="72">
-              <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+              <caret line="3" selection-start-line="3" selection-end-line="3" />
               <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#0#19#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -114,7 +125,7 @@
         <entry file="file://$PROJECT_DIR$/webpack.config.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="380">
-              <caret line="60" column="6" lean-forward="true" selection-start-line="60" selection-start-column="6" selection-end-line="60" selection-end-column="6" />
+              <caret line="60" column="6" selection-start-line="60" selection-start-column="6" selection-end-line="60" selection-end-column="6" />
             </state>
           </provider>
         </entry>
@@ -144,10 +155,15 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/venv/Lib/site-packages/sqlalchemy/orm/session.py">
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="1394" column="8" selection-start-line="1394" selection-start-column="8" selection-end-line="1394" selection-end-column="8" />
+            <state relative-caret-position="121">
+              <caret line="44" column="1" selection-start-line="44" selection-start-column="1" selection-end-line="44" selection-end-column="1" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+                <marker date="1533323077772" expanded="true" signature="358:364" ph="..." />
+                <marker date="1533323077772" expanded="true" signature="870:915" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -155,21 +171,12 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="220">
-              <caret line="44" column="6" selection-start-line="44" selection-start-column="6" selection-end-line="44" selection-end-column="6" />
+            <state relative-caret-position="162">
+              <caret line="22" column="19" selection-start-line="22" selection-start-column="19" selection-end-line="22" selection-end-column="19" />
               <folding>
                 <element signature="e#0#25#0" expanded="true" />
-                <marker date="1533298878937" expanded="true" signature="999:1004" ph="..." />
+                <marker date="1533323027538" expanded="true" signature="1084:1089" ph="..." />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/assets/layout2.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="13" column="26" selection-start-line="13" selection-start-column="26" selection-end-line="13" selection-end-column="26" />
             </state>
           </provider>
         </entry>
@@ -185,11 +192,7 @@
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/routes.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="11" column="44" selection-start-line="11" selection-start-column="44" selection-end-line="11" selection-end-column="44" />
-            </state>
-          </provider>
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
     </leaf>
@@ -203,8 +206,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ldap://ldap.example.com</find>
-      <find>home</find>
       <find>dc=heptet</find>
       <find>bind</find>
       <find>init</find>
@@ -233,6 +234,8 @@
       <find>.</find>
       <find>loaders</find>
       <find>IMPORT</find>
+      <find>set_js</find>
+      <find>set_json_</find>
     </findStrings>
     <replaceStrings>
       <replace>email_mgmt_app</replace>
@@ -270,20 +273,20 @@
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/login.jinja2" />
         <option value="$PROJECT_DIR$/../pyramid_ldap/pyramid_ldap/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/renderer/__init__.py" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/host.jinja2" />
         <option value="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/layout2.jinja2" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/service_list.jinja2" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/main.jinja2" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/routes.py" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/views/default.py" />
         <option value="$PROJECT_DIR$/src/dt.js" />
         <option value="$PROJECT_DIR$/src/assets/layout2.twig" />
         <option value="$PROJECT_DIR$/webpack.config.js" />
         <option value="$PROJECT_DIR$/node_modules/datatables.net/js/jquery.dataTables.js" />
         <option value="$PROJECT_DIR$/src/index.js" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/routes.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/models/mymodel.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/__init__.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/views/default.py" />
       </list>
     </option>
   </component>
@@ -308,10 +311,10 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-9" />
-    <option name="y" value="-9" />
+    <option name="x" value="12" />
+    <option name="y" value="30" />
     <option name="width" value="1870" />
-    <option name="height" value="850" />
+    <option name="height" value="1019" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -349,6 +352,12 @@
               <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
               <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
               <item name="scripts" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+              <item name="views" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
@@ -400,7 +409,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../iptables-drop.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -616,7 +625,21 @@
       <option name="project" value="LOCAL" />
       <updated>1533306112228</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="MORE ATTEMPTS">
+      <created>1533321267865</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1533321267865</updated>
+    </task>
+    <task id="LOCAL-00016" summary="fix">
+      <created>1533321883223</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1533321883223</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -628,15 +651,15 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32824427" />
-      <window_info anchor="bottom" id="Debug" order="2" sideWeight="0.4930362" weight="0.39809525" />
-      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.47785234" visible="true" weight="0.3264177" />
+      <window_info anchor="bottom" id="Debug" order="2" sideWeight="0.49261746" weight="0.39695713" />
+      <window_info active="true" anchor="bottom" id="Run" order="3" sideWeight="0.4771812" visible="true" weight="0.3264177" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Messages" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.52214766" side_tool="true" visible="true" weight="0.3264177" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5228188" side_tool="true" visible="true" weight="0.3264177" />
       <window_info anchor="bottom" id="Version Control" order="11" sideWeight="0.4993036" weight="0.32761905" />
       <window_info anchor="bottom" id="Terminal" order="12" sideWeight="0.7181208" weight="0.30290458" />
       <window_info anchor="bottom" id="Python Console" order="13" />
@@ -680,19 +703,21 @@
     <MESSAGE value="various fun" />
     <MESSAGE value="added a bunch of views" />
     <MESSAGE value="rename templates" />
-    <option name="LAST_COMMIT_MESSAGE" value="rename templates" />
+    <MESSAGE value="MORE ATTEMPTS" />
+    <MESSAGE value="fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>97</line>
+          <line>100</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>105</line>
+          <line>108</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -712,8 +737,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
-          <line>61</line>
+          <line>62</line>
           <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
+          <line>84</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/email_mgmt_app/views/default.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -906,15 +941,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-144">
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/services">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="168">
@@ -977,38 +1003,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="44" column="6" selection-start-line="44" selection-start-column="6" selection-end-line="44" selection-end-column="6" />
-          <folding>
-            <element signature="e#0#25#0" expanded="true" />
-            <marker date="1533298878937" expanded="true" signature="999:1004" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/routes.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="11" column="44" selection-start-line="11" selection-start-column="44" selection-end-line="11" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="258">
-          <caret line="19" selection-start-line="19" selection-end-line="19" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-            <marker date="1533300862673" expanded="true" signature="1859:2149" ph="..." />
-            <marker date="1533300862673" expanded="true" signature="2700:3108" ph="..." />
-            <marker date="1533300862673" expanded="true" signature="3282:3343" ph="..." />
-            <marker date="1533300862673" expanded="true" signature="3389:3613" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/assets/layout2.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
@@ -1036,7 +1030,7 @@
     <entry file="file://$PROJECT_DIR$/webpack.config.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="380">
-          <caret line="60" column="6" lean-forward="true" selection-start-line="60" selection-start-column="6" selection-end-line="60" selection-end-column="6" />
+          <caret line="60" column="6" selection-start-line="60" selection-start-column="6" selection-end-line="60" selection-end-column="6" />
         </state>
       </provider>
     </entry>
@@ -1053,9 +1047,59 @@
     <entry file="file://$PROJECT_DIR$/src/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="72">
-          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+          <caret line="3" selection-start-line="3" selection-end-line="3" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/routes.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="121">
+          <caret line="44" column="1" selection-start-line="44" selection-start-column="1" selection-end-line="44" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+            <marker date="1533323077772" expanded="true" signature="358:364" ph="..." />
+            <marker date="1533323077772" expanded="true" signature="870:915" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/mymodel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="22" column="19" selection-start-line="22" selection-start-column="19" selection-end-line="22" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#25#0" expanded="true" />
+            <marker date="1533323027538" expanded="true" signature="1084:1089" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/views/default.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="90" column="20" selection-start-line="90" selection-start-column="20" selection-end-line="90" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+            <marker date="1533323491307" expanded="true" signature="1920:2210" ph="..." />
+            <marker date="1533323491307" expanded="true" signature="2761:3169" ph="..." />
+            <marker date="1533323491307" expanded="true" signature="3343:3404" ph="..." />
+            <marker date="1533323491307" expanded="true" signature="3460:3738" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../iptables-drop.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="168">
+          <caret line="7" column="5" selection-start-line="7" selection-start-column="5" selection-end-line="7" selection-end-column="5" />
+          <folding>
+            <element signature="e#29#129#0" expanded="true" />
           </folding>
         </state>
       </provider>

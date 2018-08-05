@@ -14,6 +14,7 @@ from sqlalchemy.orm import Query
 from email_mgmt_app.models.mymodel import Domain, Host, ServiceEntry
 
 @view_config(route_name='domain_list', renderer='../templates/domain_list.jinja2')
+@view_config(route_name='domain_list_json', renderer='json')
 def domain_list_view(request: Request) -> dict:
     domains = request.dbsession.query(Domain).all()
     return munge_dict(request, {'domains': domains})
@@ -79,14 +80,16 @@ def domain_view(request: Request):
 def host_form_defs(request):
     return { "action": request.route_path('host_create') }
 
-def munge_dict(request, indict: dict) -> dict:
+def munge_dict(request: Request, indict: dict) -> dict:
+
     if not "form" in indict.keys():
         indict["form"] = {}
 
     if not "host_form" in indict["form"].keys():
         indict["form"]["host_form"] = host_form_defs(request)
 
-    indict["r"] = request
+    if not '_json' in request.matched_route.name:
+        indict["r"] = request
 
     return indict
 

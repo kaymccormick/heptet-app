@@ -5,6 +5,18 @@ from pyramid.config import Configurator
 from pyramid.security import Allow, Authenticated
 from pyramid_ldap import get_ldap_connector
 
+import json
+
+from email_mgmt_app.models.meta import Base
+
+
+class Encoder(json.JSONEncoder):
+
+    def default(self, o):
+        if isinstance(o, Base):
+            return json.dumps(dict(o.items()))
+        return super().default(o)
+
 
 class RootFactory(object):
     __acl__ = [(Allow, Authenticated, 'view')]
@@ -19,6 +31,8 @@ def groupfinder(dn, request):
         return None
     return [dn for dn, attrs in group_list]
 
+def set_json_encoder(config, encoder):
+    config.registry.json_encoder = encoder
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -28,6 +42,8 @@ def main(global_config, **settings):
     config.include('.models')
     config.include('.routes')
     config.include('pyramid_ldap')
+#    config.add_directive('json_encoder', set_json_encoder)
+#    config.set_json_encoder(Encoder)
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy('dmz3EpLAYqb\'y7s46QdeOOubiIUDV7U3',
                                     callback=groupfinder)

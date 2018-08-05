@@ -20,6 +20,8 @@ class Domain(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
 
+    def __json__(self, request):
+        return { 'id': self.id, 'name': self.name }
 
 
 class ServiceEntry(Base):
