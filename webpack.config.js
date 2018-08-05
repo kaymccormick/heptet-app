@@ -4,25 +4,6 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const PugLoader = require('pug-loader');
 const webpack = require('webpack');
 
-function p(compilation, assets, options) {
-    return {
-        compilation: compilation,
-        webpack: compilation.getStats().toJson(),
-        webpackConfig: compilation.options,
-        htmlWebpackPlugin: {
-            files: assets,
-            options: options
-        },
-        // TODO retry this
-        // this isnt used but i thinj because extendS_template_filename
-        // used to be misspelled as extends_temlate_filename. whoops
-        // i should try again
-        'mine': {'extends_template_filename': 'layout2.jinja'}
-
-    };
-}
-
-
 module.exports = {
     mode: 'development',
     entry:
@@ -40,21 +21,17 @@ module.exports = {
         //     'window.$': 'jquery'
         // }),
         new HtmlWebpackPlugin({
-            title: 'Output Management',
-            template: 'src/assets/layout2.html',
-            // output this layout2 template
-            filename: path.resolve(__dirname, 'build/templates/main_template.jinja2'),
-//                templateParameters: p,
+            title: '',
+            template: 'src/assets/main_layout.html',
+            filename: path.resolve(__dirname, 'build/templates/main_layout.jinja2'),
             chunks: ['app'],
             inject: false
         })
         ,
         new HtmlWebpackPlugin({
-            title: 'Output Management',
+            title: '',
             template: 'src/assets/domain_list_layout.html',
             filename: path.resolve(__dirname, 'build/templates/domain_list_layout.jinja2'),
-            // output this layout2 template
-//               templateParameters: function() { x = p(a, b, c); x.data = { extends: 'layout2.jinja2' }; return x; },
             inject: false
         })
     ],
