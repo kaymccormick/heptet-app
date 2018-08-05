@@ -6,7 +6,7 @@ from pyramid.paster import get_appsettings
 
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.domain.view import DomainView
-from email_mgmt_app.entity.model import get_engine, get_session_factory, get_tm_session
+from email_mgmt_app.models import get_engine, get_session_factory, get_tm_session
 
 
 class TestDomainView(TestCase):

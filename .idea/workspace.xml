@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/email_mgmt_app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/entity/domain/view/test_domainView.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/entity/domain/view/test_domainView.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/static/" />
     <ignored path="$PROJECT_DIR$/node_modules/" />
@@ -49,7 +50,7 @@
           <entry key="jinja2" value="28" />
           <entry key="js" value="29" />
           <entry key="json" value="1" />
-          <entry key="py" value="90" />
+          <entry key="py" value="92" />
           <entry key="rnc" value="1" />
           <entry key="services" value="1" />
           <entry key="twig" value="1" />
@@ -65,7 +66,7 @@
           <entry key="JavaScript" value="29" />
           <entry key="Jinja2" value="28" />
           <entry key="PLAIN_TEXT" value="9" />
-          <entry key="Python" value="90" />
+          <entry key="Python" value="92" />
           <entry key="RNG Compact" value="1" />
         </counts>
       </usages-collector>
@@ -78,9 +79,9 @@
           <entry key="jinja2" value="1769" />
           <entry key="js" value="1429" />
           <entry key="json" value="19" />
-          <entry key="py" value="8184" />
+          <entry key="py" value="8202" />
           <entry key="twig" value="6" />
-          <entry key="txt" value="649" />
+          <entry key="txt" value="650" />
           <entry key="wsgi" value="51" />
         </counts>
       </usages-collector>
@@ -91,8 +92,8 @@
           <entry key="JSON" value="19" />
           <entry key="JavaScript" value="1429" />
           <entry key="Jinja2" value="1769" />
-          <entry key="PLAIN_TEXT" value="732" />
-          <entry key="Python" value="8204" />
+          <entry key="PLAIN_TEXT" value="733" />
+          <entry key="Python" value="8222" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -100,24 +101,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/email_mgmt_app.egg-info/SOURCES.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="24">
-              <caret line="1" selection-start-line="1" selection-end-line="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/MANIFEST.in">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="48">
-              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="true" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py">
           <provider selected="true" editor-type-id="text-editor" />
@@ -170,7 +153,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="118">
@@ -185,8 +168,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/tests.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="98">
-              <caret line="25" column="23" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
+            <state relative-caret-position="143">
+              <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/domain/view/test_domainView.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="167">
+              <caret line="8" column="26" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="79">
+              <caret line="14" column="20" selection-start-line="14" selection-start-column="20" selection-end-line="14" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -202,7 +203,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>r.route_</find>
       <find>main_template.jinja2</find>
       <find>load-sc</find>
       <find>script</find>
@@ -232,6 +232,7 @@
       <find>.\.\.js</find>
       <find>zope.</find>
       <find>get_tm_ses</find>
+      <find>get_engine</find>
     </findStrings>
     <replaceStrings>
       <replace>email_mgmt_app</replace>
@@ -253,7 +254,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/pyramid_scaffold/views/default.py" />
         <option value="$PROJECT_DIR$/pyramid_scaffold/scripts/initializedb.py" />
         <option value="$PROJECT_DIR$/pyramid_scaffold/models/mymodel.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app.egg-info/PKG-INFO" />
@@ -265,7 +265,6 @@
         <option value="$PROJECT_DIR$/../pyramid_ldap/pyramid_ldap/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/renderer/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/host.jinja2" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/layout2.jinja2" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/service_list.jinja2" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/main.jinja2" />
@@ -294,7 +293,6 @@
         <option value="$PROJECT_DIR$/email_mgmt_app/entity/view/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/entity/domain/view/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/base/__init__.py" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/entity/domain/view/test_domainView.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/entity/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/entity/model/email_mgmt.py" />
         <option value="$PROJECT_DIR$/setup.py" />
@@ -304,6 +302,9 @@
         <option value="$PROJECT_DIR$/email_mgmt_app/models/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/__init__.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/tests.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/entity/domain/view/test_domainView.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py" />
       </list>
     </option>
   </component>
@@ -920,7 +921,21 @@
       <option name="project" value="LOCAL" />
       <updated>1533512677833</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="attempt to fix">
+      <created>1533512705779</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1533512705779</updated>
+    </task>
+    <task id="LOCAL-00041" summary="attempt to fix">
+      <created>1533512764738</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1533512764738</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1104,13 +1119,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/host/view/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="6" selection-start-line="6" selection-end-line="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="336">
@@ -1318,13 +1326,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/domain/view/test_domainView.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="7" selection-start-line="7" selection-end-line="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="118">
@@ -1403,13 +1404,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/tests.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="98">
-          <caret line="25" column="23" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/testing.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
@@ -1457,6 +1451,27 @@
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/domain/view/test_domainView.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="167">
+          <caret line="8" column="26" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/scripts/initializedb.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="79">
+          <caret line="14" column="20" selection-start-line="14" selection-start-column="20" selection-end-line="14" selection-end-column="20" />
         </state>
       </provider>
     </entry>
