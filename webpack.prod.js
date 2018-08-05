@@ -11,8 +11,7 @@ module.exports = merge(common, {
     },
         entry: {
         app: './src/index.prod.js',
-        domainList: './src/domain_listprod.js'
-    },
+        domainList: './src/domain_list.prod.js'},
 
 });
 
