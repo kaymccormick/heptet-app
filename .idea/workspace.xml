@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testing.ini" beforeDir="false" afterPath="$PROJECT_DIR$/testing.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webpack.common.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.common.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webpack.prod.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.prod.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/static/" />
     <ignored path="$PROJECT_DIR$/node_modules/" />
@@ -77,11 +75,11 @@
           <entry key="html" value="20" />
           <entry key="ini" value="22" />
           <entry key="jinja2" value="1769" />
-          <entry key="js" value="1369" />
+          <entry key="js" value="1389" />
           <entry key="json" value="19" />
           <entry key="py" value="8177" />
           <entry key="twig" value="6" />
-          <entry key="txt" value="551" />
+          <entry key="txt" value="562" />
           <entry key="wsgi" value="51" />
         </counts>
       </usages-collector>
@@ -90,9 +88,9 @@
           <entry key="HTML" value="20" />
           <entry key="Ini" value="22" />
           <entry key="JSON" value="19" />
-          <entry key="JavaScript" value="1369" />
+          <entry key="JavaScript" value="1389" />
           <entry key="Jinja2" value="1769" />
-          <entry key="PLAIN_TEXT" value="634" />
+          <entry key="PLAIN_TEXT" value="645" />
           <entry key="Python" value="8197" />
         </counts>
       </usages-collector>
@@ -159,20 +157,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/webpack.prod.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="8" column="23" selection-start-line="8" selection-start-column="23" selection-end-line="8" selection-end-column="23" />
+            <state relative-caret-position="24">
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/webpack.common.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="8" selection-start-line="8" selection-end-line="8" />
+            <state relative-caret-position="24">
+              <caret line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
@@ -209,8 +207,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>munge</find>
-      <find>\{\{</find>
       <find>\}\}</find>
       <find>dist</find>
       <find>r.route_</find>
@@ -239,6 +235,8 @@
       <find>achemy</find>
       <find>zope.q</find>
       <find>tes</find>
+      <find>mode</find>
+      <find>path</find>
     </findStrings>
     <replaceStrings>
       <replace>email_mgmt_app</replace>
@@ -294,7 +292,6 @@
         <option value="$PROJECT_DIR$/email_mgmt_app/routes.py" />
         <option value="$PROJECT_DIR$/src/domain_list.prod.js" />
         <option value="$PROJECT_DIR$/src/index.js" />
-        <option value="$PROJECT_DIR$/webpack.prod.js" />
         <option value="$PROJECT_DIR$/src/index.prod.js" />
         <option value="$PROJECT_DIR$/pyramid.wsgi" />
         <option value="$PROJECT_DIR$/email_mgmt_app/templates/domain/domain_list_child.jinja2" />
@@ -311,6 +308,7 @@
         <option value="$PROJECT_DIR$/email_mgmt_app/__init__.py" />
         <option value="$PROJECT_DIR$/testing.ini" />
         <option value="$PROJECT_DIR$/webpack.common.js" />
+        <option value="$PROJECT_DIR$/webpack.prod.js" />
       </list>
     </option>
   </component>
@@ -855,7 +853,14 @@
       <option name="project" value="LOCAL" />
       <updated>1533511430253</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="fix config">
+      <created>1533511803024</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1533511803024</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -965,7 +970,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="random stuff added/changed" />
     <MESSAGE value="added some beginning proecssing" />
     <MESSAGE value="purge Models from my model" />
     <MESSAGE value="various fixups for db and such" />
@@ -990,7 +994,8 @@
     <MESSAGE value="Merge branch 'clone' of git+ssh://10.8.0.1/home/kay/email-pyr into clone&#10;&#10;# Conflicts:&#10;#&#9;package-lock.json" />
     <MESSAGE value="moved templates" />
     <MESSAGE value="updates" />
-    <option name="LAST_COMMIT_MESSAGE" value="updates" />
+    <MESSAGE value="fix config" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix config" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1392,17 +1397,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webpack.prod.js">
+    <entry file="file://$PROJECT_DIR$/webpack.common.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="8" column="23" selection-start-line="8" selection-start-column="23" selection-end-line="8" selection-end-column="23" />
+        <state relative-caret-position="24">
+          <caret line="1" selection-end-line="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/webpack.common.js">
+    <entry file="file://$PROJECT_DIR$/webpack.prod.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="8" selection-start-line="8" selection-end-line="8" />
+        <state relative-caret-position="24">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
         </state>
       </provider>
     </entry>
