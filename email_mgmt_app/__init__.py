@@ -39,7 +39,7 @@ def main(global_config, **settings):
     """
     config = Configurator(settings=settings, root_factory=RootFactory)
     config.include('pyramid_jinja2')
-    config.include('.models')
+    config.include('.entity.model')
     config.include('.routes')
     config.include('pyramid_ldap')
 #    config.add_directive('json_encoder', set_json_encoder)
