@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="91be98dc-4357-4299-b5b8-a2ee1c45431d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/email_mgmt_app/models/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/email_mgmt_app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/email_mgmt_app/__init__.py" afterDir="false" />
     </list>
@@ -79,9 +78,9 @@
           <entry key="jinja2" value="1769" />
           <entry key="js" value="1429" />
           <entry key="json" value="19" />
-          <entry key="py" value="8183" />
+          <entry key="py" value="8184" />
           <entry key="twig" value="6" />
-          <entry key="txt" value="635" />
+          <entry key="txt" value="649" />
           <entry key="wsgi" value="51" />
         </counts>
       </usages-collector>
@@ -92,8 +91,8 @@
           <entry key="JSON" value="19" />
           <entry key="JavaScript" value="1429" />
           <entry key="Jinja2" value="1769" />
-          <entry key="PLAIN_TEXT" value="718" />
-          <entry key="Python" value="8203" />
+          <entry key="PLAIN_TEXT" value="732" />
+          <entry key="Python" value="8204" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts" />
@@ -121,15 +120,7 @@
       </file>
       <file pinned="true" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2">
-              <caret line="68" column="30" lean-forward="true" selection-start-line="68" selection-start-column="30" selection-end-line="68" selection-end-column="30" />
-              <folding>
-                <element signature="e#0#41#0" expanded="true" />
-                <marker date="1533511081424" expanded="true" signature="102:348" ph="..." />
-              </folding>
-            </state>
-          </provider>
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -183,7 +174,7 @@
         <entry file="file://$PROJECT_DIR$/email_mgmt_app/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="118">
-              <caret line="42" selection-start-line="42" selection-end-line="42" />
+              <caret line="42" column="1" selection-start-line="42" selection-start-column="1" selection-end-line="42" selection-end-column="1" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -307,11 +298,11 @@
         <option value="$PROJECT_DIR$/email_mgmt_app/entity/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/entity/model/email_mgmt.py" />
         <option value="$PROJECT_DIR$/setup.py" />
-        <option value="$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py" />
         <option value="$PROJECT_DIR$/testing.ini" />
         <option value="$PROJECT_DIR$/webpack.prod.js" />
         <option value="$PROJECT_DIR$/webpack.common.js" />
         <option value="$PROJECT_DIR$/email_mgmt_app/models/__init__.py" />
+        <option value="$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py" />
         <option value="$PROJECT_DIR$/email_mgmt_app/__init__.py" />
       </list>
     </option>
@@ -362,6 +353,19 @@
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
               <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
               <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
+              <item name="email-pyr" type="462c0819:PsiDirectoryNode" />
+              <item name="email_mgmt_app" type="462c0819:PsiDirectoryNode" />
+              <item name="entity" type="462c0819:PsiDirectoryNode" />
+              <item name="model" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="email-pyr" type="b2602c69:ProjectViewProjectNode" />
@@ -902,7 +906,21 @@
       <option name="project" value="LOCAL" />
       <updated>1533512290669</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="attempt to fix">
+      <created>1533512629798</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1533512629798</updated>
+    </task>
+    <task id="LOCAL-00039" summary="attempt to fix">
+      <created>1533512677833</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1533512677833</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1012,7 +1030,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Relationship fix" />
     <MESSAGE value="attempts to fix relationships to no avail" />
     <MESSAGE value="Rename all kinda stuff" />
     <MESSAGE value="simplify model" />
@@ -1037,7 +1054,8 @@
     <MESSAGE value="fix config" />
     <MESSAGE value="fix config, again" />
     <MESSAGE value="attempt a fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="attempt a fix" />
+    <MESSAGE value="attempt to fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="attempt to fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1071,11 +1089,6 @@
           <url>file://$PROJECT_DIR$/setup.py</url>
           <line>4</line>
           <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py</url>
-          <line>55</line>
-          <option name="timeStamp" value="12" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -1425,17 +1438,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2">
-          <caret line="68" column="30" lean-forward="true" selection-start-line="68" selection-start-column="30" selection-end-line="68" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#41#0" expanded="true" />
-            <marker date="1533511081424" expanded="true" signature="102:348" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/email_mgmt_app/models/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -1445,10 +1447,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/email_mgmt_app/entity/model/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/email_mgmt_app/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="118">
-          <caret line="42" selection-start-line="42" selection-end-line="42" />
+          <caret line="42" column="1" selection-start-line="42" selection-start-column="1" selection-end-line="42" selection-end-column="1" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
