@@ -1,3 +1,4 @@
+node_modules
 *.egg
 *.egg-info
 *.pyc
