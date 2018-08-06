@@ -1,10 +1,20 @@
+const path = require('path');
 const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
-  mode: 'development',
-  devtool: 'inline-source-map',
-  devServer: {
-    contentBase: './dist'
-  }
+    mode: 'development',
+    devtool: 'inline-source-map',
+    output: {
+        filename: '[name].bundle.js',
+        path: path.resolve(__dirname, 'email_mgmt_app/build/dist'),
+	publicPath: '/build/dist',
+    },
+    entry: {
+        app: './src/index.prod.js',
+        domainList: './src/domain_list.js'
+    },
+    devServer: {
+	contentBase: './dist'
+    }
 });

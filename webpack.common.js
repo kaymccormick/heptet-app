@@ -5,7 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
     plugins: [
-        new CleanWebpackPlugin(['dist']),
+//        new CleanWebpackPlugin(['email_mgmt_app/build/dist']),
         new CopyWebpackPlugin([{ from: 'src/__init__.py', to: path.resolve(__dirname, 'email_mgmt_app/build/templates/__init__.py') }]),
         new HtmlWebpackPlugin({
             title: '',
