@@ -1,3 +1,6 @@
+import os
+import sys
+
 import ldap3
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -37,6 +40,9 @@ def set_json_encoder(config, encoder):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+    f = open(settings['pidfile'], 'w')
+    f.write("%d" % os.getpid())
+    f.close()
     config = Configurator(settings=settings, root_factory=RootFactory)
     config.include('pyramid_jinja2')
     config.include('.models')
