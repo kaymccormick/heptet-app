@@ -1,4 +1,4 @@
-const path = require('path');
+ const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
@@ -6,7 +6,18 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 module.exports = {
     plugins: [
 //        new CleanWebpackPlugin(['email_mgmt_app/build/dist']),
-        new CopyWebpackPlugin([{ from: 'src/__init__.py', to: path.resolve(__dirname, 'email_mgmt_app/build/templates/__init__.py') }, { from: 'src/__init__.py', to: path.resolve(__dirname, 'email_mgmt_app/build/__init__.py') }]),
+        new CopyWebpackPlugin([
+            {
+                from: 'src/__init__.py',
+                to: path.resolve
+                (__dirname, 'email_mgmt_app/build/templates/__init__.py')
+            },
+            {
+                from: 'src/__init__.py',
+                to: path.resolve
+                (__dirname, 'email_mgmt_app/build/__init__.py')
+            }
+        ]),
         new HtmlWebpackPlugin({
             title: '',
             template: 'src/assets/main_layout.html',

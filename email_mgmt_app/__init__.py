@@ -1,9 +1,9 @@
-import ldap
+import ldap3
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.security import Allow, Authenticated
-from pyramid_ldap import get_ldap_connector
+from pyramid_ldap3 import get_ldap_connector
 
 import json
 
@@ -42,7 +42,7 @@ def main(global_config, **settings):
     config.include('.models')
 #    config.include('.entity.model')
     config.include('.routes')
-    config.include('pyramid_ldap')
+    config.include('pyramid_ldap3')
 #    config.add_directive('json_encoder', set_json_encoder)
 #    config.set_json_encoder(Encoder)
     config.set_authentication_policy(
@@ -59,13 +59,13 @@ def main(global_config, **settings):
     config.ldap_set_login_query(
         base_dn='ou=People,DC=heptet,DC=us',
         filter_tmpl='(uid=%(login)s)',
-        scope=ldap.SCOPE_ONELEVEL,
+        scope=ldap3.LEVEL,
     )
 
     config.ldap_set_groups_query(
         base_dn='ou=pyramid-groups,DC=heptet,DC=us',
         filter_tmpl='(&(objectCategory=groupOfNames)(member=%(userdn)s))',
-        scope=ldap.SCOPE_SUBTREE,
+        scope=ldap3.SUBTREE,
         cache_period=600,
     )
 

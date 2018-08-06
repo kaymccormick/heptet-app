@@ -20,7 +20,7 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'psycopg2',
-    'pyramid-ldap',
+    'pyramid_ldap3',
 ]
 
 tests_require = [

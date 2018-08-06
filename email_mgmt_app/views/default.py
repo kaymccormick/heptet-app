@@ -3,7 +3,7 @@ from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.security import remember, forget
 from pyramid.view import view_config, forbidden_view_config
-from pyramid_ldap import get_ldap_connector
+from pyramid_ldap3 import get_ldap_connector
 
 from sqlalchemy.orm import Query
 
