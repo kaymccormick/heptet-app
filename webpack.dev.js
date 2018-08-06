@@ -8,13 +8,13 @@ module.exports = merge(common, {
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'email_mgmt_app/build/dist'),
-	publicPath: '/build/dist',
+        publicPath: '/build/dist',
     },
     entry: {
         app: './src/index.prod.js',
         domainList: './src/domain_list.js'
     },
     devServer: {
-	contentBase: './dist'
+        contentBase: './dist'
     }
 });

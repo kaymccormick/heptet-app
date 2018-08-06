@@ -1,4 +1,4 @@
-import ldap
+import ldap3
 from pyramid.request import Request
 from pyramid.view import view_config
 
