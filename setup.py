@@ -44,7 +44,7 @@ setup(
     author_email='',
     url='',
     keywords='web pyramid pylons',
-    packages=find_packages(".", include=['build', 'email_mgmt_app']),
+    packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
     extras_require={
