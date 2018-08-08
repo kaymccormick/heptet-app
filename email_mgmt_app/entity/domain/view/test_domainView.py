@@ -10,7 +10,6 @@ from email_mgmt_app.models import get_engine, get_session_factory, get_tm_sessio
 
 
 class TestDomainView(TestCase):
-
     def setUp(self):
         settings = get_appsettings("../../../../testing.ini")
         engine = get_engine(settings)

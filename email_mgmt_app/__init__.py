@@ -1,5 +1,4 @@
 import os
-import sys
 
 import ldap3
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -12,15 +11,7 @@ import json
 
 from email_mgmt_app.entity.model.meta import Base
 
-
-class Encoder(json.JSONEncoder):
-
-    def default(self, o):
-        if isinstance(o, Base):
-            return json.dumps(dict(o.items()))
-        return super().default(o)
-
-
+# this is for ldap stuff
 class RootFactory(object):
     __acl__ = [(Allow, Authenticated, 'view')]
 
@@ -48,7 +39,10 @@ def main(global_config, **settings):
     config.include('.models')
 #    config.include('.entity.model')
     config.include('.routes')
-    config.include('pyramid_ldap3')
+    config.include('.auth')
+    config.include('.entity.domain.view') # ??
+
+
 #    config.add_directive('json_encoder', set_json_encoder)
 #    config.set_json_encoder(Encoder)
     config.set_authentication_policy(

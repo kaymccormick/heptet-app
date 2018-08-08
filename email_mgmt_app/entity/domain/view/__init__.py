@@ -1,3 +1,4 @@
+from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.view import view_config
 
@@ -5,9 +6,18 @@ from email_mgmt_app.entity.model.email_mgmt import Domain, Host
 from email_mgmt_app.entity import EntityView, EntityCollectionView
 from email_mgmt_app.views.default import munge_dict
 
+def includeme(config: Configurator) -> None:
+    config.add_view(".DomainView", route_name="DomainView", renderer='templates/domain/domain_view.jinja2')
+    config.add_route("DomainView", "/domainview/{id}")
+
 class DomainView(EntityView[Domain]):
-    def __init__(self, request: Request = None, id: int=None) -> None:
-        super().__init__(request, id)
+    def __init__(self, context, request: Request = None, id: int=None) -> None:
+        super().__init__(context, request, id)
+        self._entity_type = Domain
+
+    def __call__(self, *args, **kwargs):
+        self.load_entity()
+        return {}
 
 
 class DomainCollectionView(EntityCollectionView[Domain]):
