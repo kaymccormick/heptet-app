@@ -35,6 +35,7 @@ def main(global_config, **settings):
     f.write("%d" % os.getpid())
     f.close()
     config = Configurator(settings=settings, root_factory=RootFactory)
+    #config.add_request_method()
     config.include('pyramid_jinja2')
     config.include('.models')
 #    config.include('.entity.model')

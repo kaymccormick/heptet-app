@@ -5,10 +5,11 @@ const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
-    mode: 'development',
+    mode: 'development', // https://webpack.js.org/concepts/mode/
     devtool: 'inline-source-map',
     output: {
-        filename: '[name].bundle.js',
+        filename: '[name].[contenthash].js',
+        // output things to here so they become part of our dist
         path: path.resolve(__dirname, 'email_mgmt_app/build/dist'),
         publicPath: '/build/dist',
     },

@@ -7,7 +7,9 @@ from email_mgmt_app.entity import EntityView, EntityCollectionView
 from email_mgmt_app.views.default import munge_dict
 
 def includeme(config: Configurator) -> None:
-    config.add_view(".DomainView", route_name="DomainView", renderer='templates/domain/domain_view.jinja2')
+    # how do we further abstract this??
+    config.add_view(".DomainView", route_name="DomainView",
+                    renderer='templates/domain/domain_view.jinja2')
     config.add_route("DomainView", "/domainview/{id}")
 
 class DomainView(EntityView[Domain]):

@@ -2,7 +2,6 @@ from typing import TypeVar, Generic
 
 from pyramid.request import Request
 
-
 class BaseView(object):
     def __init__(self, context, request: Request=None) -> None:
         self._request = request
