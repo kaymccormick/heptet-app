@@ -41,7 +41,7 @@ def main(global_config, **settings):
 #    config.include('.entity.model')
     config.include('.routes')
     config.include('.auth')
-    config.include('.entity.domain.view') # ??
+#    config.include('.entity.domain.view') # ??
 
 
 #    config.add_directive('json_encoder', set_json_encoder)

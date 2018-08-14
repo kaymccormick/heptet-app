@@ -11,7 +11,8 @@ from email_mgmt_app.models import get_engine, get_session_factory, get_tm_sessio
 
 class TestDomainView(TestCase):
     def setUp(self):
-        settings = get_appsettings("../../../../testing.ini")
+        settings = get_appsettings("testing.ini")
+
         engine = get_engine(settings)
         Base.metadata.create_all(engine)
 
@@ -21,7 +22,8 @@ class TestDomainView(TestCase):
 
         request = testing.DummyRequest
         self.config = testing.setUp(request=request)
-        request.dbsession = dbsession
+
+        #request.dbsession = dbsession
         self.view = DomainView(request, id=1)
 
     def test1(self):
