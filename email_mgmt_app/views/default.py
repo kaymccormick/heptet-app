@@ -7,7 +7,6 @@ from pyramid_ldap3 import get_ldap_connector
 
 from sqlalchemy.orm import Query
 
-from email_mgmt_app.entity.host.view import host_form_defs
 from email_mgmt_app.entity.model.email_mgmt import ServiceEntry, Host
 
 
@@ -15,13 +14,13 @@ from email_mgmt_app.entity.model.email_mgmt import ServiceEntry, Host
 def service_view(request: Request) -> dict:
     service = request.dbsession.query(ServiceEntry).filter(ServiceEntry.id == request.matchdict['id']).first()
     hosts = request.dbsession.query(Host).all()
-    return { 'service': service, 'hosts': hosts, 'r': request }
+    return { 'service': service, 'hosts': hosts, 'route_path': request.route_path }
 
 @view_config(route_name='service_list', renderer='../templates/service/service_list.jinja2')
 def service_list_view(request: Request) -> dict:
     entry__all = request.dbsession.query(ServiceEntry).order_by(ServiceEntry.port_num, ServiceEntry.protocol_name).all()
     hosts = request.dbsession.query(Host).all()
-    return { 'services': entry__all , 'hosts': hosts, 'r': request }
+    return { 'services': entry__all , 'hosts': hosts, 'route_path': request.route_path }
 
 
 @view_config(route_name='main', renderer='../templates/main_child.jinja2')
@@ -36,7 +35,8 @@ def main_view(request: Request) -> dict:
         hosts = [ ]
     else:
         hosts = q.all()
-    return { 'hosts': hosts, 'paths': paths, 'r': request }
+    return { 'hosts': hosts, 'paths': paths,
+             'route_path': request.route_path }
 
 
 # @view_config(route_name='port_register_form', renderer='../templates/port_registeR_form.jinja2')
@@ -95,3 +95,6 @@ def logged_in(request):
 def logout(request):
     headers = forget(request)
     return Response('Logged out', headers=headers)
+
+def host_form_defs(request):
+    return { "action": request.route_path('host_create') }

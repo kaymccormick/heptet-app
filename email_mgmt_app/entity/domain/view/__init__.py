@@ -34,13 +34,13 @@ def domain_list_view(request: Request) -> dict:
     return munge_dict(request, {'domains': domains})
 
 
-@view_config(route_name='domain_form', renderer='../templates/domain/domain_form_main.jinja2')
+@view_config(route_name='domain_form', renderer='templates/domain/domain_form_main.jinja2')
 def domain_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'r': request }
 
 
-@view_config(route_name='domain', renderer='../templates/domain/domain_view.jinja2')
+@view_config(route_name='domain', renderer='templates/domain/domain_view.jinja2')
 def domain_view(request: Request):
     domain = request.dbsession.query(Domain).filter(Domain.id == request.matchdict["id"]).first()
     return munge_dict(request, {"domain": domain })

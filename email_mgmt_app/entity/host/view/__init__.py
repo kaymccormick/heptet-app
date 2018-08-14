@@ -4,22 +4,22 @@ from pyramid.view import view_config
 
 from email_mgmt_app.entity import EntityView
 from email_mgmt_app.entity.model.email_mgmt import Domain, Host
-
+from views.default import munge_dict
 
 class HostView(EntityView[Host]):
     pass
 
 
-@view_config(route_name='host_form', renderer='../templates/host/host_form_main.jinja2')
+@view_config(route_name='host_form', renderer='templates/host/host_form_main.jinja2')
 def host_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
-    return { 'hosts': hosts, 'r': request }
+    return { 'hosts': hosts, 'route_path': request.route_path }
 
 
-@view_config(route_name='host_list', renderer='../templates/host/host_list_main.jinja2')
+@view_config(route_name='host_list', renderer='templates/host/host_list_main.jinja2')
 def host_list_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
-    return { 'hosts': hosts, 'r': request }
+    return { 'hosts': hosts, 'route_path': request.route_path }
 
 
 @view_config(route_name='host', renderer='../templates/host/host.jinja2')
@@ -28,8 +28,6 @@ def host_view(request: Request):
     return munge_dict(request, { "host": host })
 
 
-def host_form_defs(request):
-    return { "action": request.route_path('host_create') }
 
 
 @view_config(route_name='host_create', renderer='../templates/host/host_create.jinja2')
