@@ -56,8 +56,6 @@ def generic_view(request: Request):
     return e
 
 
-
-
 @view_config(route_name='host_create', renderer='templates/host/host_create.jinja2')
 def host_create_view(request: Request):
     #conn = ldap.initialize("ldap://10.8.0.1") # type: LDAPObject

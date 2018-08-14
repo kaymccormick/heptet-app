@@ -61,8 +61,8 @@ def munge_dict(request: Request, indict: dict) -> dict:
 db_err_msg = "Pyramid is having a problem using your SQL database."
 
 @view_config(route_name='login',
-             renderer='../templates/login.jinja2')
-@forbidden_view_config(renderer='../templates/login.jinja2')
+             renderer='templates/login.jinja2')
+@forbidden_view_config(renderer='templates/login.jinja2')
 def login(request):
     url = request.current_route_url()
     login = ''
@@ -81,12 +81,12 @@ def login(request):
         else:
             error = 'Invalid credentials'
 
-    return dict(
+    return munge_dict(request, dict(
         login_url=url,
         login=login,
         password=password,
         error=error,
-        )
+        ))
 
 @view_config(route_name='root', permission='view')
 def logged_in(request):

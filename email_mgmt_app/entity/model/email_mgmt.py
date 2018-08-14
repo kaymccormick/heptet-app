@@ -5,16 +5,18 @@ from sqlalchemy.orm import relationship, configure_mappers, sessionmaker
 
 from email_mgmt_app.entity.model.meta import Base
 
-
-
 class Mixin(object):
     pass
 
+class PublicKey(Base):
+    __tablename__ = 'publickey'
+    id = Column(Integer, primary_key=True)
+    owner_id = Column(Integer, ForeignKey('person.id'))
+    owner = relationship('Person', backref='keys')
 
 class Person(Mixin, Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
-
 
 class Domain(Base):
     __tablename__ = 'domain'
