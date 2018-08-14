@@ -1,7 +1,8 @@
 from pyramid.view import notfound_view_config
+from views.default import munge_dict
 
 
 @notfound_view_config(renderer='../templates/404.jinja2')
 def notfound_view(request):
     request.response.status = 404
-    return {}
+    return munge_dict(request, {})

@@ -51,7 +51,7 @@ def munge_dict(request: Request, indict: dict) -> dict:
     if not "host_form" in indict["form"].keys():
         indict["form"]["host_form"] = host_form_defs(request)
 
-    if not '_json' in request.matched_route.name:
+    if request.matched_route is None or not '_json' in request.matched_route.name:
         indict["r"] = request
         indict["route_path"] = request.route_path
 

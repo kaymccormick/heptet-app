@@ -51,7 +51,9 @@ def generic_view(request: Request):
         d['tables2'][table] = table1
         d['columns'][table] = i.get_columns(table)
 
-    return munge_dict(request, d)
+    e = munge_dict(request, d)
+    logging.info("%s" % repr(e))
+    return e
 
 
 
