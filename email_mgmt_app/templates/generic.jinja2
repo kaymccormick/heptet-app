@@ -1,0 +1,23 @@
+{% extends "templates/main_child.jinja2" %}
+{% block content %}
+    <table>
+        <tr>
+            <th>Table Name</th>
+        </tr>
+        {% for table in tables %}
+            <tr>
+                <td class="table-cell" style="padding-right: 2em; border-bottom: double" valign="top" rowspan="{{ ( columns[table]|length ) + 1 }}">{{ table }}</td>
+            <td>{%  for k in tables2[table].foreign_key_constraints %}
+                {{ k.column_keys}}
+                {% endfor %}
+                </td>
+            </tr>
+
+            {% for c in columns[table] %}
+                <tr>
+                    <td>{{ c.name }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </table>
+{% endblock %}

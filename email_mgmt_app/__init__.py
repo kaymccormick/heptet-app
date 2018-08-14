@@ -37,7 +37,7 @@ def main(global_config, **settings):
     config = Configurator(settings=settings, root_factory=RootFactory)
     #config.add_request_method()
     config.include('pyramid_jinja2')
-    config.include('.models')
+    config.include('.entity.model.email_mgmt')
 #    config.include('.entity.model')
     config.include('.routes')
     config.include('.auth')

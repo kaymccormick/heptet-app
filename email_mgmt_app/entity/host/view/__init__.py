@@ -1,4 +1,11 @@
+import logging
+
 import ldap3
+from sqlalchemy import Table
+from sqlalchemy.engine import reflection
+from sqlalchemy.orm import Session
+
+from entity.model.meta import metadata, Base
 from pyramid.request import Request
 from pyramid.view import view_config
 
@@ -24,8 +31,27 @@ def host_list_view(request: Request) -> dict:
 
 @view_config(route_name='host', renderer='templates/host/host.jinja2')
 def host_view(request: Request):
-    host = request.dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
+    dbsession = request.dbsession # type: Session
+    host = dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
     return munge_dict(request, { "host": host })
+
+@view_config(route_name='generic', renderer='templates/generic.jinja2')
+def generic_view(request: Request):
+    dbsession = request.dbsession # type: Session
+    i = reflection.Inspector.from_engine(dbsession.get_bind())
+    for t in Base.metadata.sorted_tables:
+        print(t.name)
+
+    d = { }
+    d['tables'] = i.get_table_names()
+    d['columns'] = { }
+    d['tables2'] = {}
+    for table in i.get_table_names():
+        table1 = Table(table, Base.metadata, autoload=True, autoload_with=dbsession.get_bind())
+        d['tables2'][table] = table1
+        d['columns'][table] = i.get_columns(table)
+
+    return munge_dict(request, d)
 
 
 
