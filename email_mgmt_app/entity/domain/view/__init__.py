@@ -27,7 +27,7 @@ class DomainCollectionView(EntityCollectionView[Domain]):
         super().__init__(request)
 
 
-@view_config(route_name='domain_list', renderer='../templates/domain/domain_list.jinja2')
+@view_config(route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
 @view_config(route_name='domain_list_json', renderer='json')
 def domain_list_view(request: Request) -> dict:
     domains = request.dbsession.query(Domain).all()
@@ -37,7 +37,7 @@ def domain_list_view(request: Request) -> dict:
 @view_config(route_name='domain_form', renderer='templates/domain/domain_form_main.jinja2')
 def domain_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
-    return { 'hosts': hosts, 'r': request }
+    return munge_dict(request, { 'hosts': hosts })
 
 
 @view_config(route_name='domain', renderer='templates/domain/domain_view.jinja2')
@@ -46,7 +46,7 @@ def domain_view(request: Request):
     return munge_dict(request, {"domain": domain })
 
 
-@view_config(route_name='domain_create', renderer='../templates/domain/domain_create.jinja2')
+@view_config(route_name='domain_create', renderer='templates/domain/domain_create.jinja2')
 def domain_create_view(request: Request):
     domain = Domain()
     domain.name = request.POST['domain_name']

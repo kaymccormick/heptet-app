@@ -22,7 +22,7 @@ def host_list_view(request: Request) -> dict:
     return { 'hosts': hosts, 'route_path': request.route_path }
 
 
-@view_config(route_name='host', renderer='../templates/host/host.jinja2')
+@view_config(route_name='host', renderer='templates/host/host.jinja2')
 def host_view(request: Request):
     host = request.dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
     return munge_dict(request, { "host": host })
@@ -30,9 +30,9 @@ def host_view(request: Request):
 
 
 
-@view_config(route_name='host_create', renderer='../templates/host/host_create.jinja2')
+@view_config(route_name='host_create', renderer='templates/host/host_create.jinja2')
 def host_create_view(request: Request):
-    conn = ldap.initialize("ldap://10.8.0.1") # type: LDAPObject
+    #conn = ldap.initialize("ldap://10.8.0.1") # type: LDAPObject
     # r = conn.search_s("dc=heptet,dc=us", ldap.SCOPE_SUBTREE, '(objectClass=posixAccount)')
     # print(r)
     hostname_ = request.POST['hostname'] # type: str

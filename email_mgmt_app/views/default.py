@@ -53,6 +53,7 @@ def munge_dict(request: Request, indict: dict) -> dict:
 
     if not '_json' in request.matched_route.name:
         indict["r"] = request
+        indict["route_path"] = request.route_path
 
     return indict
 
