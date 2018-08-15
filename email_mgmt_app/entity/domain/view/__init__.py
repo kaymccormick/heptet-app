@@ -11,6 +11,9 @@ def includeme(config: Configurator) -> None:
     config.add_view(".DomainView", route_name="DomainView",
                     renderer='templates/domain/domain_view.jinja2')
     config.add_route("DomainView", "/domainview/{id}")
+    config.add_view(domain_list_view, route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
+    config.add_view(domain_list_view, renderer='json')
+    
 
 class DomainView(EntityView[Domain]):
     def __init__(self, context, request: Request = None, id: int=None) -> None:

@@ -1,7 +1,7 @@
-from entity.model.email_mgmt import Host
+from email_mgmt_app.entity.model.email_mgmt import Host
 from pyramid.request import Request
 from pyramid.view import view_config
-from views.default import munge_dict
+from email_mgmt_app.views.default import munge_dict
 
 
 @view_config(route_name='email_form', renderer='templates/email_address/email_form.jinja2')
