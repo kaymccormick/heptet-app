@@ -1,8 +1,8 @@
 import unittest
 import transaction
 
-from entity.domain.view import DomainView
-from entity.model.email_mgmt import Domain
+from email_mgmt_app.entity.domain.view import DomainView
+from email_mgmt_app.entity.model.email_mgmt import Domain
 from pyramid import testing
 
 
@@ -31,8 +31,8 @@ class BaseTest(unittest.TestCase):
 
     def init_database(self):
         from email_mgmt_app.entity.model.meta import Base
-        from entity.domain.view import DomainView
-#        from entity.model.email_mgmt import Domain
+        from email_mgmt_app.entity.domain.view import DomainView
+#        from email_mgmt_app.entity.model.email_mgmt import Domain
         Base.metadata.create_all(self.engine)
 
         domain = Domain()

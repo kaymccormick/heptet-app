@@ -5,7 +5,7 @@ from sqlalchemy import Table
 from sqlalchemy.engine import reflection
 from sqlalchemy.orm import Session
 
-from entity.model.meta import metadata, Base
+from email_mgmt_app.entity.model.meta import metadata, Base
 from pyramid.request import Request
 from pyramid.view import view_config
 
