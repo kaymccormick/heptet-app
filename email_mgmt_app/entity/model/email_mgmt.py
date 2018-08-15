@@ -1,4 +1,4 @@
-import zope
+import zope.sqlalchemy
 
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config
 from sqlalchemy.orm import relationship, configure_mappers, sessionmaker
