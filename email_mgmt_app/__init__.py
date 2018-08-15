@@ -38,7 +38,7 @@ def main(global_config, **settings):
     #config.add_request_method()
     config.include('pyramid_jinja2')
     config.include('.entity.model.email_mgmt')
-#    config.include('.entity.model')
+    #config.include('.entity.domain.view')
     config.include('.routes')
     config.include('.auth')
 #    config.include('.entity.domain.view') # ??

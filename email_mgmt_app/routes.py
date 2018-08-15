@@ -4,6 +4,7 @@ def includeme(config):
     config.add_static_view('build', 'build')
     config.add_static_view('app1/dist', '../build/dist')
     config.add_route('email_form', '/email_form')
+    config.add_route('email_create', '/email_create')
     config.add_route('host_create', '/host_create')
     config.add_route('host_form', '/host/form')
     config.add_route('main', '/')

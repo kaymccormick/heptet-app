@@ -1,6 +1,15 @@
 {% extends "templates/main_child.jinja2" %}
 {% block content %}
 <div class="container row col-sm-12">
-
+<form method="post" action="{{ route_path('email_create') }}">
+    <div class="form-group">
+        <label for="local_part">Local part</label>
+        <input type="text" class="form-control" id="local_part" aria-describedby="hostnameHelp"
+               placeholder="user" name="local_part">
+        <small id="local_part_help" class="form-text text-muted">Enter the part of the e-mail address to the left of the '@'.</small>
+    </div>
+    {% include "templates/host/host_select_innards.jinja2" with context %}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 </div>
 {% endblock %}

@@ -1,9 +1,3 @@
 <form>
-  {% if hosts|length > 0 %}
-  <select id="host-select">
-    <% for host in hosts %>
-    <option value="{{ host.id }}">{{ host.name }}</option>
-    <% endfor %>
-  </select>
-  {% endif %}
+    {%  include "host_select_innards.jinja2" with context %}
 </form>
