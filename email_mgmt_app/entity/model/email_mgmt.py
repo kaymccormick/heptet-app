@@ -18,18 +18,23 @@ class PublicKey(Base):
 
 class OrganizationRole(Mixin, Base):
     __tablename__ = 'organization_role'
-    organization_id = Column(Integer, ForeignKey('organization.id'), primary_key=True)
+    id = Column(Integer, primary_key=True)
+
+    organization_id = Column(Integer, ForeignKey('organization.id'))
     role_id = Column(Integer, ForeignKey('role_.id'))
-    role = relationship('Role', back_populates='organizations')
+
+    role_persons = relationship('OrgRolePerson', back_populates='organization_role')
     organization = relationship('Organization', back_populates='roles')
+    role = relationship('Role', back_populates='organization_roles')
 
 
-class OrgPerson(Mixin, Base):
-    __tablename__ = 'orgperson'
-    organization_id = Column(Integer, ForeignKey('organization.id'), primary_key=True)
+class OrgRolePerson(Mixin, Base):
+    __tablename__ = 'organization_role_person'
+    organization_role_id = Column(Integer, ForeignKey('organization_role.id'), primary_key=True)
     person_id = Column(Integer, ForeignKey('person.id'), primary_key=True)
-    person = relationship('Person', back_populates='organizations')
-    organization = relationship('Organization', back_populates='persons')
+
+    person = relationship('Person', back_populates='organization_roles')
+    organization_role = relationship('OrganizationRole', back_populates='role_persons')
 
 
 class Organization(Mixin, Base):
@@ -39,7 +44,6 @@ class Organization(Mixin, Base):
     name = Column(String)
     children = relationship("Organization",
                             backref=backref('parent', remote_side=[id]))
-    persons = relationship('OrgPerson', back_populates='organization')
     roles = relationship('OrganizationRole', back_populates='organization')
 
 
@@ -47,15 +51,14 @@ class Role(Mixin, Base):
     __tablename__ = 'role_'
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    organizations = relationship('OrganizationRole', back_populates='role')
+    organization_roles = relationship('OrganizationRole', back_populates='role')
 
 
 class Person(Mixin, Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    organizations = relationship('OrgPerson', back_populates='person')
-
+    organization_roles = relationship('OrgRolePerson', back_populates='person')
 
 
 class Recipient(Mixin, Base):

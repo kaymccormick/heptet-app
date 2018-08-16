@@ -19,6 +19,13 @@
             </div>
         {% endif %}
         <div class="row col-sm-12">
+        <table class="table">
+            {% for org_role in entity.roles %}
+            <tr><td>{{ org_role.role.name }}</td></tr>
+            {%  endfor %}
+        </table>
+        </div>
+        <div class="row col-sm-12">
             <h2>Persons</h2>
         </div>
         <div class="row col-sm-12">
