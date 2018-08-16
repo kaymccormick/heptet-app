@@ -10,7 +10,8 @@ from pyramid.paster import (
 
 from pyramid.scripts.common import parse_vars
 
-from email_mgmt_app.entity.model.email_mgmt import Domain, ServiceEntry, Organization, Person, Role, OrgPerson
+from email_mgmt_app.entity.model.email_mgmt import Domain, ServiceEntry, Organization, Person, Role, OrgPerson, \
+    OrganizationRole
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.model.email_mgmt import get_engine, get_session_factory, get_tm_session
 
@@ -79,5 +80,11 @@ def main(argv=sys.argv):
         org_person = OrgPerson()
         org_person.person = p
         o2.persons.append(org_person)
+
+        role = Role()
+        role.name = 'CEO'
+        org_role = OrganizationRole()
+        org_role.role = role
+        o2.roles.append(org_role)
 
         dbsession.add(d)

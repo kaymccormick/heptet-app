@@ -16,6 +16,14 @@ class PublicKey(Base):
     owner = relationship('Person', backref='keys')
 
 
+class OrganizationRole(Mixin, Base):
+    __tablename__ = 'organization_role'
+    organization_id = Column(Integer, ForeignKey('organization.id'), primary_key=True)
+    role_id = Column(Integer, ForeignKey('role_.id'))
+    role = relationship('Role', back_populates='organizations')
+    organization = relationship('Organization', back_populates='roles')
+
+
 class OrgPerson(Mixin, Base):
     __tablename__ = 'orgperson'
     organization_id = Column(Integer, ForeignKey('organization.id'), primary_key=True)
@@ -32,12 +40,14 @@ class Organization(Mixin, Base):
     children = relationship("Organization",
                             backref=backref('parent', remote_side=[id]))
     persons = relationship('OrgPerson', back_populates='organization')
+    roles = relationship('OrganizationRole', back_populates='organization')
 
 
 class Role(Mixin, Base):
     __tablename__ = 'role_'
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    organizations = relationship('OrganizationRole', back_populates='role')
 
 
 class Person(Mixin, Base):
@@ -45,6 +55,7 @@ class Person(Mixin, Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     organizations = relationship('OrgPerson', back_populates='person')
+
 
 
 class Recipient(Mixin, Base):
