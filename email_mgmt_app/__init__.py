@@ -1,15 +1,14 @@
+import logging
 import os
 
 import ldap3
+from pyramid.viewderivers import INGRESS
+
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.security import Allow, Authenticated
 from pyramid_ldap3 import get_ldap_connector
-
-import json
-
-from email_mgmt_app.entity.model.meta import Base
 
 # this is for ldap stuff
 class RootFactory(object):
@@ -28,6 +27,18 @@ def groupfinder(dn, request):
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
 
+def entity_view(view, info):
+    et = info.options.get('entity_type')
+    if et is not None:
+        logging.info("original view = %s", repr(info.original_view))
+        def wrapper_view(context, request):
+            info.original_view._entity_type = et
+            response = view(context, request)
+            return response
+        return wrapper_view
+    return view
+
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
@@ -39,6 +50,8 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.include('.entity.model.email_mgmt')
     config.include('.entity.domain.view')
+    config.include('.entity.recipient.view')
+    config.include('.entity.organization.view')
     config.include('.routes')
     config.include('.auth')
 #    config.include('.entity.domain.view') # ??
@@ -71,6 +84,8 @@ def main(global_config, **settings):
     )
 
     # config.add_renderer('host', 'email_mgmt_app.renderer.HostRenderer')
+    entity_view.options = ('entity_type',)
+    config.add_view_deriver(entity_view, under=INGRESS)
 
     config.scan()
     return config.make_wsgi_app()

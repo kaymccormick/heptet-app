@@ -1,0 +1,9 @@
+{% extends "templates/main_child.jinja2" %}
+{% block content %}
+<div class="container row col-sm-12">
+{{  entities|length }}
+{% for recipient in entities %}
+    {{ recipient.id }}
+{% endfor %}
+</div>
+{% endblock %}

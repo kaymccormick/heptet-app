@@ -25,9 +25,7 @@ class DomainView(EntityView[Domain]):
 
 
 class DomainCollectionView(EntityCollectionView[Domain]):
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
-
+    pass
 
 @view_config(route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
 @view_config(route_name='domain_list_json', renderer='json')

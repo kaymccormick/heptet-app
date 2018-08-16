@@ -1,0 +1,13 @@
+{% extends "templates/main_child.jinja2" %}
+{% block content %}
+<div class="container row col-sm-12">
+<table class="table">
+    <thead><tr><th>Organization</th>
+    <th>Parent Org</th></tr></thead>
+    {% for org in entities %}
+<tr><td>{{ org.name }}</td><td>{{ org.parent.name }}</td></tr>
+{% endfor %}
+
+</table>
+</div>
+{% endblock %}

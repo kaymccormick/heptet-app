@@ -18,15 +18,29 @@ class Person(Mixin, Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
 
+class Organization(Mixin, Base):
+    __tablename__ = 'organization'
+    id = Column(Integer, primary_key=True)
+    parent_id = Column(Integer, ForeignKey('organization.id'))
+    parent = relationship("Organization", remote_side=[id])
+    name = Column(String)
+    children = relationship('Organization')
+
+class Recipient(Mixin, Base):
+    __tablename__ = 'recipient'
+    id = Column(Integer, primary_key=True)
+
+
 class Domain(Base):
     __tablename__ = 'domain'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    organization_id = Column(Integer, ForeignKey('organization.id'))
+    organization = relationship('Organization', backref='domains')
 
     def __json__(self, request):
         return { 'id': self.id, 'name': self.name }
-
 
 class ServiceEntry(Base):
     __tablename__ = 'service_entry'

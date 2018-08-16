@@ -23,7 +23,7 @@ def service_list_view(request: Request) -> dict:
     return { 'services': entry__all , 'hosts': hosts, 'route_path': request.route_path }
 
 
-@view_config(route_name='main', renderer='../templates/main_child.jinja2')
+@view_config(route_name='main', renderer='templates/main_child.jinja2')
 def main_view(request: Request) -> dict:
     q = request.dbsession.query(Host) # type: Query
     need_paths_for = ['service_list']

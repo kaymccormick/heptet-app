@@ -3,7 +3,7 @@ from typing import TypeVar, Generic
 from pyramid.request import Request
 
 class BaseView(object):
-    def __init__(self, context, request: Request=None) -> None:
+    def __init__(self, request: Request=None) -> None:
         self._request = request
 
     def __call__(self, *args, **kwargs):
@@ -18,5 +18,6 @@ BaseEntityRelatedView_RelatedEntityType = TypeVar('BaseEntityRelatedView_Related
 
 
 class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], BaseView):
-    def __init__(self, context, request: Request = None) -> None:
-        super().__init__(context, request)
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+        self._entity_type = None

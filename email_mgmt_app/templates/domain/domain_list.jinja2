@@ -4,10 +4,10 @@
 {% block content %}
 <table class="table" id="domain-table">
 <thead>
-<tr><th>Name</th><th>No. of Hosts</th></tr>
+<tr><th>Org</th><th>Name</th><th>No. of Hosts</th></tr>
 </thead>
 {% for domain in domains %}
-    <tr><td><a href="{{ route_path('domain', id=domain.id) }}">{{ domain.name }}</a></td><td>{{ domain.hosts|length }}</tr>
+    <tr><TD>{{ domain.organization.name }}</TD><td><a href="{{ route_path('domain', id=domain.id) }}">{{ domain.name }}</a></td><td>{{ domain.hosts|length }}</tr>
 {% endfor %}
 </table>
 {% endblock %}
