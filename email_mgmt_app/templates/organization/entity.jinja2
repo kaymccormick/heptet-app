@@ -4,24 +4,28 @@
         <div class="row col-sm-12">
             <h1>{{ entity.name }}</h1>
         </div>
-        <div class="row col-sm-12">
-            <h2>Child Organizations</h2>
-        </div>
-        <div class="row col-sm-12">
-            <ul class="list-group">
-                {% for org in entity.children %}
-                    <li class="list-group-item"><a href="{{ route_path('organization', id=org.id) }}">{{ org.name }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+        {% if entity.children|length > 0 %}
+            <div class="row col-sm-12">
+                <h2>Child Organizations</h2>
+            </div>
+            <div class="row col-sm-12">
+                <ul class="list-group">
+                    {% for org in entity.children %}
+                        <li class="list-group-item"><a
+                                href="{{ route_path('organization', id=org.id) }}">{{ org.name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
         <div class="row col-sm-12">
             <h2>Persons</h2>
         </div>
         <div class="row col-sm-12">
             <ul class="list-group">
                 {% for person in entity.persons %}
-                    <li class="list-group-item">{{ person.name }}</li>
+                    <li class="list-group-item"><a
+                            href="{{ route_path('person', id=person.person.id) }}">{{ person.person.name }}</li></a>
                 {% endfor %}
             </ul>
         </div>
