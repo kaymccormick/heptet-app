@@ -9,6 +9,11 @@ class Mixin(object):
     pass
 
 
+# class ApplicationUser(Mixin, Base):
+#     __tablename__ = 'appuser'
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String)
+
 class PublicKey(Base):
     __tablename__ = 'publickey'
     id = Column(Integer, primary_key=True)
