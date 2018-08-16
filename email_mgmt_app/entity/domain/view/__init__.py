@@ -9,12 +9,14 @@ from email_mgmt_app.views.default import munge_dict
 
 
 def includeme(config: Configurator) -> None:
-    # how do we further abstract this??
     config.register_resource('Domain', Domain)
+    
     config.add_view(".DomainView", name='view', context=EntityResource,
                     renderer='templates/domain/domain.jinja2')
-    #config.add_route("DomainView", "/domainview/{id}")
-
+    
+    
+    
+    
     config.add_view('.DomainFormView', route_name='domain_form',
                     renderer='templates/domain/domain_form_main.jinja2')
     config.add_route('domain_form', '/domain_form')

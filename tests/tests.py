@@ -1,5 +1,6 @@
 import unittest
 import transaction
+from pyramid.request import Request
 
 from email_mgmt_app.entity.domain.view import DomainView
 from email_mgmt_app.entity.model.email_mgmt import Domain
@@ -9,6 +10,8 @@ from pyramid import testing
 def dummy_request(dbsession):
     return testing.DummyRequest(dbsession=dbsession)
 
+def real_request(dbsession):
+    return Request(dbsession=dbsession)
 
 class BaseTest(unittest.TestCase):
     def setUp(self):
@@ -16,13 +19,12 @@ class BaseTest(unittest.TestCase):
             'sqlalchemy.url': 'sqlite:///:memory:'
 
         })
-        ## I moved this!
-        self.config.include('email_mgmt_app.models')
+
         settings = self.config.get_settings()
 
-        from email_mgmt_app.models import get_tm_session
-        from email_mgmt_app.models import get_session_factory
-        from email_mgmt_app.models import get_engine
+        from email_mgmt_app.entity.model.email_mgmt import get_tm_session
+        from email_mgmt_app.entity.model.email_mgmt import get_session_factory
+        from email_mgmt_app.entity.model.email_mgmt import get_engine
 
         self.engine = get_engine(settings)
         session_factory = get_session_factory(self.engine)
@@ -59,7 +61,9 @@ class TestMyViewSuccessCondition(BaseTest):
         #self.session.add(model)
 
     def test_passing_view(self):
-        view = DomainView(None, dummy_request(self.session))
+        request = dummy_request(self.session)
+        request.matchdict['id'] = 1
+        view = DomainView(request)
         d = view.__call__()
         print(repr(d))
         pass

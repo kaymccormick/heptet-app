@@ -1,3 +1,6 @@
+import logging
+import sys
+
 from pyramid.httpexceptions import HTTPFound
 from pyramid.request import Request
 from pyramid.response import Response
@@ -44,16 +47,23 @@ def main_view(request: Request) -> dict:
 #     pass
 
 def munge_dict(request: Request, indict: dict) -> dict:
-
     if not "form" in indict.keys():
         indict["form"] = {}
 
-    if not "host_form" in indict["form"].keys():
-        indict["form"]["host_form"] = host_form_defs(request)
+    try:
+        if not "host_form" in indict["form"].keys():
+            indict["form"]["host_form"] = host_form_defs(request)
+    except:
+        logging.warning("unable to populate host_form_defs: %s", sys.exc_info()[1])
 
-    if request.matched_route is None or not '_json' in request.matched_route.name:
-        indict["r"] = request
-        indict["route_path"] = request.route_path
+    try:
+        if request.matched_route is not None and '_json' in request.matched_route.name:
+            return indict
+    except:
+        logging.warning("unable to populate host_form_defs: %s", sys.exc_info()[1])
+
+#    indict["r"] = request
+    indict["route_path"] = request.route_path
 
     return indict
 

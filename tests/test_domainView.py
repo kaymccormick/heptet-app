@@ -24,7 +24,7 @@ class TestDomainView(TestCase):
         self.config = testing.setUp(request=request)
 
         #request.dbsession = dbsession
-        self.view = DomainView(request, id=1)
+        self.view = DomainView(request)
 
     def test1(self):
         out = self.view()
@@ -32,7 +32,4 @@ class TestDomainView(TestCase):
 
     def tearDown(self):
         testing.tearDown()
-
-
-
 
