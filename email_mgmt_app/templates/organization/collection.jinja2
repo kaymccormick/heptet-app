@@ -1,13 +1,26 @@
 {% extends "templates/main_child.jinja2" %}
 {% block content %}
-<div class="container row col-sm-12">
-<table class="table">
-    <thead><tr><th>Organization</th>
-    <th>Parent Org</th></tr></thead>
-    {% for org in entities %}
-<tr><td><a href="{{ route_path('organization', id=org.id) }}">{{ org.name }}</a></td><td>{{ org.parent.name }}</td></tr>
-{% endfor %}
+    <div class="container">
+        <div class="row col-sm-12">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Organization</th>
+                    <th>Parent Org</th>
+                </tr>
+                </thead>
+                {% for org in entities %}
+                    <tr>
+                        <td><a href="{{ route_path('organization', id=org.id) }}">{{ org.name }}</a></td>
+                        <td>{{ org.parent.name }}</td>
+                        <td><a href="{{ route_path('organization_form', parent_id=org.id) }}" class="btn btn-primary btn-large">New Child Org.</a></td>
+                    </tr>
+                {% endfor %}
 
-</table>
-</div>
+            </table>
+        </div>
+        <div class="row col-sm-12">
+            <a href="{{ route_path('organization_form', parent_id=None) }}" class="btn btn-primary btn-large">New Organization</a>
+        </div>
+    </div>
 {% endblock %}

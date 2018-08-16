@@ -50,3 +50,22 @@ class EntityCollectionView(BaseEntityRelatedView[EntityCollectionView_EntityType
         collection = self.request.dbsession.query(self._entity_type).all()
         return munge_dict(self.request, {'entities': collection})
 
+
+EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
+
+
+class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+
+    def __call__(self, *args, **kwargs):
+        return munge_dict(self.request, {})
+
+
+EntityFormActionView_EntityType = TypeVar('EntityFormActionView_EntityType')
+
+
+class EntityFormActionView(BaseEntityRelatedView[EntityFormActionView_EntityType]):
+    def __call__(self, *args, **kwargs):
+        return munge_dict(self.request, {})
+
