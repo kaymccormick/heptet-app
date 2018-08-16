@@ -1,0 +1,29 @@
+{% extends "templates/main_child.jinja2" %}
+{% block content %}
+    <div class="container">
+        <div class="row col-sm-12">
+            <h1>{{ entity.name }}</h1>
+        </div>
+        <div class="row col-sm-12">
+            <h2>Child Organizations</h2>
+        </div>
+        <div class="row col-sm-12">
+            <ul class="list-group">
+                {% for org in entity.children %}
+                    <li class="list-group-item"><a href="{{ route_path('organization', id=org.id) }}">{{ org.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="row col-sm-12">
+            <h2>Domains</h2>
+        </div>
+        <div class="row col-sm-12">
+            <ul class="list-group">
+                {% for domain in entity.domains %}
+                    <li class="list-group-item"><a href="{{  route_path('DomainView', id=domain.id) }}">{{ domain.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

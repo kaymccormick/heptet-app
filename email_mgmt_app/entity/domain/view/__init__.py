@@ -9,20 +9,15 @@ from email_mgmt_app.views.default import munge_dict
 def includeme(config: Configurator) -> None:
     # how do we further abstract this??
     config.add_view(".DomainView", route_name="DomainView",
-                    renderer='templates/domain/domain_view.jinja2')
+                    renderer='templates/domain/domain.jinja2')
     config.add_route("DomainView", "/domainview/{id}")
     #config.add_view(domain_list_view, route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
     #config.add_view(domain_list_view, renderer='json')
 
 class DomainView(EntityView[Domain]):
-    def __init__(self, context, request: Request = None, id: int=None) -> None:
-        super().__init__(context, request, id)
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
         self._entity_type = Domain
-
-    def __call__(self, *args, **kwargs):
-        self.load_entity()
-        return {}
-
 
 class DomainCollectionView(EntityCollectionView[Domain]):
     pass
@@ -40,7 +35,7 @@ def domain_form_view(request: Request) -> dict:
     return munge_dict(request, { 'hosts': hosts })
 
 
-@view_config(route_name='domain', renderer='templates/domain/domain_view.jinja2')
+@view_config(route_name='domain', renderer='templates/domain/domain.jinja2')
 def domain_view(request: Request):
     domain = request.dbsession.query(Domain).filter(Domain.id == request.matchdict["id"]).first()
     return munge_dict(request, {"domain": domain })

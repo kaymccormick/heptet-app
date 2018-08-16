@@ -1,9 +1,9 @@
 {% extends "templates/main_child.jinja2" %}
 {% block content %}
-    <h1> {{ domain.name }} </h1>
-    Organization: {{  domain.organization.name }}
+    <h1> {{ entity.name }} </h1>
+    Organization: <a href="{{ route_path('organization', id=entity.organization.id)}}">{{  entity.organization.name }}</a>
     <table class="table">
-        {% for host in domain.hosts %}
+        {% for host in entity.hosts %}
             <tr>
                 <td><a href="{{ route_path('host', id=host.id) }}">{{ host.name }}</a></td>
                 <td> {{ host.email_addresses|length }}</td>

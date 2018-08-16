@@ -1,12 +1,13 @@
 import zope.sqlalchemy
 
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config
-from sqlalchemy.orm import relationship, configure_mappers, sessionmaker
+from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
 
 from email_mgmt_app.entity.model.meta import Base
 
 class Mixin(object):
     pass
+
 
 class PublicKey(Base):
     __tablename__ = 'publickey'
@@ -14,17 +15,20 @@ class PublicKey(Base):
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='keys')
 
+
 class Person(Mixin, Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
+
 
 class Organization(Mixin, Base):
     __tablename__ = 'organization'
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('organization.id'))
-    parent = relationship("Organization", remote_side=[id])
     name = Column(String)
-    children = relationship('Organization')
+    children = relationship("Organization",
+                            backref=backref('parent', remote_side=[id]))
+
 
 class Recipient(Mixin, Base):
     __tablename__ = 'recipient'

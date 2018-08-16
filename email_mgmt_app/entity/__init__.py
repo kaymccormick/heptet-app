@@ -8,10 +8,11 @@ from email_mgmt_app.entity.view import BaseEntityRelatedView
 from email_mgmt_app.views.default import munge_dict
 
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
+
+
 class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
-
 
     def query(self):
         return self.request.dbsession.query(self.entity_type)
@@ -21,17 +22,24 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
         assert query is not None
         by = query.filter_by(id=self.id)
         assert by is not None
-        entity = by.first()
+        self.entity = by.first()
 
     @property
     def id(self):
-        return self._id
+        return self.request.matchdict['id']
 
     @property
     def entity_type(self):
         return self._entity_type
 
+    def __call__(self, *args, **kwargs):
+        self.load_entity()
+        return munge_dict(self.request, { 'entity': self.entity })
+
+
 EntityCollectionView_EntityType = TypeVar('EntityCollectionView_EntityType')
+
+
 class EntityCollectionView(BaseEntityRelatedView[EntityCollectionView_EntityType]):
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
