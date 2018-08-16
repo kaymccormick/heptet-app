@@ -10,7 +10,7 @@ from pyramid.paster import (
 
 from pyramid.scripts.common import parse_vars
 
-from email_mgmt_app.entity.model.email_mgmt import Domain, ServiceEntry, Organization, Person
+from email_mgmt_app.entity.model.email_mgmt import Domain, ServiceEntry, Organization, Person, Role
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.model.email_mgmt import get_engine, get_session_factory, get_tm_session
 
@@ -58,6 +58,10 @@ def main(argv=sys.argv):
             sv.protocol_name = proto
             dbsession.add(sv)
 
+
+        r = Role()
+        r.name = "Support"
+        dbsession.add(r)
 
         p = Person()
         p.name = 'Kay McCormick'

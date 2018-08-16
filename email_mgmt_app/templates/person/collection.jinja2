@@ -10,7 +10,7 @@
                 </thead>
                 {% for person in entities %}
                     <tr>
-                        <td><a href="#">{{ person.name }}</a></td>
+                        <td><a href="{{ route_path('person', id=person.id) }}">{{ person.name }}</a></td>
                     </tr>
                 {% endfor %}
             </table>

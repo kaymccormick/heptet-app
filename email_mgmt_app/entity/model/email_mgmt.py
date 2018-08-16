@@ -16,17 +16,12 @@ class PublicKey(Base):
     owner = relationship('Person', backref='keys')
 
 
-association_table = Table\
-    ('orgperson', Base.metadata,
-     Column('organization_id', Integer, ForeignKey('organization.id')),
-     Column('person_id', Integer, ForeignKey('person.id'))
-     )
-
-class Person(Mixin, Base):
-    __tablename__ = 'person'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    organizations = relationship('Organization', secondary=association_table, back_populates='persons')
+class OrgPerson(Mixin, Base):
+    __tablename__ = 'orgperson'
+    organization_id = Column(Integer, ForeignKey('organization.id'), primary_key=True)
+    person_id = Column(Integer, ForeignKey('person.id'), primary_key=True)
+    person = relationship('Person', back_populates='organizations')
+    organization = relationship('Organization', back_populates='persons')
 
 
 class Organization(Mixin, Base):
@@ -36,7 +31,20 @@ class Organization(Mixin, Base):
     name = Column(String)
     children = relationship("Organization",
                             backref=backref('parent', remote_side=[id]))
-    persons = relationship('Person', secondary=association_table, back_populates='organizations')
+    persons = relationship('OrgPerson', back_populates='organization')
+
+
+class Role(Mixin, Base):
+    __tablename__ = 'role_'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+
+class Person(Mixin, Base):
+    __tablename__ = 'person'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    organizations = relationship('OrgPerson', back_populates='person')
 
 
 class Recipient(Mixin, Base):
