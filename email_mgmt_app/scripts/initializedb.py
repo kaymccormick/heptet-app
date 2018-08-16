@@ -10,7 +10,7 @@ from pyramid.paster import (
 
 from pyramid.scripts.common import parse_vars
 
-from email_mgmt_app.entity.model.email_mgmt import Domain, ServiceEntry, Organization
+from email_mgmt_app.entity.model.email_mgmt import Domain, ServiceEntry, Organization, Person
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.model.email_mgmt import get_engine, get_session_factory, get_tm_session
 
@@ -58,6 +58,10 @@ def main(argv=sys.argv):
             sv.protocol_name = proto
             dbsession.add(sv)
 
+
+        p = Person()
+        p.name = 'Kay McCormick'
+
         d = Domain()
         d.name = "test.domain"
         o = Organization()
@@ -66,6 +70,7 @@ def main(argv=sys.argv):
         o2.parent = o
         o2.name = "Heptet North America"
         d.organization = o2
+        o2.persons.append(p)
 
         dbsession.add(d)
 

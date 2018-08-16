@@ -1,6 +1,6 @@
 import zope.sqlalchemy
 
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, Table
 from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
 
 from email_mgmt_app.entity.model.meta import Base
@@ -16,9 +16,17 @@ class PublicKey(Base):
     owner = relationship('Person', backref='keys')
 
 
+association_table = Table\
+    ('orgperson', Base.metadata,
+     Column('organization_id', Integer, ForeignKey('organization.id')),
+     Column('person_id', Integer, ForeignKey('person.id'))
+     )
+
 class Person(Mixin, Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
+    name = Column(String)
+    organizations = relationship('Organization', secondary=association_table, back_populates='persons')
 
 
 class Organization(Mixin, Base):
@@ -28,6 +36,7 @@ class Organization(Mixin, Base):
     name = Column(String)
     children = relationship("Organization",
                             backref=backref('parent', remote_side=[id]))
+    persons = relationship('Person', secondary=association_table, back_populates='organizations')
 
 
 class Recipient(Mixin, Base):

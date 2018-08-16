@@ -52,6 +52,7 @@ def main(global_config, **settings):
     config.include('.entity.domain.view')
     config.include('.entity.recipient.view')
     config.include('.entity.organization.view')
+    config.include('.entity.person.view')
     config.include('.routes')
     config.include('.auth')
 #    config.include('.entity.domain.view') # ??

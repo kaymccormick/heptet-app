@@ -1,0 +1,19 @@
+{% extends "templates/main_child.jinja2" %}
+{% block content %}
+    <div class="container">
+        <div class="row col-sm-12">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Person</th>
+                </tr>
+                </thead>
+                {% for person in entities %}
+                    <tr>
+                        <td><a href="#">{{ person.name }}</a></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock %}
