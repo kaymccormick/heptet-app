@@ -2,8 +2,8 @@ from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.view import view_config
 
-from email_mgmt_app.entity.model.email_mgmt import Domain, Host
-from email_mgmt_app.entity import EntityView, EntityCollectionView
+from email_mgmt_app.entity.model.email_mgmt import Domain, Host, Organization
+from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
 from email_mgmt_app.views.default import munge_dict
 
 def includeme(config: Configurator) -> None:
@@ -11,7 +11,13 @@ def includeme(config: Configurator) -> None:
     config.add_view(".DomainView", route_name="DomainView",
                     renderer='templates/domain/domain.jinja2')
     config.add_route("DomainView", "/domainview/{id}")
+
+    config.add_view('.DomainFormView', route_name='domain_form',
+                    renderer='templates/domain/domain_form_main.jinja2')
+    config.add_route('domain_form', '/domain_form')
+
     #config.add_view(domain_list_view, route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
+
     #config.add_view(domain_list_view, renderer='json')
 
 class DomainView(EntityView[Domain]):
@@ -22,14 +28,22 @@ class DomainView(EntityView[Domain]):
 class DomainCollectionView(EntityCollectionView[Domain]):
     pass
 
+class DomainFormView(EntityFormView[Domain]):
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+        self._entity_type = Domain
+
+    def __call__(self, *args, **kwargs):
+        hosts = self.request.dbsession.query(Host).all()
+        orgs = self.request.dbsession.query(Organization).all()
+        return munge_dict(self.request, {'hosts': hosts, 'orgs': orgs})
+
 @view_config(route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
 @view_config(route_name='domain_list_json', renderer='json')
 def domain_list_view(request: Request) -> dict:
     domains = request.dbsession.query(Domain).all()
     return munge_dict(request, {'domains': domains})
 
-
-@view_config(route_name='domain_form', renderer='templates/domain/domain_form_main.jinja2')
 def domain_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return munge_dict(request, { 'hosts': hosts })
