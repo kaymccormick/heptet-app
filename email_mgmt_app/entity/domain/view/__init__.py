@@ -1,3 +1,4 @@
+from email_mgmt_app.context import EntityResource
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.view import view_config
@@ -6,27 +7,36 @@ from email_mgmt_app.entity.model.email_mgmt import Domain, Host, Organization
 from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
 from email_mgmt_app.views.default import munge_dict
 
+
 def includeme(config: Configurator) -> None:
     # how do we further abstract this??
-    config.add_view(".DomainView", route_name="DomainView",
+    config.register_resource('Domain', Domain)
+    config.add_view(".DomainView", name='view', context=EntityResource,
                     renderer='templates/domain/domain.jinja2')
-    config.add_route("DomainView", "/domainview/{id}")
+    #config.add_route("DomainView", "/domainview/{id}")
 
     config.add_view('.DomainFormView', route_name='domain_form',
                     renderer='templates/domain/domain_form_main.jinja2')
     config.add_route('domain_form', '/domain_form')
-
-    #config.add_view(domain_list_view, route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
+    config.add_view(".DomainCollectionView", name='', context=EntityResource,
+                    entity_name='Domain',
+                    renderer='templates/domain/collection.jinja2')
+    #config.add_view(domain_list_view, route_name='domain_list', renderer='templates/domain/collection.jinja2')
 
     #config.add_view(domain_list_view, renderer='json')
+
 
 class DomainView(EntityView[Domain]):
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
         self._entity_type = Domain
 
+
 class DomainCollectionView(EntityCollectionView[Domain]):
-    pass
+    def __init__(self, request: Request = None) -> None:
+        super().__init__(request)
+        self._entity_type = Domain
+
 
 class DomainFormView(EntityFormView[Domain]):
     def __init__(self, request: Request = None) -> None:
@@ -37,12 +47,6 @@ class DomainFormView(EntityFormView[Domain]):
         hosts = self.request.dbsession.query(Host).all()
         orgs = self.request.dbsession.query(Organization).all()
         return munge_dict(self.request, {'hosts': hosts, 'orgs': orgs})
-
-@view_config(route_name='domain_list', renderer='templates/domain/domain_list.jinja2')
-@view_config(route_name='domain_list_json', renderer='json')
-def domain_list_view(request: Request) -> dict:
-    domains = request.dbsession.query(Domain).all()
-    return munge_dict(request, {'domains': domains})
 
 def domain_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()

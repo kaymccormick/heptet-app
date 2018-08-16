@@ -2,6 +2,10 @@ import logging
 import os
 
 import ldap3
+
+from email_mgmt_app.context import EntityResource
+from email_mgmt_app.entity.model.email_mgmt import Domain, Organization
+from email_mgmt_app.entity import EntityNamePredicate
 from pyramid.viewderivers import INGRESS
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -10,12 +14,17 @@ from pyramid.config import Configurator
 from pyramid.security import Allow, Authenticated
 from pyramid_ldap3 import get_ldap_connector
 
-# this is for ldap stuff
-class RootFactory(object):
+
+class Resource(dict):
+    pass
+
+class RootFactory(Resource):
+    root_resources = {}
     __acl__ = [(Allow, Authenticated, 'view')]
 
     def __init__(self, request):
-        pass
+        super().__init__(RootFactory.root_resources)
+
 
 def groupfinder(dn, request):
     connector = get_ldap_connector(request)
@@ -38,6 +47,15 @@ def entity_view(view, info):
         return wrapper_view
     return view
 
+def register_resource(config, name, resource):
+    def register():
+        if 'resources' not in config.registry.keys():
+            config.registry['resources'] = {}
+
+        config.registry['resources'][name] = resource
+
+    config.action(None, register)
+
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -46,6 +64,9 @@ def main(global_config, **settings):
     f.write("%d" % os.getpid())
     f.close()
     config = Configurator(settings=settings, root_factory=RootFactory)
+
+    config.add_directive('register_resource', register_resource)
+
     #config.add_request_method()
     config.include('pyramid_jinja2')
     config.include('.entity.model.email_mgmt')
@@ -87,6 +108,12 @@ def main(global_config, **settings):
     # config.add_renderer('host', 'email_mgmt_app.renderer.HostRenderer')
     entity_view.options = ('entity_type',)
     config.add_view_deriver(entity_view, under=INGRESS)
+
+    config.add_view_predicate('entity_name', EntityNamePredicate)
+    config.commit()
+    if config.registry['resources'] is not None:
+        for (k, v) in config.registry['resources'].items():
+            RootFactory.root_resources[k] = EntityResource(k, v)
 
     config.scan()
     return config.make_wsgi_app()

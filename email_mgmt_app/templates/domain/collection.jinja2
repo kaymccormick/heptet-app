@@ -6,7 +6,7 @@
 <thead>
 <tr><th>Org</th><th>Name</th><th>No. of Hosts</th></tr>
 </thead>
-{% for domain in domains %}
+{% for domain in entities %}
     <tr><TD>{{ domain.organization.name }}</TD><td><a href="{{ route_path('domain', id=domain.id) }}">{{ domain.name }}</a></td><td>{{ domain.hosts|length }}</tr>
 {% endfor %}
 </table>
