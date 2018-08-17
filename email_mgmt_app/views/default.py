@@ -6,11 +6,11 @@ from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.security import remember, forget
 from pyramid.view import view_config, forbidden_view_config
-from pyramid_ldap3 import get_ldap_connector
 
 from sqlalchemy.orm import Query
 
 from email_mgmt_app.entity.model.email_mgmt import ServiceEntry, Host
+from ..security import check_password, USERS
 
 
 @view_config(route_name='service', renderer='../templates/service/service.jinja2')
@@ -26,7 +26,7 @@ def service_list_view(request: Request) -> dict:
     return { 'services': entry__all , 'hosts': hosts, 'route_path': request.route_path }
 
 
-@view_config(route_name='main', renderer='templates/main_child.jinja2')
+@view_config(route_name='main', permission='view', renderer='templates/main_child.jinja2')
 def main_view(request: Request) -> dict:
     q = request.dbsession.query(Host) # type: Query
     need_paths_for = ['service_list']
@@ -41,10 +41,6 @@ def main_view(request: Request) -> dict:
     return { 'hosts': hosts, 'paths': paths,
              'route_path': request.route_path }
 
-
-# @view_config(route_name='port_register_form', renderer='../templates/port_registeR_form.jinja2')
-# def port_register_form(request):
-#     pass
 
 def munge_dict(request: Request, indict: dict) -> dict:
     if not "form" in indict.keys():
@@ -78,18 +74,22 @@ def login(request):
     login = ''
     password = ''
     error = ''
+    login_url = request.route_url('login')
+    referrer = request.url
+    if referrer == login_url:
+        referrer = '/'  # never use login form itself as came_from
+    came_from = request.params.get('came_from', referrer)
 
     if 'form.submitted' in request.POST:
         login = request.POST['login']
         password = request.POST['password']
-        connector = get_ldap_connector(request)
-        data = connector.authenticate(login, password)
-        if data is not None:
-            dn = data[0]
-            headers = remember(request, dn)
-            return HTTPFound('/', headers=headers)
-        else:
-            error = 'Invalid credentials'
+
+        hashed_pw = USERS.get(login)
+        if hashed_pw and check_password(password, hashed_pw):
+            headers = remember(request, login)
+            return HTTPFound(location=came_from,
+                             headers=headers)
+        message = 'Failed login'
 
     return munge_dict(request, dict(
         login_url=url,

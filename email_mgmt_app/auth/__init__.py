@@ -1,2 +1,8 @@
+import logging
+
+
 def includeme(config):
-    config.include('pyramid_ldap3')
+    logging.warning("%s", ",".join(config.registry.settings.keys()))
+    if config.registry.settings['email_mgmt_app.authsource'] == 'ldap':
+        config.include('.ldap')
+

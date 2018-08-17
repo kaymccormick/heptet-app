@@ -79,3 +79,24 @@ class TestMyViewFailureCondition(BaseTest):
         # from .views.default import my_view
         # info = my_view(dummy_request(self.session))
         # self.assertEqual(info.status_int, 500)
+
+
+
+class TestViewSuccessCondition(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.init_database()
+
+        # from .models import MyModel
+        #
+        # model = MyModel(name='one', value=55)
+        #self.session.add(model)
+
+    def test_passing_view(self):
+        pass
+
+
+class TestViewFailureCondition(BaseTest):
+    def test_failing_view(self):
+        pass
++

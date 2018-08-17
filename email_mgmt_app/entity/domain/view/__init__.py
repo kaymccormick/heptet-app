@@ -1,11 +1,26 @@
 from email_mgmt_app.context import EntityResource
 from pyramid.config import Configurator
 from pyramid.request import Request
-from pyramid.view import view_config
 
 from email_mgmt_app.entity.model.email_mgmt import Domain, Host, Organization
 from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
 from email_mgmt_app.views.default import munge_dict
+
+from pyramid.httpexceptions import HTTPFound
+from pyramid.security import (
+    remember,
+    forget,
+    )
+
+from pyramid.view import (
+    view_config,
+    view_defaults
+    )
+
+from email_mgmt_app.security import (
+    USERS,
+    check_password
+)
 
 
 def includeme(config: Configurator) -> None:
@@ -13,19 +28,15 @@ def includeme(config: Configurator) -> None:
     
     config.add_view(".DomainView", name='view', context=EntityResource,
                     renderer='templates/domain/domain.jinja2')
-    
-    
-    
-    
+
     config.add_view('.DomainFormView', route_name='domain_form',
                     renderer='templates/domain/domain_form_main.jinja2')
+
     config.add_route('domain_form', '/domain_form')
+
     config.add_view(".DomainCollectionView", name='', context=EntityResource,
                     entity_name='Domain',
                     renderer='templates/domain/collection.jinja2')
-    #config.add_view(domain_list_view, route_name='domain_list', renderer='templates/domain/collection.jinja2')
-
-    #config.add_view(domain_list_view, renderer='json')
 
 
 class DomainView(EntityView[Domain]):

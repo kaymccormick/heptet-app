@@ -1,10 +1,7 @@
 import logging
 import os
 
-import ldap3
-
 from email_mgmt_app.context import EntityResource
-from email_mgmt_app.entity.model.email_mgmt import Domain, Organization
 from email_mgmt_app.entity import EntityNamePredicate
 from pyramid.viewderivers import INGRESS
 
@@ -12,26 +9,21 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.security import Allow, Authenticated
-from pyramid_ldap3 import get_ldap_connector
+from .security import groupfinder
 
 
 class Resource(dict):
     pass
 
+
 class RootFactory(Resource):
     root_resources = {}
-    __acl__ = [(Allow, Authenticated, 'view')]
+    __acl__ = [(Allow, Authenticated, None),
+               (Allow, Authenticated, 'view')]
 
     def __init__(self, request):
         super().__init__(RootFactory.root_resources)
 
-
-def groupfinder(dn, request):
-    connector = get_ldap_connector(request)
-    group_list = connector.user_groups(dn)
-    if group_list is None:
-        return None
-    return [dn for dn, attrs in group_list]
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
@@ -60,14 +52,15 @@ def register_resource(config, name, resource):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    f = open(settings['pidfile'], 'w')
-    f.write("%d" % os.getpid())
-    f.close()
+    if 'pidfile' in settings.keys():
+        f = open(settings['pidfile'], 'w')
+        f.write("%d" % os.getpid())
+        f.close()
+
     config = Configurator(settings=settings, root_factory=RootFactory)
 
     config.add_directive('register_resource', register_resource)
 
-    #config.add_request_method()
     config.include('pyramid_jinja2')
     config.include('.entity.model.email_mgmt')
     config.include('.entity.domain.view')
@@ -76,33 +69,13 @@ def main(global_config, **settings):
     config.include('.entity.person.view')
     config.include('.routes')
     config.include('.auth')
-#    config.include('.entity.domain.view') # ??
 
-
-#    config.add_directive('json_encoder', set_json_encoder)
-#    config.set_json_encoder(Encoder)
     config.set_authentication_policy(
-        AuthTktAuthenticationPolicy('dmz3EpLAYqb\'y7s46QdeOOubiIUDV7U3',
+        AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
                                     callback=groupfinder)
     )
     config.set_authorization_policy(
        ACLAuthorizationPolicy()
-    )
-    config.ldap_setup(
-        'ldap://10.8.0.1'
-    )
-
-    config.ldap_set_login_query(
-        base_dn='ou=People,DC=heptet,DC=us',
-        filter_tmpl='(uid=%(login)s)',
-        scope=ldap3.LEVEL,
-    )
-
-    config.ldap_set_groups_query(
-        base_dn='ou=pyramid-groups,DC=heptet,DC=us',
-        filter_tmpl='(&(objectCategory=groupOfNames)(member=%(userdn)s))',
-        scope=ldap3.SUBTREE,
-        cache_period=600,
     )
 
     # config.add_renderer('host', 'email_mgmt_app.renderer.HostRenderer')
