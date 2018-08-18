@@ -68,6 +68,7 @@ class Resource:
         self._registration = reg
         assert reg
         self.__name__ = reg.node_name
+        self._entity_type = reg.entity_type
 
 
     def __str__(self):
@@ -86,6 +87,10 @@ class Resource:
     @property
     def registration(self):
         return self._registration
+
+    @property
+    def entity_type(self):
+        return self._entity_type
 
 
 class ContainerResource(Resource, UserDict):

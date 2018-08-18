@@ -1,32 +1,12 @@
 from typing import TypeVar
 
-from ..resource import EntityResource
 from pyramid.request import Request
 
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 from ..util import munge_dict
 
-
-class EntityNamePredicate():
-
-    def __init__(self, val, config) -> None:
-        self._val = val
-        self._config = config
-
-    def text(self):
-        return 'entity_name = %s' % (self._val)
-
-    phash = text
-
-    def __call__(self, context, request):
-        if isinstance(context, EntityResource) and context.entity_name == self._val:
-            return True
-        return False
-
-
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
-
 
 class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
     def __init__(self, request: Request = None) -> None:

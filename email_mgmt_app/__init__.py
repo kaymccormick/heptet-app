@@ -3,7 +3,7 @@ import os
 
 from .resource import NodeNamePredicate
 from .root import register_resource
-from email_mgmt_app.entity import EntityNamePredicate
+from .predicate import EntityNamePredicate, EntityTypePredicate
 from pyramid.viewderivers import INGRESS
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -65,6 +65,7 @@ def main(global_config, **settings):
     config.add_view_deriver(entity_view, under=INGRESS)
 
     config.add_view_predicate('entity_name', EntityNamePredicate)
+    config.add_view_predicate('entity_type', EntityTypePredicate)
     config.add_view_predicate('node_name', NodeNamePredicate)
     config.commit()
 

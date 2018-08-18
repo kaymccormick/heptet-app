@@ -28,6 +28,7 @@ def includeme(config: Configurator) -> None:
         (ResourceRegistration('Domain', view=DomainView, entity_type=Domain))
 
     config.add_view(".DomainView", name='view', context=Resource,
+                    entity_type=Domain,
                     renderer='templates/domain/domain.jinja2')
 
     config.add_view('.DomainFormView', name='form',

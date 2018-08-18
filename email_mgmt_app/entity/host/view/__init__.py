@@ -21,14 +21,16 @@ def includeme(config: Configurator):
         (ResourceRegistration('Host', view=HostView, entity_type=Host))
 
     config.add_view(".HostView", name='view', context=Resource,
+                    entity_type=Host,
                     renderer='templates/host/host.jinja2')
 
-    config.add_view('.HostFormView', name='form',
-                    renderer='templates/host/host_form_main.jinja2')
+    # config.add_view('.HostFormView', name='form',
+    #                 renderer='templates/host/host_form_main.jinja2')
+    #
+    # config.add_view(".HostCollectionView", name='list', context=ContainerResource,
+    #                 entity_name='Host',
+    #                 renderer='templates/host/collection.jinja2')
 
-    config.add_view(".HostCollectionView", name='list', context=ContainerResource,
-                    entity_name='Host',
-                    renderer='templates/host/collection.jinja2')
 
 class HostView(EntityView[Host]):
     pass
