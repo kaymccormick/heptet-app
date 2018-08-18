@@ -1,17 +1,8 @@
-<div class="alert alert-info" role="alert">
-    <div class="row">
-        <div class="col-sm-2">
-            <span style="margin-right: 4em">root</span>
-        </div>
-        <div class="col-sm-10">
-            <table class="table">
-                {% for (key, val) in r.root.items() %}
-                    <tr>
-                        <th>{{ key|pprint(True) }}</th>
-                        <td>{{ val }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
-</div>
+<table class="table">
+    {% for (key, val) in r.root.items() %}
+        <tr>
+            <th>{{ key|pprint(True) }}</th>
+            <td>{{ val }}</td>
+        </tr>
+    {% endfor %}
+</table>
