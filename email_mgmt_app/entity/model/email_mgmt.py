@@ -179,6 +179,9 @@ def includeme(config):
     # use pyramid_retry to retry a request when transient exceptions occur
     config.include('pyramid_retry')
 
+    if 'sqlalchemy.url' not in settings:
+        logging.critical("sqlalchemy.url not in settings!")
+
     session_factory = get_session_factory(get_engine(settings))
     config.registry['dbsession_factory'] = session_factory
 

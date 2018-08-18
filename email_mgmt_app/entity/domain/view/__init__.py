@@ -43,7 +43,6 @@ def includeme(config: Configurator) -> None:
                      entity_type=Domain)
 
 
-
 class DomainView(EntityView[Domain]):
     pass
 

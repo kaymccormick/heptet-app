@@ -1,4 +1,6 @@
 import logging
+from collections import OrderedDict
+
 from typing import Dict, AnyStr
 
 from email_mgmt_app.resource import Resource, EntityResource, ResourceRegistration, ContainerResource, ResourceManager
@@ -55,7 +57,7 @@ def register_resource(config, reg: ResourceRegistration, mgr: ResourceManager):
         resource = reg.callable
         node_name = reg.node_name
         if 'resources' not in config.registry.keys():
-            config.registry['resources'] = {}
+            config.registry['resources'] = OrderedDict()
 
         o = reg.factory_method(reg, mgr)
         config.registry['resources'][node_name] = o

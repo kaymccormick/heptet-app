@@ -91,7 +91,7 @@ class Resource:
 
 
     def __str__(self):
-        return "Resource[%s, %s]" % (self.title, self.registration)
+        return "Resource[%s,\n%s]" % (self.registration.view, self.registration.entity_type)
 
     def __repr__(self):
         return str(self)
@@ -102,6 +102,9 @@ class Resource:
 
     def path(self):
         return pyramid.threadlocal.get_current_request().resource_path(self)
+
+    def url(self):
+        return pyramid.threadlocal.get_current_request().resource_url(self)
 
     @property
     def registration(self):

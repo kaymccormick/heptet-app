@@ -4,7 +4,7 @@
            {% for x in r.root %}
   <li class="list-group-item">{{ r.root[x].title }}</li>
                     {% for y in r.root[x].resource_manager._ops %}
-  <li class="list-group-item" style="padding-left: 3.25rem"><a href="{{ r.root[x].path() }}{{ y._name }}">{{ y._name }}</a></li>
+  <li class="list-group-item" style="padding-left: 3.25rem"><a href="{{ r.root[x].url() }}{{ y._name }}">{{ y._name }}</a></li>
                                             {% endfor %}
                     {% endfor %}
 </ul>
