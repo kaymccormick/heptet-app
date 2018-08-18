@@ -3,7 +3,7 @@
         <ul class="nav flex-column">
             {% for x in r.root %}
             <li class="nav-item">
-                <a class="nav-link" href="{{ r.root[x].path() }}">
+                <a class="nav-link" href="../{{ r.root[x].path() }}">
                     {{ r.root[x].title }}
                 </a>
 

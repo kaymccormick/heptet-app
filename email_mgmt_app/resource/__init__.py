@@ -1,6 +1,8 @@
+from collections import UserDict, OrderedDict
 from typing import AnyStr, Callable, Dict, NewType
 
 import pyramid
+
 
 class ResourceRegistration():
     def __str__(self):
@@ -59,10 +61,20 @@ class ResourceRegistration():
 
 
 class Resource:
-    def __init__(self, reg: ResourceRegistration=None, title: AnyStr=None) -> None:
+    def __init__(self, reg: ResourceRegistration, title: AnyStr=None) -> None:
         self._title = title
         if not title and reg:
             self._title = reg.title
+        self._registration = reg
+        assert reg
+        self.__name__ = reg.node_name
+
+
+    def __str__(self):
+        return "Resource[%s, %s]" % (self.title, self.registration)
+
+    def __repr__(self):
+        return str(self)
 
     @property
     def title(self):
@@ -71,13 +83,15 @@ class Resource:
     def path(self):
         return pyramid.threadlocal.get_current_request().resource_path(self)
 
+    @property
+    def registration(self):
+        return self._registration
 
 
-
-class ContainerResource(Resource, Dict[AnyStr, Resource]):
-    def __init__(self, dict_init, reg: ResourceRegistration=None) -> None:
+class ContainerResource(Resource, UserDict):
+    def __init__(self, dict_init, reg: ResourceRegistration) -> None:
         super().__init__(reg)
-
+        self.data = OrderedDict(dict_init)
 
 class LeafResource(Resource):
     def __getattr__(self, item):

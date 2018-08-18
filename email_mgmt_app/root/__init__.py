@@ -17,8 +17,8 @@ class RootFactory(ContainerResource):
                (Allow, Authenticated, 'view')]
 
     def __init__(self, request) -> None:
-        logging.debug("initializing Root Factory with %s", repr(RootFactory.root_resources))
-        super().__init__(RootFactory.root_resources)
+        logging.debug("initializing Root Factory with %s", str(RootFactory.root_resources))
+        super().__init__(RootFactory.root_resources, reg=ResourceRegistration('root', 'Home', node_name=''))
 
     def __repr__(self):
         return "RootFactory(%s)" % repr(dict(self))
@@ -33,6 +33,8 @@ class RootFactory(ContainerResource):
         if config.registry['resources'] is not None:
             for (k, v) in config.registry['resources'].items():
                 RootFactory.root_resources[k] = v
+                logging.debug("RootFactory.root_resources[%s] = %s [%s]", repr(k), repr(v), type(v))
+
 
 
 def register_resource(config, reg: ResourceRegistration):

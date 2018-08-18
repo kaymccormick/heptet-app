@@ -47,9 +47,13 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
     def entity(self):
         return self._entity
 
+    @entity.setter
+    def entity(self, new):
+        self._entity = new
+
     @property
     def id(self):
-        return self.request.matchdict['id']
+        return self.request.subpath[0]
 
     @property
     def entity_type(self):

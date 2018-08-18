@@ -1,6 +1,7 @@
 import logging
 
 import ldap3
+from pyramid.config import Configurator
 from sqlalchemy import Table
 from sqlalchemy.engine import reflection
 from sqlalchemy.orm import Session
@@ -10,9 +11,24 @@ from pyramid.request import Request
 from pyramid.view import view_config
 
 from email_mgmt_app.entity import EntityView
-from email_mgmt_app.entity.model.email_mgmt import Domain, Host
+from email_mgmt_app.entity.model.email_mgmt import Host, Host
 from email_mgmt_app.util import munge_dict
+from ....resource import ResourceRegistration, Resource, ContainerResource
 
+
+def includeme(config: Configurator):
+    config.register_resource\
+        (ResourceRegistration('Host', view=HostView, entity_type=Host))
+
+    config.add_view(".HostView", name='view', context=Resource,
+                    renderer='templates/host/host.jinja2')
+
+    config.add_view('.HostFormView', name='form',
+                    renderer='templates/host/host_form_main.jinja2')
+
+    config.add_view(".HostCollectionView", name='list', context=ContainerResource,
+                    entity_name='Host',
+                    renderer='templates/host/collection.jinja2')
 
 class HostView(EntityView[Host]):
     pass
@@ -66,16 +82,16 @@ def host_create_view(request: Request):
     split = hostname_.split('.')
     reverse = reversed(split)
     tld = next(reverse)
-    domain_name = next(reverse) + "." + tld
-    domain = request.dbsession.query(Domain).filter(Domain.name == domain_name).first()
-    if domain is None:
-        domain = Domain()
-        domain.name = domain_name;
+    host_name = next(reverse) + "." + tld
+    host = request.dbsession.query(Host).filter(Host.name == host_name).first()
+    if host is None:
+        host = Host()
+        host.name = host_name;
 
     host = Host()
-    host.domain = domain
+    host.host = host
     host.name = hostname_
     request.dbsession.add(host)
     request.dbsession.flush()
 
-    return munge_dict(request, { 'host': host, 'domain': domain })
+    return munge_dict(request, { 'host': host, 'host': host })

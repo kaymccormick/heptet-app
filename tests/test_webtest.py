@@ -38,7 +38,7 @@ session_factory = get_session_factory(engine)
 session = get_tm_session(session_factory, transaction.manager)
 
 init_database(engine, session)
-resp = app.get('/')
+resp = app.get('/Domain/view/1')
 assert resp.status_int == 200
 assert resp.content_type == 'text/html'
 assert resp.content_length > 0

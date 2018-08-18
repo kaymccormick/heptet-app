@@ -43,6 +43,8 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.include('.entity.model.email_mgmt')
     config.include('.entity.domain.view')
+    config.include('.entity.host.view')
+    config.include('.entity.email_address.view')
     config.include('.entity.recipient.view')
     config.include('.entity.organization.view')
     config.include('.entity.person.view')

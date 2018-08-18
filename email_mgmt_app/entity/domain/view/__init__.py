@@ -1,4 +1,4 @@
-from ....resource import EntityResource, ResourceRegistration
+from ....resource import EntityResource, ResourceRegistration, Resource
 from pyramid.config import Configurator
 from pyramid.request import Request
 
@@ -26,25 +26,22 @@ from email_mgmt_app.security import (
 def includeme(config: Configurator) -> None:
     config.register_resource\
         (ResourceRegistration('Domain', view=DomainView, entity_type=Domain))
-    
-    config.add_view(".DomainView", name='view', context=EntityResource,
+
+    config.add_view(".DomainView", name='view', context=Resource,
                     renderer='templates/domain/domain.jinja2')
 
-    config.add_view('.DomainFormView', #route_name='domain_form',
+    config.add_view('.DomainFormView', name='form',
                     renderer='templates/domain/domain_form_main.jinja2')
 
 #    config.add_route('domain_form', '/domain_form')
 
-    config.add_view(".DomainCollectionView", name='', context=EntityResource,
-                    entity_name='Domain',
-                    renderer='templates/domain/collection.jinja2')
+    config.add_view(".DomainCollectionView", name='list', context=EntityResource,
+                     entity_name='Domain',
+                     renderer='templates/domain/collection.jinja2')
 
 
 class DomainView(EntityView[Domain]):
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
-        self._entity_type = Domain
-
+    pass
 
 class DomainCollectionView(EntityCollectionView[Domain]):
     def __init__(self, request: Request = None) -> None:

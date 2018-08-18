@@ -1,8 +1,20 @@
+from pyramid.config import Configurator
+
 from email_mgmt_app.entity.model.email_mgmt import Host, EmailAddress
 from pyramid.request import Request
 from pyramid.view import view_config
 from email_mgmt_app.util import munge_dict
+from ....entity import EntityView
+from ....resource import ResourceRegistration
 
+
+class EmailAddressView(EntityView[EmailAddress]):
+    pass
+
+
+def includeme(config: Configurator):
+    config.register_resource\
+        (ResourceRegistration('EmailAddress', view=EmailAddressView, entity_type=EmailAddress, title='Email Addresses'))
 
 #@view_config(route_name='email_form', renderer='templates/email_address/email_form.jinja2')
 def email_form_view(request: Request) -> dict:
