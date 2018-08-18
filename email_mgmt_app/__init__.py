@@ -1,10 +1,13 @@
 import logging
 import os
 
-from pyramid.events import NewRequest, subscriber
+from pyramid.events import NewRequest, subscriber, ContextFound
 from pyramid.renderers import get_renderer, RendererHelper
+from pyramid.request import Request
 from pyramid_jinja2 import Jinja2RendererFactory
 
+from .resource import Resource
+from .entity import EntityView
 from .resource import NodeNamePredicate
 from .root import register_resource
 from .predicate import EntityNamePredicate, EntityTypePredicate
@@ -18,11 +21,16 @@ from .security import groupfinder
 
 
 def set_renderer(event):
-    pass
-    request = event.request
+    request = event.request # type: Request
+    context = request.context # type: Resource
+    if context.entity_type:
 
-    # request.override_renderer = 'templates/main_child.jinja2'
-    # return True
+        renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
+                                               request.view_name.lower())
+        logging.debug("selecting %s for %s", renderer, request.path_info)
+
+        request.override_renderer = renderer
+        return True
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
@@ -32,7 +40,15 @@ def entity_view(view, info):
     if et is not None:
         logging.info("original view = %s", repr(info.original_view))
         def wrapper_view(context, request):
-            info.original_view._entity_type = et
+            original_view = info.original_view
+
+            renderer = None
+            if isinstance(original_view, EntityView):
+                renderer = "templates/%s/%s.jinja2" % (original_view.entity_type.__name__.lower(),
+                                                       original_view.entity_type.__name__.lower())
+            if renderer:
+                request.override_renderer = renderer
+            original_view._entity_type = et
             response = view(context, request)
             return response
             # tmpl = "templates/main_child.jinja2"
@@ -77,10 +93,10 @@ def main(global_config, **settings):
 
     config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
     #config.get_renderer()
-    config.add_subscriber(set_renderer, NewRequest)
+    config.add_subscriber(set_renderer, ContextFound)
     # config.add_renderer('host', 'email_mgmt_app.renderer.HostRenderer')
     entity_view.options = ('entity_type',)
-    config.add_view_deriver(entity_view, over=VIEW)
+    config.add_view_deriver(entity_view, under=INGRESS)
 
 
     config.add_view_predicate('entity_name', EntityNamePredicate)

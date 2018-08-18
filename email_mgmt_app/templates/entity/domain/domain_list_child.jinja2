@@ -1,0 +1,12 @@
+{% extends "build/templates/domain_list_layout.jinja2" %}
+{% block main %}
+{% include "templates/nav.jinja2" %}
+<div class="container-fluid">
+  <div class="row">
+    {% include "templates/left_sidebar.jinja2" %}
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock main %}

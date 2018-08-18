@@ -29,19 +29,19 @@ def includeme(config: Configurator) -> None:
         (ResourceRegistration('Domain', view=DomainView, entity_type=Domain),
          mgr)
 
-    mgr.operation('view', ".DomainView", renderer='templates/domain/domain.jinja2')
+    mgr.operation('view', ".DomainView")
     config.add_view(".DomainView", name='view', context=Resource,
                     entity_type=Domain,
                     )
 
+    mgr.operation('form', ".DomainFormView")
     config.add_view('.DomainFormView', name='form',
-                    renderer='templates/domain/domain_form_main.jinja2')
+                    context=Resource, entity_type=Domain)
 
-#    config.add_route('domain_form', '/domain_form')
+    mgr.operation('list', ".DomainCollectionView")
+    config.add_view(".DomainCollectionView", name='list', context=Resource,
+                     entity_type=Domain)
 
-    config.add_view(".DomainCollectionView", name='list', context=EntityResource,
-                     entity_name='Domain',
-                     renderer='templates/domain/collection.jinja2')
 
 
 class DomainView(EntityView[Domain]):
