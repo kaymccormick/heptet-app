@@ -1,12 +1,27 @@
+import logging
+
 import zope.sqlalchemy
 
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, Table
 from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
 
+from email_mgmt_app.root import RootFactory
 from email_mgmt_app.entity.model.meta import Base
 
+from sqlalchemy import event
+
+
+# standard decorator style
+@event.listens_for(object, 'mapper_configured')
+def receive_mapper_configured(mapper, class_):
+    "listen for the 'mapper_configured' event"
+    logging.warning("%s", class_)
+    # ... (event handling logic) ...
+
+
+
 class Mixin(object):
-    pass
+    RootFactory.register_model_type()
 
 
 # class ApplicationUser(Mixin, Base):
@@ -71,7 +86,7 @@ class Recipient(Mixin, Base):
     id = Column(Integer, primary_key=True)
 
 
-class Domain(Base):
+class Domain(Mixin, Base):
     __tablename__ = 'domain'
 
     id = Column(Integer, primary_key=True)

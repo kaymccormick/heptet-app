@@ -1,32 +1,30 @@
-import logging
-import sys
-
 from pyramid.httpexceptions import HTTPFound
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.security import remember, forget
-from pyramid.view import view_config, forbidden_view_config
+from pyramid.view import forbidden_view_config
 
 from sqlalchemy.orm import Query
 
 from email_mgmt_app.entity.model.email_mgmt import ServiceEntry, Host
+from email_mgmt_app.util import munge_dict
 from ..security import check_password, USERS
 
 
-@view_config(route_name='service', renderer='../templates/service/service.jinja2')
+#@view_config(route_name='service', renderer='../templates/service/service.jinja2')
 def service_view(request: Request) -> dict:
     service = request.dbsession.query(ServiceEntry).filter(ServiceEntry.id == request.matchdict['id']).first()
     hosts = request.dbsession.query(Host).all()
     return { 'service': service, 'hosts': hosts, 'route_path': request.route_path }
 
-@view_config(route_name='service_list', renderer='../templates/service/service_list.jinja2')
+#@view_config(route_name='service_list', renderer='../templates/service/service_list.jinja2')
 def service_list_view(request: Request) -> dict:
     entry__all = request.dbsession.query(ServiceEntry).order_by(ServiceEntry.port_num, ServiceEntry.protocol_name).all()
     hosts = request.dbsession.query(Host).all()
     return { 'services': entry__all , 'hosts': hosts, 'route_path': request.route_path }
 
 
-@view_config(route_name='main', permission='view', renderer='templates/main_child.jinja2')
+#@view_config(route_name='main', permission='view', renderer='templates/main_child.jinja2')
 def main_view(request: Request) -> dict:
     q = request.dbsession.query(Host) # type: Query
     need_paths_for = ['service_list']
@@ -38,36 +36,13 @@ def main_view(request: Request) -> dict:
         hosts = [ ]
     else:
         hosts = q.all()
-    return { 'hosts': hosts, 'paths': paths,
-             'route_path': request.route_path }
-
-
-def munge_dict(request: Request, indict: dict) -> dict:
-    if not "form" in indict.keys():
-        indict["form"] = {}
-
-    try:
-        if not "host_form" in indict["form"].keys():
-            indict["form"]["host_form"] = host_form_defs(request)
-    except:
-        logging.warning("unable to populate host_form_defs: %s", sys.exc_info()[1])
-
-    try:
-        if request.matched_route is not None and '_json' in request.matched_route.name:
-            return indict
-    except:
-        logging.warning("unable to populate host_form_defs: %s", sys.exc_info()[1])
-
-#    indict["r"] = request
-    indict["route_path"] = request.route_path
-
-    return indict
+    return munge_dict(request, {'hosts': hosts, 'paths': paths})
 
 
 db_err_msg = "Pyramid is having a problem using your SQL database."
 
-@view_config(route_name='login',
-             renderer='templates/login.jinja2')
+#@view_config(route_name='login',
+#             renderer='templates/login.jinja2')
 @forbidden_view_config(renderer='templates/login.jinja2')
 def login(request):
     url = request.current_route_url()
@@ -98,11 +73,11 @@ def login(request):
         error=error,
         ))
 
-@view_config(route_name='root', permission='view')
+#@view_config(route_name='root', permission='view')
 def logged_in(request):
     return Response('OK')
 
-@view_config(route_name='logout')
+#@view_config(route_name='logout')
 def logout(request):
     headers = forget(request)
     return Response('Logged out', headers=headers)

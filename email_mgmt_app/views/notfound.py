@@ -1,5 +1,5 @@
 from pyramid.view import notfound_view_config
-from email_mgmt_app.views.default import munge_dict
+from email_mgmt_app.util import munge_dict
 
 
 @notfound_view_config(renderer='../templates/404.jinja2')

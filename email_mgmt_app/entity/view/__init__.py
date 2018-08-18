@@ -1,14 +1,17 @@
 from typing import TypeVar, Generic
 
+from pyramid.interfaces import IView
 from pyramid.request import Request
 
+from email_mgmt_app.util import munge_dict
 
-class BaseView(object):
+
+class BaseView():
     def __init__(self, request: Request=None) -> None:
         self._request = request
 
     def __call__(self, *args, **kwargs):
-        return {}
+        return munge_dict(self.request, {})
 
     @property
     def request(self) -> Request:

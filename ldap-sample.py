@@ -24,8 +24,8 @@ from pyramid_ldap import (
     groupfinder,
     )
 
-@view_config(route_name='login',
-             renderer='templates/login.pt')
+#@view_config(route_name='login',
+#             renderer='templates/login.pt')
 @forbidden_view_config(renderer='templates/login.pt')
 def login(request):
     url = request.current_route_url()
@@ -52,11 +52,11 @@ def login(request):
         error=error,
         )
 
-@view_config(route_name='root', permission='view')
+#@view_config(route_name='root', permission='view')
 def logged_in(request):
     return Response('OK')
 
-@view_config(route_name='logout')
+#@view_config(route_name='logout')
 def logout(request):
     headers = forget(request)
     return Response('Logged out', headers=headers)

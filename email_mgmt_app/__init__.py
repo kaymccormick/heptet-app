@@ -1,29 +1,16 @@
 import logging
 import os
 
-from email_mgmt_app.context import EntityResource
+from .resource import NodeNamePredicate
+from .root import register_resource
 from email_mgmt_app.entity import EntityNamePredicate
 from pyramid.viewderivers import INGRESS
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from pyramid.security import Allow, Authenticated
+from .root import RootFactory
 from .security import groupfinder
-
-
-class Resource(dict):
-    pass
-
-
-class RootFactory(Resource):
-    root_resources = {}
-    __acl__ = [(Allow, Authenticated, None),
-               (Allow, Authenticated, 'view')]
-
-    def __init__(self, request):
-        super().__init__(RootFactory.root_resources)
-
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
@@ -38,15 +25,6 @@ def entity_view(view, info):
             return response
         return wrapper_view
     return view
-
-def register_resource(config, name, resource):
-    def register():
-        if 'resources' not in config.registry.keys():
-            config.registry['resources'] = {}
-
-        config.registry['resources'][name] = resource
-
-    config.action(None, register)
 
 
 def main(global_config, **settings):
@@ -69,6 +47,7 @@ def main(global_config, **settings):
     config.include('.entity.person.view')
     config.include('.routes')
     config.include('.auth')
+    config.include('.views')
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
@@ -83,10 +62,10 @@ def main(global_config, **settings):
     config.add_view_deriver(entity_view, under=INGRESS)
 
     config.add_view_predicate('entity_name', EntityNamePredicate)
+    config.add_view_predicate('node_name', NodeNamePredicate)
     config.commit()
-    if config.registry['resources'] is not None:
-        for (k, v) in config.registry['resources'].items():
-            RootFactory.root_resources[k] = EntityResource(k, v)
 
-    config.scan()
+    RootFactory.populate_resources(config)
+
+    #config.scan()
     return config.make_wsgi_app()

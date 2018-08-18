@@ -1,11 +1,11 @@
 from typing import TypeVar
 
-from email_mgmt_app import EntityResource
+from ..resource import EntityResource
 from pyramid.request import Request
 
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
-from email_mgmt_app.views.default import munge_dict
+from ..util import munge_dict
 
 
 class EntityNamePredicate():
@@ -31,6 +31,7 @@ EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
 class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
+        self._entity = None
 
     def query(self):
         return self.request.dbsession.query(self.entity_type)
@@ -41,6 +42,10 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
         by = query.filter_by(id=self.id)
         assert by is not None
         self.entity = by.first()
+
+    @property
+    def entity(self):
+        return self._entity
 
     @property
     def id(self):

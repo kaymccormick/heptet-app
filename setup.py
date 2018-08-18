@@ -17,6 +17,8 @@ requires = [
     'waitress',
     'psycopg2',
     'pyramid_ldap3',
+    'lxml',
+    'bcrypt',
 ]
 
 tests_require = [

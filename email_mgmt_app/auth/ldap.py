@@ -6,7 +6,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid_ldap3 import get_ldap_connector
 
 from pyramid.view import forbidden_view_config, view_config
-from ..views.default import munge_dict
+from email_mgmt_app.util import munge_dict
 
 
 def includeme(config):
@@ -36,7 +36,7 @@ def ldap_groupfinder(dn, request):
         return None
     return [dn for dn, attrs in group_list]
 
-#@view_config(route_name='login',
+##@view_config(route_name='login',
 #             renderer='templates/login.jinja2')
 #@forbidden_view_config(renderer='templates/login.jinja2')
 def login(request):

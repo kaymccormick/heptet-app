@@ -24,6 +24,9 @@ settings = { 'sqlalchemy.url': 'postgresql://flaskuser:FcQCPDM7%40RpRCsnO@localh
 
 packed_assets = ['./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_modules/bootstrap/dist/js/bootstrap.js', './node_modules/css-loader/index.js!./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_modules/css-loader/lib/css-base.js', './node_modules/jquery/dist/jquery.js', './node_modules/popper.js/dist/esm/popper.js', './node_modules/raw-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js', './node_modules/script-loader/addScript.js', './node_modules/script-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js', './node_modules/style-loader/lib/addStyles.js', './node_modules/style-loader/lib/urls.js', './node_modules/webpack/buildin/global.js', './src/index.prod.js']
 
+
+logging.basicConfig(level=logging.DEBUG)
+
 app = TestApp(email_mgmt_app.main(None, **settings))
 
 engine = get_engine(settings)
@@ -38,7 +41,7 @@ assert resp.content_type == 'text/html'
 assert resp.content_length > 0
 root = lxml.html.document_fromstring(resp.text)
 
-logging.warning("%s", type(root))
+logging.debug("type(root) = %s", type(root))
 scripts = root.xpath("//script")
 srcs = []
 for script in scripts:
@@ -55,5 +58,12 @@ for src in srcs:
     all = re.findall(r'^/\*\*\*/ "(.*)":$', text, re.MULTILINE)
     #print(*all, sep='\n')
 
-for link in root.iterlinks():
-    print(link[2])
+#print(resp.text)
+debug_dict = { }
+matches = re.findall(r'<!-- ([^ \t]*) = ([^ ]*) -->', resp.text)
+for (k, v) in matches:
+    debug_dict[k] = v
+    logging.debug("debug_dict[%s] = %s", k, v)
+
+# for link in root.iterlinks():
+#     print(link[2])

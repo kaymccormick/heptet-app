@@ -11,31 +11,32 @@ from pyramid.view import view_config
 
 from email_mgmt_app.entity import EntityView
 from email_mgmt_app.entity.model.email_mgmt import Domain, Host
-from email_mgmt_app.views.default import munge_dict
+from email_mgmt_app.util import munge_dict
+
 
 class HostView(EntityView[Host]):
     pass
 
 
-@view_config(route_name='host_form', renderer='templates/host/host_form_main.jinja2')
+#@view_config(route_name='host_form', renderer='templates/host/host_form_main.jinja2')
 def host_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'route_path': request.route_path }
 
 
-@view_config(route_name='host_list', renderer='templates/host/host_list_main.jinja2')
+#@view_config(route_name='host_list', renderer='templates/host/host_list_main.jinja2')
 def host_list_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'route_path': request.route_path }
 
 
-@view_config(route_name='host', renderer='templates/host/host.jinja2')
+#@view_config(route_name='host', renderer='templates/host/host.jinja2')
 def host_view(request: Request):
     dbsession = request.dbsession # type: Session
     host = dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
     return munge_dict(request, { "host": host })
 
-@view_config(route_name='generic', renderer='templates/generic.jinja2')
+#@view_config(route_name='generic', renderer='templates/generic.jinja2')
 def generic_view(request: Request):
     dbsession = request.dbsession # type: Session
     i = reflection.Inspector.from_engine(dbsession.get_bind())
@@ -56,7 +57,7 @@ def generic_view(request: Request):
     return e
 
 
-@view_config(route_name='host_create', renderer='templates/host/host_create.jinja2')
+#@view_config(route_name='host_create', renderer='templates/host/host_create.jinja2')
 def host_create_view(request: Request):
     #conn = ldap.initialize("ldap://10.8.0.1") # type: LDAPObject
     # r = conn.search_s("dc=heptet,dc=us", ldap.SCOPE_SUBTREE, '(objectClass=posixAccount)')

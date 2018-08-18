@@ -1,10 +1,10 @@
-from email_mgmt_app.context import EntityResource
+from ....resource import EntityResource, ResourceRegistration
 from pyramid.config import Configurator
 from pyramid.request import Request
 
 from email_mgmt_app.entity.model.email_mgmt import Domain, Host, Organization
 from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
-from email_mgmt_app.views.default import munge_dict
+from email_mgmt_app.util import munge_dict
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import (
@@ -24,15 +24,16 @@ from email_mgmt_app.security import (
 
 
 def includeme(config: Configurator) -> None:
-    config.register_resource('Domain', Domain)
+    config.register_resource\
+        (ResourceRegistration('Domain', view=DomainView, entity_type=Domain))
     
     config.add_view(".DomainView", name='view', context=EntityResource,
                     renderer='templates/domain/domain.jinja2')
 
-    config.add_view('.DomainFormView', route_name='domain_form',
+    config.add_view('.DomainFormView', #route_name='domain_form',
                     renderer='templates/domain/domain_form_main.jinja2')
 
-    config.add_route('domain_form', '/domain_form')
+#    config.add_route('domain_form', '/domain_form')
 
     config.add_view(".DomainCollectionView", name='', context=EntityResource,
                     entity_name='Domain',
@@ -66,13 +67,13 @@ def domain_form_view(request: Request) -> dict:
     return munge_dict(request, { 'hosts': hosts })
 
 
-@view_config(route_name='domain', renderer='templates/domain/domain.jinja2')
+#@view_config(route_name='domain', renderer='templates/domain/domain.jinja2')
 def domain_view(request: Request):
     domain = request.dbsession.query(Domain).filter(Domain.id == request.matchdict["id"]).first()
     return munge_dict(request, {"domain": domain })
 
 
-@view_config(route_name='domain_create', renderer='templates/domain/domain_create.jinja2')
+#@view_config(route_name='domain_create', renderer='templates/domain/domain_create.jinja2')
 def domain_create_view(request: Request):
     domain = Domain()
     domain.name = request.POST['domain_name']
