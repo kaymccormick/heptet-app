@@ -1,4 +1,7 @@
 {% extends "build/templates/main_layout.jinja2" %}
+{%  block extra_head %}
+<link rel="stylesheet" href="https://use.typekit.net/evy4yyd.css">
+{% endblock %}
 {% block main %}
     {% include "nav.jinja2" with context %}
 
@@ -8,8 +11,7 @@
             <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
                 {% block content %}
                     <div class="jumbotron">
-                        <h1 class="display-4">Admin</h1>
-                        <p class="lead"> Welcome to Administration. Please use the navbar to the left..</p>
+                        <p class="lead">Expert Knob Twiddling Room.</p>
                         <hr class="my-4">
 
                             <div id="myCarousel" class="carousel slide" data-ride="carousel">
