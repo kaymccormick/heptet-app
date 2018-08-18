@@ -13,13 +13,17 @@ from pyramid.view import view_config
 from email_mgmt_app.entity import EntityView
 from email_mgmt_app.entity.model.email_mgmt import Host, Host
 from email_mgmt_app.util import munge_dict
-from ....resource import ResourceRegistration, Resource, ContainerResource
+from ....resource import ResourceRegistration, Resource, ContainerResource, ResourceManager
 
 
 def includeme(config: Configurator):
-    config.register_resource\
-        (ResourceRegistration('Host', view=HostView, entity_type=Host))
+    mgr = ResourceManager(config, Host)
 
+    config.register_resource\
+        (ResourceRegistration('Host', view=HostView, entity_type=Host),
+         mgr)
+
+    mgr.operation('view', ".HostView", renderer='templates/host/host.jinja2')
     config.add_view(".HostView", name='view', context=Resource,
                     entity_type=Host,
                     renderer='templates/host/host.jinja2')

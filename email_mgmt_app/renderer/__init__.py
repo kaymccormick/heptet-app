@@ -1,4 +1,6 @@
-from pyramid.interfaces import IRenderer, IRendererFactory
+from pyramid.interfaces import IRenderer, IRendererFactory, IRendererInfo
+
+
 #
 #
 # class HostRendererFactory(IRendererFactory):
@@ -9,12 +11,14 @@ from pyramid.interfaces import IRenderer, IRendererFactory
 # class HostRenderer(IRenderer):
 #     def __call__(value, system):
 #         super().__call__(system)
+from pyramid.renderers import get_renderer
 
 
 class Renderer(IRenderer):
     def __call__(value, system):
         pass
 
+
 class RendererFactory(IRendererFactory):
-    def __call__(info):
+    def __call__(self, info: IRendererInfo):
         return Renderer()

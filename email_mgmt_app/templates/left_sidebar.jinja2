@@ -2,12 +2,19 @@
     <div class="sidebar-sticky">
         <ul class="nav flex-column">
             {% for x in r.root %}
-            <li class="nav-item">
-                <a class="nav-link" href="../{{ r.root[x].path() }}">
-                    {{ r.root[x].title }}
-                </a>
+                <li class="nav-item">
+                    <a class="nav-link" href="../{{ r.root[x].path() }}">
+                        {{ r.root[x].title }}
+                    </a>
+                </li>
+                <ul class="nav-item">
+                    {% for y in r.root[x].resource_manager._ops %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="../{{ r.root[x].path() }}{{ y._name }}">{{ y._name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
 
-            </li>
             {% endfor %}
         </ul>
     </div>

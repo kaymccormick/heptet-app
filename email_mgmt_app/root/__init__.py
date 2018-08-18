@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, AnyStr
 
-from email_mgmt_app.resource import Resource, EntityResource, ResourceRegistration, ContainerResource
+from email_mgmt_app.resource import Resource, EntityResource, ResourceRegistration, ContainerResource, ResourceManager
 from pyramid.security import Allow, Authenticated
 
 
@@ -18,7 +18,11 @@ class RootFactory(ContainerResource):
 
     def __init__(self, request) -> None:
         logging.debug("initializing Root Factory with %s", str(RootFactory.root_resources))
-        super().__init__(RootFactory.root_resources, reg=ResourceRegistration('root', 'Home', node_name=''))
+        super().__init__(RootFactory.root_resources,
+                         ResourceRegistration('root', 'Home', node_name = ''),
+                         ResourceManager(None, None),
+                         )
+
 
     def __repr__(self):
         return "RootFactory(%s)" % repr(dict(self))
@@ -37,7 +41,7 @@ class RootFactory(ContainerResource):
 
 
 
-def register_resource(config, reg: ResourceRegistration):
+def register_resource(config, reg: ResourceRegistration, mgr: ResourceManager):
     """
     register_resource is an add-on method to register resources with the Root Factory
 
@@ -53,7 +57,7 @@ def register_resource(config, reg: ResourceRegistration):
         if 'resources' not in config.registry.keys():
             config.registry['resources'] = {}
 
-        o = reg.factory_method(reg)
+        o = reg.factory_method(reg, mgr)
         config.registry['resources'][node_name] = o
         logging.debug("o = %s", o)
 

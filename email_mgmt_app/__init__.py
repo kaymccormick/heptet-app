@@ -1,16 +1,28 @@
 import logging
 import os
 
+from pyramid.events import NewRequest, subscriber
+from pyramid.renderers import get_renderer, RendererHelper
+from pyramid_jinja2 import Jinja2RendererFactory
+
 from .resource import NodeNamePredicate
 from .root import register_resource
 from .predicate import EntityNamePredicate, EntityTypePredicate
-from pyramid.viewderivers import INGRESS
+from pyramid.viewderivers import INGRESS, VIEW
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from .root import RootFactory
 from .security import groupfinder
+
+
+def set_renderer(event):
+    pass
+    request = event.request
+
+    # request.override_renderer = 'templates/main_child.jinja2'
+    # return True
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
@@ -23,6 +35,9 @@ def entity_view(view, info):
             info.original_view._entity_type = et
             response = view(context, request)
             return response
+            # tmpl = "templates/main_child.jinja2"
+            # renderer = get_renderer(tmpl)
+            # return renderer(response, { 'renderer_name': tmpl, 'view': view, 'context': context, 'request': request})
         return wrapper_view
     return view
 
@@ -60,14 +75,28 @@ def main(global_config, **settings):
        ACLAuthorizationPolicy()
     )
 
+    config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
+    #config.get_renderer()
+    config.add_subscriber(set_renderer, NewRequest)
     # config.add_renderer('host', 'email_mgmt_app.renderer.HostRenderer')
     entity_view.options = ('entity_type',)
-    config.add_view_deriver(entity_view, under=INGRESS)
+    config.add_view_deriver(entity_view, over=VIEW)
+
 
     config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
     config.add_view_predicate('node_name', NodeNamePredicate)
     config.commit()
+
+    renderers = { }
+    for x in os.walk("templates"):
+        for y in x[2]:
+            path = os.path.join(x[0], y)
+            logging.debug("path = %s", path)
+            renderers[path] = RendererHelper(name=path, package='email_mgmt_app', registry=config.registry)
+            logging.debug("renderer = %s", renderers[path])
+
+    config.registry['app_renderers'] = renderers
 
     RootFactory.populate_resources(config)
 

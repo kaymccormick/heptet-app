@@ -1,4 +1,4 @@
-from ....resource import EntityResource, ResourceRegistration, Resource
+from ....resource import EntityResource, ResourceRegistration, Resource, ResourceManager
 from pyramid.config import Configurator
 from pyramid.request import Request
 
@@ -24,12 +24,15 @@ from email_mgmt_app.security import (
 
 
 def includeme(config: Configurator) -> None:
+    mgr = ResourceManager(config, Domain)
     config.register_resource\
-        (ResourceRegistration('Domain', view=DomainView, entity_type=Domain))
+        (ResourceRegistration('Domain', view=DomainView, entity_type=Domain),
+         mgr)
 
+    mgr.operation('view', ".DomainView", renderer='templates/domain/domain.jinja2')
     config.add_view(".DomainView", name='view', context=Resource,
                     entity_type=Domain,
-                    renderer='templates/domain/domain.jinja2')
+                    )
 
     config.add_view('.DomainFormView', name='form',
                     renderer='templates/domain/domain_form_main.jinja2')

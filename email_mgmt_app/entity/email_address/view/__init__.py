@@ -5,7 +5,7 @@ from pyramid.request import Request
 from pyramid.view import view_config
 from email_mgmt_app.util import munge_dict
 from ....entity import EntityView
-from ....resource import ResourceRegistration
+from ....resource import ResourceRegistration, ResourceManager
 
 
 class EmailAddressView(EntityView[EmailAddress]):
@@ -13,8 +13,11 @@ class EmailAddressView(EntityView[EmailAddress]):
 
 
 def includeme(config: Configurator):
+    mgr = ResourceManager(config, EmailAddress)
     config.register_resource\
-        (ResourceRegistration('EmailAddress', view=EmailAddressView, entity_type=EmailAddress, title='Email Addresses'))
+        (ResourceRegistration('EmailAddress', view=EmailAddressView, entity_type=EmailAddress, title='Email Addresses'),
+         mgr)
+    mgr.operation('view', ".EmailAddressView", renderer='templates/email_address/email_address.jinja2')
 
 #@view_config(route_name='email_form', renderer='templates/email_address/email_form.jinja2')
 def email_form_view(request: Request) -> dict:

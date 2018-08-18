@@ -2,6 +2,24 @@ from collections import UserDict, OrderedDict
 from typing import AnyStr, Callable, Dict, NewType
 
 import pyramid
+from pyramid.config import Configurator
+
+class ResourceOperation():
+    def __init__(self, name, view, renderer=None) -> None:
+        self._renderer = renderer
+        self._view = view
+        self._name = name
+
+
+class ResourceManager():
+    def __init__(self, config: Configurator, entity_type) -> None:
+        self._entity_type = entity_type
+        self._config = config
+        self._ops = []
+
+    def operation(self, name, view, renderer=None) -> None:
+        op = ResourceOperation(name, view, renderer=renderer)
+        self._ops.append(op)
 
 
 class ResourceRegistration():
@@ -20,8 +38,8 @@ class ResourceRegistration():
         self._factory_method = factory_method
         self._view = view
         if self._factory_method is None:
-            def factory(reg: ResourceRegistration):
-                return ContainerResource({}, reg=reg)
+            def factory(reg: ResourceRegistration, mgr: ResourceManager):
+                return ContainerResource({}, reg=reg, mgr=mgr)
             self._factory_method = factory
         self._name = name
         self._callable = callable
@@ -61,7 +79,7 @@ class ResourceRegistration():
 
 
 class Resource:
-    def __init__(self, reg: ResourceRegistration, title: AnyStr=None) -> None:
+    def __init__(self, reg: ResourceRegistration, mgr: ResourceManager, title: AnyStr=None) -> None:
         self._title = title
         if not title and reg:
             self._title = reg.title
@@ -69,6 +87,7 @@ class Resource:
         assert reg
         self.__name__ = reg.node_name
         self._entity_type = reg.entity_type
+        self._resource_manager = mgr
 
 
     def __str__(self):
@@ -92,10 +111,14 @@ class Resource:
     def entity_type(self):
         return self._entity_type
 
+    @property
+    def resource_manager(self):
+        return self._resource_manager
+
 
 class ContainerResource(Resource, UserDict):
-    def __init__(self, dict_init, reg: ResourceRegistration) -> None:
-        super().__init__(reg)
+    def __init__(self, dict_init, reg: ResourceRegistration, mgr: ResourceManager) -> None:
+        super().__init__(reg, mgr)
         self.data = OrderedDict(dict_init)
 
 class LeafResource(Resource):
