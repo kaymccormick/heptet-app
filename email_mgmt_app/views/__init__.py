@@ -12,5 +12,4 @@ class MainView(BaseView):
 
 
 def includeme(config: Configurator):
-    config.register_resource(ResourceRegistration('MainView', MainView, node_name=''))
     config.add_view('.MainView', name='', renderer='templates/main_child.jinja2', context=RootFactory)

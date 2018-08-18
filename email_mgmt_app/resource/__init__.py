@@ -1,14 +1,82 @@
 from typing import AnyStr, Callable, Dict, NewType
 
+import pyramid
 
-class Resource():
-    pass
+class ResourceRegistration():
+    def __str__(self):
+        def class_str(class_):
+            if class_:
+                return class_.__module__ + '.' + class_.__name__
+            return str(None)
+
+        return "RR {\n  name\t\t\t= %s;\n  node_name\t\t= %s;\n  view\t\t\t= %s;\n  entity_type\t= %s;\n}" % (self.name, self.node_name, class_str(self.view), class_str(self.entity_type))
+
+    def __init__(self, name: AnyStr, title: AnyStr=None, view=None, callable: Callable=None, node_name: AnyStr=None, entity_type=None,
+                 factory_method: Callable=None) -> None:
+        super().__init__()
+        self._title = title
+        self._factory_method = factory_method
+        self._view = view
+        if self._factory_method is None:
+            def factory(reg: ResourceRegistration):
+                return ContainerResource({}, reg=reg)
+            self._factory_method = factory
+        self._name = name
+        self._callable = callable
+        if node_name is None:
+            node_name = name
+        self._node_name = node_name
+        self._entity_type = entity_type
+        self._view = view
+
+    @property
+    def callable(self):
+        return self._callable
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def node_name(self):
+        return self._node_name
+
+    @property
+    def factory_method(self) -> Callable:
+        return self._factory_method
+
+    @property
+    def view(self):
+        return self._view
+
+    @property
+    def entity_type(self):
+        return self._entity_type
+
+    @property
+    def title(self):
+        return self._title or self._name
 
 
-class ContainerResource(Dict[AnyStr, Resource], Resource):
-    def __init__(self, dictinit) -> None:
-        super().__init__(dictinit)
+class Resource:
+    def __init__(self, reg: ResourceRegistration=None, title: AnyStr=None) -> None:
+        self._title = title
+        if not title and reg:
+            self._title = reg.title
 
+    @property
+    def title(self):
+        return self._title
+
+    def path(self):
+        return pyramid.threadlocal.get_current_request().resource_path(self)
+
+
+
+
+class ContainerResource(Resource, Dict[AnyStr, Resource]):
+    def __init__(self, dict_init, reg: ResourceRegistration=None) -> None:
+        super().__init__(reg)
 
 
 class LeafResource(Resource):
@@ -43,25 +111,3 @@ class NodeNamePredicate():
         return False
 
 
-class ResourceRegistration():
-    def __init__(self, name: AnyStr, view=None, callable: Callable=None, node_name: AnyStr=None, entity_type=None) -> None:
-        super().__init__()
-        self._name = name
-        self._callable = callable
-        if node_name is None:
-            node_name = name
-        self._node_name = node_name
-        self._entity_type = entity_type
-        self._view = view
-
-    @property
-    def callable(self):
-        return self._callable
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def node_name(self):
-        return self._node_name

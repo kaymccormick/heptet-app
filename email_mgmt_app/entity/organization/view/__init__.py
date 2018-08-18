@@ -4,9 +4,13 @@ from email_mgmt_app.entity import EntityCollectionView, EntityView, EntityFormVi
 from email_mgmt_app.entity.model.email_mgmt import Organization
 from pyramid.config import Configurator
 
+from ....resource import ResourceRegistration
+
 
 def includeme(config: Configurator) -> None:
-    pass
+    config.register_resource\
+        (ResourceRegistration('Organization', view=OrganizationView, entity_type=Organization))
+
 #    config.add_view(".OrganizationCollectionView",
 #                     route_name='organization_collection',
 #                     renderer='templates/organization/collection.jinja2')

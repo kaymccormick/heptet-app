@@ -14,13 +14,16 @@ from email_mgmt_app.entity.model.email_mgmt import get_engine
 
 javascript_contenttypes = ['application/javascript', 'text/plain']
 
+
 def init_database(engine, session):
     from email_mgmt_app.entity.model.meta import Base
     Base.metadata.create_all(engine)
 
+
 settings = { 'sqlalchemy.url': 'postgresql://flaskuser:FcQCPDM7%40RpRCsnO@localhost/email',
              'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
-             'email_mgmt_app.authsource': 'db'}
+             'email_mgmt_app.authsource': 'db',
+             'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals'}
 
 packed_assets = ['./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_modules/bootstrap/dist/js/bootstrap.js', './node_modules/css-loader/index.js!./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_modules/css-loader/lib/css-base.js', './node_modules/jquery/dist/jquery.js', './node_modules/popper.js/dist/esm/popper.js', './node_modules/raw-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js', './node_modules/script-loader/addScript.js', './node_modules/script-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js', './node_modules/style-loader/lib/addStyles.js', './node_modules/style-loader/lib/urls.js', './node_modules/webpack/buildin/global.js', './src/index.prod.js']
 
