@@ -47,6 +47,9 @@ def register_resource(config, reg: ResourceRegistration, mgr: ResourceManager):
     """
     register_resource is an add-on method to register resources with the Root Factory
 
+    notes: right now there is really no case for a multi-level hierarchy -
+    everything is a child of the root
+
     :param reg:
     :param config:
     :return:

@@ -37,10 +37,14 @@ class ResourceRegistration():
         self._title = title
         self._factory_method = factory_method
         self._view = view
+
         if self._factory_method is None:
+
             def factory(reg: ResourceRegistration, mgr: ResourceManager):
                 return ContainerResource({}, reg=reg, mgr=mgr)
+
             self._factory_method = factory
+
         self._name = name
         self._callable = callable
         if node_name is None:

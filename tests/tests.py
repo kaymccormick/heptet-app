@@ -99,10 +99,8 @@ class TestConfigSuccessCondition(BaseAppTest):
 
         for (x, y) in root.items():
             logging.debug("%s: %s", x, repr(y))
-            assert y.__parent__ == root
+            assert '__parent__' in dir(y) and y.__parent__ == root, "No parent for %s" % (repr(y))
             assert y.__name__ == x
-
-
 
         pass
 
