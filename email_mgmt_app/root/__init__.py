@@ -16,6 +16,8 @@ class RootFactory(ContainerResource):
     def __init__(self, request) -> None:
         super().__init__(RootFactory.root_resources)
 
+    def __repr__(self):
+        return "RootFactory(%s)" % repr(dict(self))
 
     @staticmethod
     def register_model_type():

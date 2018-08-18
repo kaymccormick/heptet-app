@@ -38,6 +38,7 @@ def main(global_config, **settings):
     config = Configurator(settings=settings, root_factory=RootFactory)
 
     config.add_directive('register_resource', register_resource)
+    #config.add_directive('')
 
     config.include('pyramid_jinja2')
     config.include('.entity.model.email_mgmt')

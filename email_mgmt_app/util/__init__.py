@@ -9,6 +9,16 @@ def munge_dict(request: Request, indict: dict) -> dict:
     view_name = request.view_name
     context = request.context
 
+    val = request.registry.settings['email_mgmt_app.request_attrs']
+    logging.debug("attrs = %s", repr(val))
+    attrs = val.split(', ')
+
+    indict['r'] = { }
+    for attr in attrs:
+        indict['r'][attr] = request.__getattribute__(attr)
+
+    #request.resource_path()
+
     stack = inspect.stack()
     class_ = stack[1][0].f_locals["self"].__class__
     indict['class_'] = class_

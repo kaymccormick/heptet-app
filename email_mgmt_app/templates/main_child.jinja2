@@ -1,16 +1,48 @@
 {% extends "build/templates/main_layout.jinja2" %}
 {% block main %}
-<!-- view_name = {{ view_name }} -->
-<!-- class_ = {{ class_.__module__ }}.{{ class_.__name__ }} -->
-{% include "nav.jinja2" %}
-<div class="container-fluid">
-  <div class="row">
-    {% include "left_sidebar.jinja2" %}
-    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
-      {% block content %}
-      Welcome to Administration. Please use the navbar to the left.
-      {% endblock %}
-    </main>
+    {% include "nav.jinja2" with context %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include "left_sidebar.jinja2" %}
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                {% block content %}
+                    <div class="jumbotron">
+                        <h1 class="display-4">Hello, world!</h1>
+                        <p class="lead"> Welcome to Administration. Please use the navbar to the left..</p>
+                        <hr class="my-4">
+                        <p>It uses utility classes for typography and spacing to space content out within the larger
+                            container.</p>
+
+                            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+        <div class="card" style="width: 18rem;">
+  <div class="card-body">
+    <h5 class="card-title">Card title</h5>
+    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+    <a href="#" class="card-link">Card link</a>
+    <a href="#" class="card-link">Another link</a>
   </div>
 </div>
+        <div>&nbsp;</div>
+    <nav aria-label="Page navigation example">
+  <ul class="pagination">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+    </nav>
+  </div>
+</div>
+
+                    </div>
+                    </div>
+                {% endblock %}
+            </main>
+        </div>
+    </div>
 {% endblock main %}

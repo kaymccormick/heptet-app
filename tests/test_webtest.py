@@ -58,7 +58,7 @@ for src in srcs:
     all = re.findall(r'^/\*\*\*/ "(.*)":$', text, re.MULTILINE)
     #print(*all, sep='\n')
 
-#print(resp.text)
+logging.debug("response text = %s", repr(resp.text))
 debug_dict = { }
 matches = re.findall(r'<!-- ([^ \t]*) = ([^ ]*) -->', resp.text)
 for (k, v) in matches:
