@@ -4,14 +4,24 @@ from typing import AnyStr, Callable, Dict, NewType
 import pyramid
 from pyramid.config import Configurator
 
-class ResourceOperation():
+
+class ResourceOperation:
+    """
+    Class encapsulating an operation on a resource
+    """
     def __init__(self, name, view, renderer=None) -> None:
+        """
+
+        :param name:
+        :param view:
+        :param renderer:
+        """
         self._renderer = renderer
         self._view = view
         self._name = name
 
 
-class ResourceManager():
+class ResourceManager:
     def __init__(self, config: Configurator, entity_type) -> None:
         self._entity_type = entity_type
         self._config = config
@@ -22,7 +32,10 @@ class ResourceManager():
         self._ops.append(op)
 
 
-class ResourceRegistration():
+class ResourceRegistration:
+    """
+
+    """
     def __str__(self):
         def class_str(class_):
             if class_:
@@ -93,6 +106,10 @@ class Resource:
         self._entity_type = reg.entity_type
         self._resource_manager = mgr
 
+    def attach(self, parent, name):
+        self.__parent__ = parent
+        self.__name__ = name
+
 
     def __str__(self):
         return "Resource[%s,\n%s]" % (self.registration.view, self.registration.entity_type)
@@ -126,7 +143,13 @@ class Resource:
 class ContainerResource(Resource, UserDict):
     def __init__(self, dict_init, reg: ResourceRegistration, mgr: ResourceManager) -> None:
         super().__init__(reg, mgr)
-        self.data = OrderedDict(dict_init)
+
+        def a(x, y):
+            for (k, v) in x:
+                a(v, y[k])
+
+        self.data = OrderedDict()
+        a(dict_init, self.data)
 
 class LeafResource(Resource):
     def __getattr__(self, item):

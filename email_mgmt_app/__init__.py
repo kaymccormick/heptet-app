@@ -79,6 +79,8 @@ def main(global_config, **settings):
     config.include('.entity.recipient.view')
     config.include('.entity.organization.view')
     config.include('.entity.person.view')
+    config.include('.entity.publickey.view')
+    config.include('.entity.file')
     config.include('.routes')
     config.include('.auth')
     config.include('.views')

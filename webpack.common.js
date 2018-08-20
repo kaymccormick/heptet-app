@@ -18,6 +18,11 @@ module.exports = {
                 from: 'src/__init__.py',
                 to: path.resolve
                 (__dirname, 'email_mgmt_app/build/__init__.py')
+            },
+            {
+                from: 'src/assets/manifest.json',
+                to: path.resolve
+                (__dirname, 'email_mgmt_app/build/manifest.json')
             }
         ]),
         new HtmlWebpackPlugin({

@@ -1,5 +1,5 @@
 import logging
-from collections import OrderedDict
+from collections import OrderedDict, UserDict
 
 from typing import Dict, AnyStr
 
@@ -8,17 +8,31 @@ from pyramid.security import Allow, Authenticated
 
 
 class RootFactory(ContainerResource):
+    """
+
+    """
+    __acl__ = [(Allow, Authenticated, None),
+               (Allow, Authenticated, 'view')]
     __name__ = ''
     __parent__ = None
 
-    def __getitem__(self, k: AnyStr) -> Resource:
-        return super().__getitem__(k)
+    class RootResources(ContainerResource):
+        """
 
-    root_resources = {}
-    __acl__ = [(Allow, Authenticated, None),
-               (Allow, Authenticated, 'view')]
+        """
+
+        @classmethod
+        def static_init(cls, param):
+            logging.debug("my cls = %s (param = %s)", repr(cls), repr(param))
+            return cls(param)
+
+    root_resources = RootResources.static_init({})
 
     def __init__(self, request) -> None:
+        """
+
+        :param request:
+        """
         logging.debug("initializing Root Factory with %s", str(RootFactory.root_resources))
         super().__init__(RootFactory.root_resources,
                          ResourceRegistration('root', 'Home', node_name = ''),
@@ -39,17 +53,20 @@ class RootFactory(ContainerResource):
         if config.registry['resources'] is not None:
             for (k, v) in config.registry['resources'].items():
                 RootFactory.root_resources[k] = v
+                v.__name__ = k
                 logging.debug("RootFactory.root_resources[%s] = %s [%s]", repr(k), repr(v), type(v))
 
 
-
-def register_resource(config, reg: ResourceRegistration, mgr: ResourceManager):
+def register_resource(config: Configurator,
+                      reg: ResourceRegistration,
+                      mgr: ResourceManager):
     """
     register_resource is an add-on method to register resources with the Root Factory
 
     notes: right now there is really no case for a multi-level hierarchy -
     everything is a child of the root
 
+    :param mgr:
     :param reg:
     :param config:
     :return:

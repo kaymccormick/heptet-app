@@ -68,5 +68,5 @@ for (k, v) in matches:
     debug_dict[k] = v
     logging.debug("debug_dict[%s] = %s", k, v)
 
-# for link in root.iterlinks():
-#     print(link[2])
+for link in root.iterlinks():
+    print(link[2])

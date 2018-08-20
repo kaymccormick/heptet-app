@@ -76,3 +76,10 @@ class EntityFormActionView(BaseEntityRelatedView[EntityFormActionView_EntityType
     def __call__(self, *args, **kwargs):
         return munge_dict(self.request, {})
 
+
+EntityAddView_EntityType = TypeVar('EntityAddView_EntityType')
+
+
+class EntityAddView(BaseEntityRelatedView[EntityAddView_EntityType]):
+    pass
+

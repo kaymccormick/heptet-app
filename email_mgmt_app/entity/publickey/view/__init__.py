@@ -1,6 +1,18 @@
 from pyramid.request import Request
 from pyramid.view import view_config
 from email_mgmt_app.util import munge_dict
+from ....entity.model.email_mgmt import PublicKey
+from ....resource import ResourceManager, ResourceRegistration
+
+
+def includeme(config):
+    mgr = ResourceManager(config, PublicKey)
+    config.register_resource\
+        (ResourceRegistration('PublicKey',
+                              title='Public Keys',
+                              #view=PublicKeyView,
+                              entity_type=PublicKey),
+         mgr)
 
 
 #@view_config(route_name='pubkeys', renderer='templates/pubkeys.jinja2')

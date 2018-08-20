@@ -2,7 +2,7 @@ import logging
 
 import zope.sqlalchemy
 
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, Table
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, Table, LargeBinary
 from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
 
 from email_mgmt_app.root import RootFactory
@@ -34,6 +34,14 @@ class PublicKey(Base):
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='keys')
+
+
+class File(Base):
+    __tablename__ = 'file'
+    id = Column(Integer, primary_key=True)
+    owner_id = Column(Integer, ForeignKey('person.id'))
+    owner = relationship('Person', backref='files')
+    data = Column(LargeBinary)
 
 
 class OrganizationRole(Mixin, Base):
