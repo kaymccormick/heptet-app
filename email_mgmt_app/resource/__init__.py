@@ -59,7 +59,8 @@ class ResourceRegistration:
                 return class_.__module__ + '.' + class_.__name__
             return str(None)
 
-        return "RR {\n  name\t\t\t= %s;\n  node_name\t\t= %s;\n  view\t\t\t= %s;\n  entity_type\t= %s;\n}" % (self.name, self.node_name, class_str(self.view), class_str(self.entity_type))
+        #return "RR {\n  name\t\t\t= %s;\n  node_name\t\t= %s;\n  view\t\t\t= %s;\n  entity_type\t= %s;\n}" % (self.name, self.node_name, class_str(self.view), class_str(self.entity_type))
+        return "reg{%s, %s, %s, %s}" % (self.name, self.node_name, class_str(self.view), class_str(self.entity_type))
 
     def __init__(self, name: AnyStr, title: AnyStr=None, view=None, callable: Callable=None, node_name: AnyStr=None, entity_type=None,
                  factory_method: Callable=None) -> None:
@@ -235,6 +236,8 @@ def register_resource(config: Configurator,
     :param config:
     :return:
     """
+    logging.debug("in register_resource(%s, %s)", reg, mgr)
+
     def register():
         logging.debug("registering %s", reg)
         name = reg.name
@@ -242,13 +245,7 @@ def register_resource(config: Configurator,
         resource = reg.callable
         node_name = reg.node_name
         root = None
-        if 'resources' not in config.registry.keys():
-            root = RootResource({})
-            config.registry.resources = root
-        else:
-            root = config.registry.resources
-
-        #this should be moved out of config!
+        root = config.registry.resources
 
         root[node_name] = reg.factory_method(reg, mgr,
                                              name=node_name,

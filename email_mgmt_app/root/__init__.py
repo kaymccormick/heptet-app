@@ -27,6 +27,7 @@ class RootFactory(UserDict):
             logging.warning("registry does not have resources")
         super().__init__()
         self.data = RootFactory.resources
+        self.entity_type = None
 
 
     def __repr__(self):

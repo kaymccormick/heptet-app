@@ -6,7 +6,7 @@ from pyramid.renderers import get_renderer, RendererHelper
 from pyramid.request import Request
 from pyramid_jinja2 import Jinja2RendererFactory
 
-from .resource import Resource
+from .resource import Resource, RootResource
 from .entity import EntityView
 from .resource import NodeNamePredicate
 from .resource import register_resource
@@ -78,6 +78,7 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings, root_factory=RootFactory)
 
+    config.registry.resources = RootResource({})
     config.add_directive('register_resource', register_resource)
     #config.add_directive('')
 
@@ -103,17 +104,23 @@ def main(global_config, **settings):
        ACLAuthorizationPolicy()
     )
 
-    config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
-    #config.get_renderer()
+    renderer_pkg = 'pyramid_jinja2.renderer_factory'
+    logging.debug("adding renderer %s", renderer_pkg)
+    config.add_renderer(None, renderer_pkg)
+
+    logging.debug("registering event subscriber")
     config.add_subscriber(set_renderer, ContextFound)
-    # config.add_renderer('host', 'email_mgmt_app.renderer.HostRenderer')
+
+    logging.debug("registering view deriver")
     entity_view.options = ('entity_type',)
     config.add_view_deriver(entity_view, under=INGRESS)
 
-
+    logging.debug("registering view predicates")
     config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
     config.add_view_predicate('node_name', NodeNamePredicate)
+
+    logging.debug("Comitting configuration")
     config.commit()
 
     # experimental template preload
@@ -127,6 +134,7 @@ def main(global_config, **settings):
 
     config.registry['app_renderers'] = renderers
 
+    config.registry['resources'] = None
     # Configure our Root Factory for when it is instantiated on a per-request basis
     RootFactory.populate_resources(config)
 
