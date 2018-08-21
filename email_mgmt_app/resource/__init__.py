@@ -130,12 +130,13 @@ class ResourceRegistration:
 
 class Resource:
     def __init__(self, reg: ResourceRegistration=None, mgr: ResourceManager=None, name: AnyStr=None, parent: 'ContainerResource'=None, title: AnyStr=None) -> None:
+        assert parent is not None or isinstance(self, RootResource)
         self._title = title
         if not title and reg:
             self._title = reg.title
         self._registration = reg
         self.__name__ = name
-        self.___parent__ = parent
+        self.__parent__ = parent
         if reg:
             self._entity_type = reg.entity_type
         self._resource_manager = mgr
