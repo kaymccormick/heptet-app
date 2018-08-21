@@ -1,4 +1,6 @@
+import logging
 from collections import UserDict, OrderedDict
+from collections.__init__ import OrderedDict
 from typing import AnyStr, Callable, Dict, NewType
 
 import pyramid
@@ -12,9 +14,9 @@ class ResourceOperation:
     def __init__(self, name, view, renderer=None) -> None:
         """
 
-        :param name:
-        :param view:
-        :param renderer:
+        :param name: name of the operation - add, view, etc
+        :param view: associated view
+        :param renderer: associated renderer
         """
         self._renderer = renderer
         self._view = view
@@ -22,19 +24,34 @@ class ResourceOperation:
 
 
 class ResourceManager:
+    """
+    ResourceManager class. Provides access to resource operations.
+    """
     def __init__(self, config: Configurator, entity_type) -> None:
+        """
+        Instantiate a new instance of ResourceManager
+        :param config: Configurator class
+        :param entity_type: Associated entity type
+        """
         self._entity_type = entity_type
         self._config = config
         self._ops = []
 
     def operation(self, name, view, renderer=None) -> None:
+        """
+        Add operation to resource manager.
+        :param name:
+        :param view:
+        :param renderer:
+        :return:
+        """
         op = ResourceOperation(name, view, renderer=renderer)
         self._ops.append(op)
 
 
 class ResourceRegistration:
     """
-
+    ResourceRegistration
     """
     def __str__(self):
         def class_str(class_):
@@ -46,6 +63,16 @@ class ResourceRegistration:
 
     def __init__(self, name: AnyStr, title: AnyStr=None, view=None, callable: Callable=None, node_name: AnyStr=None, entity_type=None,
                  factory_method: Callable=None) -> None:
+        """
+        :param name:
+        Instantiate a ResourceRegistration
+        :param title:
+        :param view:
+        :param callable:
+        :param node_name:
+        :param entity_type:
+        :param factory_method:
+        """
         super().__init__()
         self._title = title
         self._factory_method = factory_method
@@ -53,8 +80,9 @@ class ResourceRegistration:
 
         if self._factory_method is None:
 
-            def factory(reg: ResourceRegistration, mgr: ResourceManager):
-                return ContainerResource({}, reg=reg, mgr=mgr)
+
+            def factory(*args, **kwargs):
+                return ContainerResource({}, *args, **kwargs)
 
             self._factory_method = factory
 
@@ -68,6 +96,10 @@ class ResourceRegistration:
 
     @property
     def callable(self):
+        """
+        Property callable
+        :return:
+        """
         return self._callable
 
     @property
@@ -96,14 +128,15 @@ class ResourceRegistration:
 
 
 class Resource:
-    def __init__(self, reg: ResourceRegistration, mgr: ResourceManager, title: AnyStr=None) -> None:
+    def __init__(self, reg: ResourceRegistration=None, mgr: ResourceManager=None, name: AnyStr=None, parent: 'ContainerResource'=None, title: AnyStr=None) -> None:
         self._title = title
         if not title and reg:
             self._title = reg.title
         self._registration = reg
-        assert reg
-        self.__name__ = reg.node_name
-        self._entity_type = reg.entity_type
+        self.__name__ = name
+        self.___parent__ = parent
+        if reg:
+            self._entity_type = reg.entity_type
         self._resource_manager = mgr
 
     def attach(self, parent, name):
@@ -141,19 +174,23 @@ class Resource:
 
 
 class ContainerResource(Resource, UserDict):
-    def __init__(self, dict_init, reg: ResourceRegistration, mgr: ResourceManager) -> None:
-        super().__init__(reg, mgr)
+    def __init__(self, dict_init, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.data = OrderedDict(dict_init)
 
-        def a(x, y):
-            for (k, v) in x:
-                a(v, y[k])
-
-        self.data = OrderedDict()
-        a(dict_init, self.data)
 
 class LeafResource(Resource):
     def __getattr__(self, item):
         raise KeyError
+
+
+class RootResource(ContainerResource):
+
+    def __init__(self, dict_init, *args, **kwargs) -> None:
+        logging.warning("%s %s", args, kwargs)
+        self.__name__ = ''
+        self.__parent__ = None
+        super().__init__(dict_init, *args, **kwargs)
 
 
 class EntityResource():
@@ -165,6 +202,7 @@ class EntityResource():
     @property
     def entity_name(self):
         return self._name
+
 
 class NodeNamePredicate():
 
@@ -183,3 +221,37 @@ class NodeNamePredicate():
         return False
 
 
+def register_resource(config: Configurator,
+                      reg: ResourceRegistration,
+                      mgr: ResourceManager):
+    """
+    register_resource is an add-on method to register resources with the Root Factory
+
+    notes: right now there is really no case for a multi-level hierarchy -
+    everything is a child of the root
+
+    :param mgr:
+    :param reg:
+    :param config:
+    :return:
+    """
+    def register():
+        logging.debug("registering %s", reg)
+        name = reg.name
+        # this we dont seem to be using
+        resource = reg.callable
+        node_name = reg.node_name
+        root = None
+        if 'resources' not in config.registry.keys():
+            root = RootResource({})
+            config.registry.resources = root
+        else:
+            root = config.registry.resources
+
+        #this should be moved out of config!
+
+        root[node_name] = reg.factory_method(reg, mgr,
+                                             name=node_name,
+                                             parent=config.registry.resources)
+
+    config.action(None, register)

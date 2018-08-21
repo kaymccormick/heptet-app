@@ -23,3 +23,5 @@ coverage
 test
 venv/ 
 *.pid
+.scannerwork
+.pytest_cache

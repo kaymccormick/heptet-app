@@ -9,7 +9,7 @@ from pyramid_jinja2 import Jinja2RendererFactory
 from .resource import Resource
 from .entity import EntityView
 from .resource import NodeNamePredicate
-from .root import register_resource
+from .resource import register_resource
 from .predicate import EntityNamePredicate, EntityTypePredicate
 from pyramid.viewderivers import INGRESS, VIEW
 
@@ -21,16 +21,21 @@ from .security import groupfinder
 
 
 def set_renderer(event):
+    """
+    Routine for overriding the renderer, called by pyramid event subscription
+    :param event: the event
+    :return:
+    """
     request = event.request # type: Request
     context = request.context # type: Resource
     if context.entity_type:
-
         renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
                                                request.view_name.lower())
         logging.debug("selecting %s for %s", renderer, request.path_info)
 
         request.override_renderer = renderer
         return True
+
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
@@ -44,7 +49,9 @@ def entity_view(view, info):
 
             renderer = None
             if isinstance(original_view, EntityView):
-                renderer = "templates/%s/%s.jinja2" % (original_view.entity_type.__name__.lower(),
+                # is this still in effect?
+                assert False
+                renderer = "    templates/%s/%s.jinja2" % (original_view.entity_type.__name__.lower(),
                                                        original_view.entity_type.__name__.lower())
             if renderer:
                 request.override_renderer = renderer
@@ -57,6 +64,9 @@ def entity_view(view, info):
         return wrapper_view
     return view
 
+
+def get_root(request: Request):
+    return RootFactory(request)
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -106,6 +116,7 @@ def main(global_config, **settings):
     config.add_view_predicate('node_name', NodeNamePredicate)
     config.commit()
 
+    # experimental template preload
     renderers = { }
     for x in os.walk("templates"):
         for y in x[2]:
@@ -116,6 +127,7 @@ def main(global_config, **settings):
 
     config.registry['app_renderers'] = renderers
 
+    # Configure our Root Factory for when it is instantiated on a per-request basis
     RootFactory.populate_resources(config)
 
     #config.scan()

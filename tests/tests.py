@@ -69,6 +69,8 @@ class BaseAppTest(unittest.TestCase):
             'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
         })
 
+        RootFactory.populate_resources(self.config)
+
         settings = self.config.get_settings()
         self.settings = settings
 
