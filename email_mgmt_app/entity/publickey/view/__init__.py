@@ -1,8 +1,7 @@
 from pyramid.request import Request
-from pyramid.view import view_config
 from email_mgmt_app.util import munge_dict
 from ....entity.model.email_mgmt import PublicKey
-from ....resource import ResourceManager, ResourceRegistration
+from res.resource import ResourceManager, ResourceRegistration
 
 
 def includeme(config):

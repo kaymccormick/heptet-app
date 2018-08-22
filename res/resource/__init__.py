@@ -246,10 +246,10 @@ def register_resource(config: Configurator,
         resource = reg.callable
         node_name = reg.node_name
         root = None
-        root = config.registry.resources
+        root = config.registry.email_mgmt_app_resources
 
         root[node_name] = reg.factory_method(reg, mgr,
                                              name=node_name,
-                                             parent=config.registry.resources)
+                                             parent=config.registry.email_mgmt_app_resources)
 
     config.action(None, register)

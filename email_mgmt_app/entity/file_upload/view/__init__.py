@@ -1,7 +1,7 @@
 from pyramid.config import Configurator
 
 from email_mgmt_app.entity.model.email_mgmt import FileUpload
-from ....resource import ResourceManager, ResourceRegistration
+from res.resource import ResourceManager, ResourceRegistration
 
 
 class FileUploadView(object):

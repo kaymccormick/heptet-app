@@ -1,17 +1,16 @@
 import logging
 import os
 
-from pyramid.events import NewRequest, subscriber, ContextFound
-from pyramid.renderers import get_renderer, RendererHelper
+from pyramid.events import ContextFound
+from pyramid.renderers import RendererHelper
 from pyramid.request import Request
-from pyramid_jinja2 import Jinja2RendererFactory
 
-from .resource import Resource, RootResource
+from res.resource import Resource, RootResource
 from .entity import EntityView
-from .resource import NodeNamePredicate
-from .resource import register_resource
+from res.resource import NodeNamePredicate
+from res.resource import register_resource
 from .predicate import EntityNamePredicate, EntityTypePredicate
-from pyramid.viewderivers import INGRESS, VIEW
+from pyramid.viewderivers import INGRESS
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -78,7 +77,7 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings, root_factory=RootFactory)
 
-    config.registry.resources = RootResource({})
+    config.registry.email_mgmt_app_resources = RootResource({})
     config.add_directive('register_resource', register_resource)
     #config.add_directive('')
 
@@ -135,7 +134,7 @@ def main(global_config, **settings):
 
     config.registry['app_renderers'] = renderers
 
-    config.registry['resources'] = None
+    config.registry['email_mgmt_app_resources'] = None
     # Configure our Root Factory for when it is instantiated on a per-request basis
     RootFactory.populate_resources(config)
 

@@ -4,7 +4,7 @@ from email_mgmt_app.entity import EntityCollectionView, EntityView, EntityFormVi
 from email_mgmt_app.entity.model.email_mgmt import Organization
 from pyramid.config import Configurator
 
-from ....resource import ResourceRegistration, ResourceManager
+from res.resource import ResourceRegistration, ResourceManager
 
 
 def includeme(config: Configurator) -> None:

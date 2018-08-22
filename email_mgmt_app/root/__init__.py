@@ -3,7 +3,7 @@ from collections import UserDict
 
 from pyramid.request import Request
 
-from email_mgmt_app.resource import ResourceRegistration, ContainerResource, ResourceManager, RootResource
+from res.resource import RootResource
 from pyramid.security import Allow, Authenticated
 
 
@@ -23,7 +23,7 @@ class RootFactory(UserDict):
 
         :param request:
         """
-        if not 'resources' in request.registry:
+        if not 'email_mgmt_app_resources' in request.registry:
             logging.warning("registry does not have resources")
         super().__init__()
         self.data = RootFactory.resources
@@ -40,7 +40,7 @@ class RootFactory(UserDict):
     @staticmethod
     def populate_resources(config):
         logging.warning("%s", config.registry)
-        if not 'resources' in config.registry or not config.registry.resources:
-            config.registry.resources = RootResource({})
+        if not 'email_mgmt_app_resources' in config.registry or not config.registry.email_mgmt_app_resources:
+            config.registry.email_mgmt_app_resources = RootResource({})
 
-        RootFactory.resources = config.registry.resources
+        RootFactory.resources = config.registry.email_mgmt_app_resources

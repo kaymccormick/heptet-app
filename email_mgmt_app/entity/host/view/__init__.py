@@ -1,19 +1,17 @@
 import logging
 
-import ldap3
 from pyramid.config import Configurator
 from sqlalchemy import Table
 from sqlalchemy.engine import reflection
 from sqlalchemy.orm import Session
 
-from email_mgmt_app.entity.model.meta import metadata, Base
+from email_mgmt_app.entity.model.meta import Base
 from pyramid.request import Request
-from pyramid.view import view_config
 
 from email_mgmt_app.entity import EntityView
-from email_mgmt_app.entity.model.email_mgmt import Host, Host
+from email_mgmt_app.entity.model.email_mgmt import Host
 from email_mgmt_app.util import munge_dict
-from ....resource import ResourceRegistration, Resource, ContainerResource, ResourceManager
+from res.resource import ResourceRegistration, Resource, ResourceManager
 
 
 def includeme(config: Configurator):

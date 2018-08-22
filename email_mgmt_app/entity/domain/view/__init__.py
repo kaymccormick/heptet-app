@@ -1,26 +1,10 @@
-from ....resource import EntityResource, ResourceRegistration, Resource, ResourceManager
+from res.resource import ResourceRegistration, Resource, ResourceManager
 from pyramid.config import Configurator
 from pyramid.request import Request
 
 from email_mgmt_app.entity.model.email_mgmt import Domain, Host, Organization
 from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
 from email_mgmt_app.util import munge_dict
-
-from pyramid.httpexceptions import HTTPFound
-from pyramid.security import (
-    remember,
-    forget,
-    )
-
-from pyramid.view import (
-    view_config,
-    view_defaults
-    )
-
-from email_mgmt_app.security import (
-    USERS,
-    check_password
-)
 
 
 def includeme(config: Configurator) -> None:

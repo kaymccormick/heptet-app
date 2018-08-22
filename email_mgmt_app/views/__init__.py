@@ -3,7 +3,6 @@ from pyramid.request import Request
 from email_mgmt_app.root import RootFactory
 from email_mgmt_app.entity.view import BaseView
 from pyramid.config import Configurator
-from ..resource import ResourceRegistration
 
 
 class MainView(BaseView):
