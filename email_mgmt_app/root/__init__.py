@@ -1,7 +1,7 @@
 import logging
 from collections import UserDict
 
-from requests import Request
+from pyramid.request import Request
 
 from email_mgmt_app.resource import ResourceRegistration, ContainerResource, ResourceManager, RootResource
 from pyramid.security import Allow, Authenticated
