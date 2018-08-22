@@ -4,7 +4,7 @@ from email_mgmt_app.entity.model.email_mgmt import Host, EmailAddress
 from pyramid.request import Request
 from email_mgmt_app.util import munge_dict
 from ....entity import EntityView
-from res.resource import ResourceRegistration, ResourceManager
+from email_mgmt_app.res import ResourceRegistration, ResourceManager
 
 
 class EmailAddressView(EntityView[EmailAddress]):

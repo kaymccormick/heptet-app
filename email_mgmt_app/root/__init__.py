@@ -3,7 +3,7 @@ from collections import UserDict
 
 from pyramid.request import Request
 
-from res.resource import RootResource
+from email_mgmt_app.res import RootResource
 from pyramid.security import Allow, Authenticated
 
 

@@ -1,4 +1,4 @@
-from res.resource import EntityResource, Resource
+from ..res import EntityResource, Resource
 
 
 class EntityNamePredicate():

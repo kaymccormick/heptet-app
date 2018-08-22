@@ -1,4 +1,4 @@
-from res.resource import ResourceRegistration, Resource, ResourceManager
+from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager
 from pyramid.config import Configurator
 from pyramid.request import Request
 

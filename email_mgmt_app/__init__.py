@@ -5,10 +5,10 @@ from pyramid.events import ContextFound
 from pyramid.renderers import RendererHelper
 from pyramid.request import Request
 
-from res.resource import Resource, RootResource
+from .res import Resource, RootResource
 from .entity import EntityView
-from res.resource import NodeNamePredicate
-from res.resource import register_resource
+from .res import NodeNamePredicate
+from .res import register_resource
 from .predicate import EntityNamePredicate, EntityTypePredicate
 from pyramid.viewderivers import INGRESS
 
@@ -82,6 +82,7 @@ def main(global_config, **settings):
     #config.add_directive('')
 
     config.include('pyramid_jinja2')
+    config.include('.db')
     config.include('.entity.model.email_mgmt')
     config.include('.entity.domain.view')
     config.include('.entity.host.view')
@@ -92,6 +93,7 @@ def main(global_config, **settings):
     config.include('.entity.publickey.view')
     config.include('.entity.file_upload.view')
     config.include('.entity.file')
+
     config.include('.routes')
     config.include('.auth')
     config.include('.views')

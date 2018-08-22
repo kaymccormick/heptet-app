@@ -11,7 +11,7 @@ from pyramid.request import Request
 from email_mgmt_app.entity import EntityView
 from email_mgmt_app.entity.model.email_mgmt import Host
 from email_mgmt_app.util import munge_dict
-from res.resource import ResourceRegistration, Resource, ResourceManager
+from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager
 
 
 def includeme(config: Configurator):
