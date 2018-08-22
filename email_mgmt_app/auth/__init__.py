@@ -7,6 +7,6 @@ def includeme(config):
         if config.registry.settings['email_mgmt_app.authsource'] == 'ldap':
             config.include('.ldap')
     except:
-        logging.warning("{}", sys.exc_info()[2].message)
+        logging.warning("{}", sys.exc_info()[1].message)
 
 
