@@ -1,0 +1,46 @@
+{% extends "build/templates/file_upload.jinja2" %}
+{%  block extra_head %}
+<link rel="stylesheet" href="https://use.typekit.net/evy4yyd.css">
+{% endblock %}
+{% block main %}
+    {% include "nav.jinja2" with context %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% include "left_sidebar.jinja2" %}
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                {% block content %}
+                    <div class="jumbotron">
+                        <p class="lead tk-capucine-web">Expert Knob Twiddling Room.</p>
+                        <hr class="my-4">
+
+                            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+        <div class="card" style="width: 40rem;">
+  <div class="card-body">
+    <h5 class="card-title">Root</h5>
+    <h6 class="card-subtitle mb-2 text-muted">Root resource / factory</h6>
+    <p class="card-text">{% include "request/root.jinja2" with context %}</p>
+  </div>
+</div>
+        <div>&nbsp;</div>
+    <nav aria-label="Page navigation example">
+  <ul class="pagination">
+    <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+  </ul>
+    </nav>
+  </div>
+</div>
+
+                    </div>
+                    </div>
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+{% endblock main %}

@@ -3,6 +3,7 @@ import logging
 import zope.sqlalchemy
 
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, Table, LargeBinary
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
 
 from email_mgmt_app.root import RootFactory
@@ -42,6 +43,15 @@ class File(Base):
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='files')
     data = Column(LargeBinary)
+
+
+class FileUpload(Base):
+    __tablename__ = 'file_upload'
+    uuid = Column(UUID, primary_key=True)
+    owner_id = Column(Integer, ForeignKey('person.id'))
+    owner = relationship('Person', backref='file_uploads')
+    data = Column(LargeBinary)
+
 
 
 class OrganizationRole(Mixin, Base):

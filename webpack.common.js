@@ -31,14 +31,20 @@ module.exports = {
             filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/main_layout.jinja2'),
             chunks: ['app'],
             inject: false
-        })
-        ,
+        }),
+        new HtmlWebpackPlugin({
+            title: '',
+            template: 'src/assets/file_upload.html',
+            filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/file_upload.jinja2'),
+            inject: false,
+            chunks: ['fileUpload'],
+        }),
         new HtmlWebpackPlugin({
             title: '',
             template: 'src/assets/domain_list_layout.html',
             filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/domain_list_layout.jinja2'),
-            inject: false
-        })
+            inject: false,
+        }),
     ],
     node: {
         fs: "empty" // avoids error messages

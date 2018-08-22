@@ -14,6 +14,7 @@
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^1.0.0",
+    "file-loader": "^2.0.0",
     "html-webpack-plugin": "^3.2.0",
     "imports-loader": "^0.8.0",
     "jinja-loader": "0.0.8",
@@ -35,6 +36,7 @@
     "bootstrap": "^4.1.3",
     "datatables.net-editor-bs4": "^1.6.3",
     "datatables.net-select-bs4": "^1.2.7",
+    "fine-uploader": "^5.16.2",
     "jquery": "^3.3.1",
     "popper.js": "^1.14.3"
   }

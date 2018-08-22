@@ -15,8 +15,10 @@ module.exports = merge(common, {
     },
     entry: {
         app: './src/index.prod.js',
-        domainList: './src/domain_list.js'
+        domainList: './src/domain_list.js',
+        fileUpload: './src/file_upload.js',
     },
+
     devServer: {
         contentBase: './dist'
     }
