@@ -12,10 +12,9 @@ class EmailAddressView(EntityView[EmailAddress]):
 
 
 def includeme(config: Configurator):
-    mgr = ResourceManager(config, EmailAddress)
-    config.register_resource\
-        (ResourceRegistration('EmailAddress', view=EmailAddressView, entity_type=EmailAddress, title='Email Addresses'),
-         mgr)
+    registration = ResourceRegistration('EmailAddress', view=EmailAddressView, entity_type=EmailAddress,
+                                        title='Email Addresses')
+    mgr = ResourceManager(config, registration)
     mgr.operation('view', ".EmailAddressView", renderer='templates/email_address/email_address.jinja2')
 
 #@view_config(route_name='email_form', renderer='templates/email_address/email_form.jinja2')

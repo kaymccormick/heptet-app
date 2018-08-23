@@ -29,6 +29,8 @@ class EntityTypePredicate():
     phash = text
 
     def __call__(self, context, request):
+        if context.entity_type is None:
+            return False
         if isinstance(context, Resource) and issubclass(context.entity_type, self._val):
             return True
         return False

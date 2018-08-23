@@ -8,10 +8,9 @@ from email_mgmt_app.util import munge_dict
 
 
 def includeme(config: Configurator) -> None:
-    mgr = ResourceManager(config, Domain)
-    config.register_resource\
-        (ResourceRegistration('Domain', view=DomainView, entity_type=Domain),
-         mgr)
+    registration = ResourceRegistration('Domain', view=DomainView, entity_type=Domain)
+    mgr = ResourceManager(config, registration)
+    config.add_resource_manager(mgr)
 
     mgr.operation('view', ".DomainView")
     config.add_view(".DomainView", name='view', context=Resource,

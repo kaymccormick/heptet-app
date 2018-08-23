@@ -9,6 +9,8 @@ class FileUploadView(object):
 
 
 def includeme(config: Configurator):
-    mgr = ResourceManager(config, FileUpload)
-    config.register_resource(ResourceRegistration('FileUpload', view=FileUploadView, entity_type=FileUpload), mgr)
+    registration = ResourceRegistration('FileUpload', view=FileUploadView, entity_type=FileUpload)
+    mgr = ResourceManager(config, registration)
     mgr.operation('up1oad', '.FileUploadView')
+    config.add_resource_manager(mgr)
+

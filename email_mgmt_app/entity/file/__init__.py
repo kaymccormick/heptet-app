@@ -6,11 +6,8 @@ from email_mgmt_app.entity import EntityView, EntityAddView
 
 
 def includeme(config: Configurator) -> None:
-    res_mgr = ResourceManager(config, File)
-    config.register_resource(
-        ResourceRegistration('File', view=FileView, entity_type=File),
-        res_mgr
-    )
+    registration = ResourceRegistration('File', view=FileView, entity_type=File)
+    res_mgr = ResourceManager(config, registration)
 
     res_mgr.operation('view', ".FileView")
     config.add_view(".FileView", name='view', context=Resource,
@@ -20,6 +17,7 @@ def includeme(config: Configurator) -> None:
     res_mgr.operation('add', '.FileAddView')
     config.add_view('.FileAddView', name='add', context=Resource,
                     entity_type=File)
+    config.add_resource_manager(res_mgr)
 
     # res_mgr.operation('form', ".FileFormView")
     # config.add_view('.FileFormView', name='form',

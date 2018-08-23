@@ -8,10 +8,8 @@ from email_mgmt_app.res import ResourceRegistration, ResourceManager
 
 
 def includeme(config: Configurator) -> None:
-    mgr = ResourceManager(config, Organization)
-    config.register_resource\
-        (ResourceRegistration('Organization', view=OrganizationView, entity_type=Organization),
-         mgr)
+    registration = ResourceRegistration('Organization', view=OrganizationView, entity_type=Organization)
+    mgr = ResourceManager(config, registration)
 
 #    config.add_view(".OrganizationCollectionView",
 #                     route_name='organization_collection',

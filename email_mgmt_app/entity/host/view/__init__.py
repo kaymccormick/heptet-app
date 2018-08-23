@@ -15,11 +15,8 @@ from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager
 
 
 def includeme(config: Configurator):
-    mgr = ResourceManager(config, Host)
-
-    config.register_resource\
-        (ResourceRegistration('Host', view=HostView, entity_type=Host),
-         mgr)
+    registration = ResourceRegistration('Host', view=HostView, entity_type=Host)
+    mgr = ResourceManager(config, registration)
 
     mgr.operation('view', ".HostView", renderer='templates/host/host.jinja2')
     config.add_view(".HostView", name='view', context=Resource,

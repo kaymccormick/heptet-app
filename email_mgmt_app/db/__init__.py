@@ -1,7 +1,7 @@
 from pyramid.config import Configurator
 
 from ..entity.view import BaseView
-from ..res import ResourceRegistration, ResourceManager
+from ..res import ResourceRegistration, ResourceManager, Resource
 
 
 class DbView(BaseView):
@@ -10,6 +10,9 @@ class DbView(BaseView):
 
 
 def includeme(config: Configurator):
-    mgr = ResourceManager(config, None)
-    config.register_resource(ResourceRegistration('db', view=DbView), mgr)
-    mgr.operation('view', DbView)
+    registration = ResourceRegistration('db', view=DbView)
+    mgr = ResourceManager(config, registration)
+    mgr.operation('view', DbView, renderer="templates/db/view.jinja2")
+
+    config.add_resource_manager(mgr)
+    #config.add_view(".DbView", name='view', context=Resource,

@@ -5,12 +5,13 @@ from pyramid.events import ContextFound
 from pyramid.renderers import RendererHelper
 from pyramid.request import Request
 
+from .util import munge_dict
 from .res import Resource, RootResource
 from .entity import EntityView
 from .res import NodeNamePredicate
 from .res import register_resource
 from .predicate import EntityNamePredicate, EntityTypePredicate
-from pyramid.viewderivers import INGRESS
+from pyramid.viewderivers import INGRESS, VIEW
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -39,7 +40,21 @@ def set_renderer(event):
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
 
+
+def munge_view(view, info):
+    def wrapper_view(context, request):
+        original_view = info.original_view
+        response = view(context, request)
+
+        if '__getattr__' in response.__dict__:
+            response = munge_dict(request, response)
+
+        return response
+    return wrapper_view
+
+
 def entity_view(view, info):
+
     et = info.options.get('entity_type')
     if et is not None:
         logging.info("original view = %s", repr(info.original_view))
@@ -78,7 +93,8 @@ def main(global_config, **settings):
     config = Configurator(settings=settings, root_factory=RootFactory)
 
     config.registry.email_mgmt_app_resources = RootResource({})
-    config.add_directive('register_resource', register_resource)
+    config.include('.res')
+
     #config.add_directive('')
 
     config.include('pyramid_jinja2')
@@ -116,6 +132,7 @@ def main(global_config, **settings):
     logging.debug("registering view deriver")
     entity_view.options = ('entity_type',)
     config.add_view_deriver(entity_view, under=INGRESS)
+    config.add_view_deriver(munge_view)
 
     logging.debug("registering view predicates")
     config.add_view_predicate('entity_name', EntityNamePredicate)
