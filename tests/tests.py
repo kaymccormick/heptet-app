@@ -111,7 +111,7 @@ class TestConfigSuccessCondition(BaseAppTest):
 class TestMyViewFailureCondition(BaseTest):
     def test_failing_view(self):
         pass
-        # from .views.default import my_view
+        # from email_mgmt_app.views.default import my_view
         # info = my_view(dummy_request(self.session))
         # self.assertEqual(info.status_int, 500)
 
@@ -122,7 +122,7 @@ class TestViewSuccessCondition(BaseTest):
         super().setUp()
         self.init_database()
 
-        # from .models import MyModel
+        # from email_mgmt_app.models import MyModel
         #
         # model = MyModel(name='one', value=55)
         #self.session.add(model)

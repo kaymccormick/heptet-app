@@ -6,20 +6,20 @@ from pyramid.renderers import RendererHelper
 from pyramid.request import Request
 
 from jinja2 import Environment
-from .template import TemplateManager
-from .util import munge_dict
-from .res import Resource, RootResource, ResourceManager
-from .entity import EntityView
-from .res import NodeNamePredicate
-from .res import register_resource
-from .predicate import EntityNamePredicate, EntityTypePredicate
+from email_mgmt_app.template import TemplateManager
+from email_mgmt_app.util import munge_dict
+from email_mgmt_app.res import Resource, RootResource, ResourceManager
+from email_mgmt_app.entity import EntityView
+from email_mgmt_app.res import NodeNamePredicate
+from email_mgmt_app.res import register_resource
+from email_mgmt_app.predicate import EntityNamePredicate, EntityTypePredicate
 from pyramid.viewderivers import INGRESS, VIEW
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from .root import RootFactory
-from .security import groupfinder
+from email_mgmt_app.root import RootFactory
+from email_mgmt_app.security import groupfinder
 
 
 def set_renderer(event):
@@ -43,44 +43,6 @@ def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
 
 
-def munge_view(view, info):
-    def wrapper_view(context, request):
-        original_view = info.original_view
-        response = view(context, request)
-
-        if '__getattr__' in response.__dict__:
-            response = munge_dict(request, response)
-
-        return response
-    return wrapper_view
-
-
-def entity_view(view, info):
-
-    et = info.options.get('entity_type')
-    if et is not None:
-        logging.info("original view = %s", repr(info.original_view))
-        def wrapper_view(context, request):
-            original_view = info.original_view
-
-            renderer = None
-            if isinstance(original_view, EntityView):
-                # is this still in effect?
-                assert False
-                renderer = "    templates/%s/%s.jinja2" % (original_view.entity_type.__name__.lower(),
-                                                       original_view.entity_type.__name__.lower())
-            if renderer:
-                request.override_renderer = renderer
-            original_view._entity_type = et
-            response = view(context, request)
-            return response
-            # tmpl = "templates/main_child.jinja2"
-            # renderer = get_renderer(tmpl)
-            # return renderer(response, { 'renderer_name': tmpl, 'view': view, 'context': context, 'request': request})
-        return wrapper_view
-    return view
-
-
 def get_root(request: Request):
     return RootFactory(request)
 
@@ -101,23 +63,25 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings, root_factory=RootFactory)
     config.include('pyramid_jinja2')
+    config.include('.viewderiver')
 
     config.registry.email_mgmt_app_resources = RootResource({}, ResourceManager(config, ResourceManager.reg('', 'Root Resource', '')))
     config.include('.res')
 
     #config.add_directive('')
 
+    config.include('.exceptions')
     config.include('.db')
     config.include('.entity.model.email_mgmt')
     config.include('.entity.domain.view')
-    config.include('.entity.host.view')
-    config.include('.entity.email_address.view')
-    config.include('.entity.recipient.view')
-    config.include('.entity.organization.view')
-    config.include('.entity.person.view')
-    config.include('.entity.publickey.view')
-    config.include('.entity.file_upload.view')
-    config.include('.entity.file')
+    # config.include('.entity.host.view')
+    # config.include('.entity.email_address.view')
+    # config.include('.entity.recipient.view')
+    # config.include('.entity.organization.view')
+    # config.include('.entity.person.view')
+    # config.include('.entity.publickey.view')
+    # config.include('.entity.file_upload.view')
+    # config.include('.entity.file')
 
     config.include('.routes')
     config.include('.auth')
@@ -138,10 +102,6 @@ def main(global_config, **settings):
     logging.debug("registering event subscriber")
     config.add_subscriber(set_renderer, ContextFound)
 
-    logging.debug("registering view deriver")
-    entity_view.options = ('entity_type',)
-    config.add_view_deriver(entity_view, under=INGRESS)
-    config.add_view_deriver(munge_view)
 
     logging.debug("registering view predicates")
     config.add_view_predicate('entity_name', EntityNamePredicate)

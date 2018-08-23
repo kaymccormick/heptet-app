@@ -7,35 +7,29 @@ from pyramid.request import Request
 from email_mgmt_app.entity.model.email_mgmt import Domain, Host, Organization
 from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
 from email_mgmt_app.util import munge_dict
+from email_mgmt_app.res import SubpathArgumentGetter
 
 
 def includeme(config: Configurator) -> None:
     registration = ResourceManager.reg('Domain', default_view=DomainView, entity_type=Domain)
     mgr = ResourceManager(config, registration)
-    config.add_resource_manager(mgr)
 
-    mgr.operation('view', ".DomainView", [OperationArgument("id", Integer)])
-    config.add_view(".DomainView", name='view', context=Resource,
-                    entity_type=Domain,
-                    )
+    mgr.operation('view', ".DomainView",
+                  [OperationArgument(
+                      "id", Integer,
+                      getter=SubpathArgumentGetter())])
 
     mgr.operation('form', ".DomainFormView", [])
-    config.add_view('.DomainFormView', name='form',
-                    context=Resource, entity_type=Domain)
-
     mgr.operation('list', ".DomainCollectionView", [])
-    config.add_view(".DomainCollectionView", name='list', context=Resource,
-                     entity_type=Domain)
+    config.add_resource_manager(mgr)
 
 
 class DomainView(EntityView[Domain]):
     pass
 
-class DomainCollectionView(EntityCollectionView[Domain]):
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
-        self._entity_type = Domain
 
+class DomainCollectionView(EntityCollectionView[Domain]):
+    pass
 
 class DomainFormView(EntityFormView[Domain]):
     def __init__(self, request: Request = None) -> None:

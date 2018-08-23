@@ -8,7 +8,7 @@ from sqlalchemy.orm import Query
 
 from email_mgmt_app.entity.model.email_mgmt import ServiceEntry, Host
 from email_mgmt_app.util import munge_dict
-from ..security import check_password, USERS
+from email_mgmt_app.security import check_password, USERS
 
 
 #@view_config(route_name='service', renderer='../templates/service/service.jinja2')

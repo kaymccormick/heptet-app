@@ -4,7 +4,7 @@ from sqlalchemy import Integer
 from email_mgmt_app.entity.model.email_mgmt import Host, EmailAddress
 from pyramid.request import Request
 from email_mgmt_app.util import munge_dict
-from ....entity import EntityView
+from email_mgmt_app.entity import EntityView
 from email_mgmt_app.res import ResourceRegistration, ResourceManager, OperationArgument
 
 

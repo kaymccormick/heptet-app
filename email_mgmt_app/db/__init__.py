@@ -1,8 +1,8 @@
 from pyramid.config import Configurator
 from sqlalchemy import Integer
 
-from ..entity.view import BaseView
-from ..res import ResourceRegistration, ResourceManager, Resource, OperationArgument
+from email_mgmt_app.entity.view import BaseView
+from email_mgmt_app.res import ResourceRegistration, ResourceManager, Resource, OperationArgument
 
 
 class DbView(BaseView):
