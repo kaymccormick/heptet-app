@@ -5,8 +5,10 @@ from pyramid.events import ContextFound
 from pyramid.renderers import RendererHelper
 from pyramid.request import Request
 
+from jinja2 import Environment
+from .template import TemplateManager
 from .util import munge_dict
-from .res import Resource, RootResource
+from .res import Resource, RootResource, ResourceManager
 from .entity import EntityView
 from .res import NodeNamePredicate
 from .res import register_resource
@@ -82,6 +84,13 @@ def entity_view(view, info):
 def get_root(request: Request):
     return RootFactory(request)
 
+# def load_global_templates(config):
+#     tmpls = ['templates/left_sidebar.jinja2']
+#
+#     for template in tmpls:
+
+
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
@@ -91,13 +100,13 @@ def main(global_config, **settings):
         f.close()
 
     config = Configurator(settings=settings, root_factory=RootFactory)
+    config.include('pyramid_jinja2')
 
-    config.registry.email_mgmt_app_resources = RootResource({})
+    config.registry.email_mgmt_app_resources = RootResource({}, ResourceManager(config, ResourceManager.reg('', 'Root Resource', '')))
     config.include('.res')
 
     #config.add_directive('')
 
-    config.include('pyramid_jinja2')
     config.include('.db')
     config.include('.entity.model.email_mgmt')
     config.include('.entity.domain.view')
@@ -142,14 +151,16 @@ def main(global_config, **settings):
     logging.debug("Comitting configuration")
     config.commit()
 
+    env = config.get_jinja2_environment() # type: Environment
+#    env.globals[]
+    tmpl_mgr = TemplateManager(config)
+
     # experimental template preload
     renderers = { }
     for x in os.walk("templates"):
         for y in x[2]:
             path = os.path.join(x[0], y)
-            logging.debug("path = %s", path)
-            renderers[path] = RendererHelper(name=path, package='email_mgmt_app', registry=config.registry)
-            logging.debug("renderer = %s", renderers[path])
+            tmpl_mgr.add_template(path)
 
     config.registry['app_renderers'] = renderers
 

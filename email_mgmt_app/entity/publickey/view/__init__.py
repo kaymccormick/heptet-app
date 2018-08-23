@@ -5,7 +5,7 @@ from email_mgmt_app.res import ResourceManager, ResourceRegistration
 
 
 def includeme(config):
-    registration = ResourceRegistration('PublicKey',
+    registration = ResourceManager.reg('PublicKey',
                                         title='Public Keys',
                                         # view=PublicKeyView,
                                         entity_type=PublicKey)

@@ -1,4 +1,6 @@
-from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager
+from sqlalchemy import Integer
+
+from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager, OperationArgument
 from pyramid.config import Configurator
 from pyramid.request import Request
 
@@ -8,20 +10,20 @@ from email_mgmt_app.util import munge_dict
 
 
 def includeme(config: Configurator) -> None:
-    registration = ResourceRegistration('Domain', view=DomainView, entity_type=Domain)
+    registration = ResourceManager.reg('Domain', default_view=DomainView, entity_type=Domain)
     mgr = ResourceManager(config, registration)
     config.add_resource_manager(mgr)
 
-    mgr.operation('view', ".DomainView")
+    mgr.operation('view', ".DomainView", [OperationArgument("id", Integer)])
     config.add_view(".DomainView", name='view', context=Resource,
                     entity_type=Domain,
                     )
 
-    mgr.operation('form', ".DomainFormView")
+    mgr.operation('form', ".DomainFormView", [])
     config.add_view('.DomainFormView', name='form',
                     context=Resource, entity_type=Domain)
 
-    mgr.operation('list', ".DomainCollectionView")
+    mgr.operation('list', ".DomainCollectionView", [])
     config.add_view(".DomainCollectionView", name='list', context=Resource,
                      entity_type=Domain)
 

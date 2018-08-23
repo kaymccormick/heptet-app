@@ -8,7 +8,7 @@ from email_mgmt_app.res import ResourceRegistration, ResourceManager
 
 
 def includeme(config: Configurator) -> None:
-    registration = ResourceRegistration('Organization', view=OrganizationView, entity_type=Organization)
+    registration = ResourceManager.reg('Organization', default_view=OrganizationView, entity_type=Organization)
     mgr = ResourceManager(config, registration)
 
 #    config.add_view(".OrganizationCollectionView",
@@ -20,7 +20,7 @@ def includeme(config: Configurator) -> None:
 #                     renderer='templates/organization/entity.jinja2')
 #    config.add_route('organization', '/organization/{id}')
 #     config.add_view(".OrganizationForm", route_name="organization_form",
-#                      renderer='templates/organization/form.jinja2')
+#                      renderer='templates/organization/form_insert.jinja2')
 #     #config.add_route('organization_form', '/organizations/form/{parent_id}')
 #     config.add_view('.OrganizationFormAction', route_name='organization_form_action',
 #                     renderer='templates/organization/form_action.jinja2')
@@ -34,9 +34,10 @@ class OrganizationCollectionView(EntityCollectionView[Organization]):
 
 
 class OrganizationView(EntityView[Organization]):
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
-        self._entity_type = Organization
+    # def __init__(self, request: Request = None) -> None:
+    #     super().__init__(request)
+    #     self._entity_type = Organization
+    pass
 
 
 class OrganizationForm(EntityFormView[Organization]):

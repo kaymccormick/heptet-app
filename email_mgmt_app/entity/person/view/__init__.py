@@ -23,6 +23,4 @@ class PersonCollectionView(EntityCollectionView[Person]):
 
 
 class PersonView(EntityView[Person]):
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
-        self._entity_type = Person
+    pass

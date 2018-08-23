@@ -4,13 +4,17 @@ from pyramid.request import Request
 
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
+from ..res import ResourceOperation
 from ..util import munge_dict
 
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
 
+
 class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
-    def __init__(self, request: Request = None) -> None:
+    def __init__(self, request: Request) -> None:
         super().__init__(request)
+        context = request.context # type: Resource
+#  TODO        self._op = request.
         self._entity = None
 
     def query(self):
@@ -24,7 +28,7 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
         self.entity = by.first()
 
     @property
-    def entity(self):
+    def entity(self) -> EntityView_EntityType:
         return self._entity
 
     @entity.setter
@@ -37,9 +41,13 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
 
     @property
     def entity_type(self):
-        return self._entity_type
+        assert False
 
     def __call__(self, *args, **kwargs):
+        request = self.request
+
+        if len(self.request.subpath) == 0:
+            request.override_renderer = "templates/entity/"
         self.load_entity()
         return munge_dict(self.request, { 'entity': self.entity })
 

@@ -2,11 +2,11 @@
 {% block content %}
     <div class="row">
         <div class="col-sm-2">Host</div>
-        <div class="col-sm-1">ID: {{ host.id }}</div>
-        <div class="col-sm-6">{{ host.name }}</div>
+        <div class="col-sm-1">ID: {{ entity.id }}</div>
+        <div class="col-sm-6">{{ entity.name }}</div>
     </div>
     <table class="table">
-    {% for add in host.email_addresses %}
+    {% for add in entity.email_addresses %}
     <tr><td>{{add.name}}@{{add.host.name}}</td></tr>
     {% endfor %}
     </table>

@@ -1,30 +1,33 @@
 import logging
 
 from pyramid.config import Configurator
-from sqlalchemy import Table
+from sqlalchemy import Table, Integer
 from sqlalchemy.engine import reflection
 from sqlalchemy.orm import Session
 
 from email_mgmt_app.entity.model.meta import Base
 from pyramid.request import Request
 
-from email_mgmt_app.entity import EntityView
+from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
 from email_mgmt_app.entity.model.email_mgmt import Host
 from email_mgmt_app.util import munge_dict
-from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager
+from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager, OperationArgument
 
 
 def includeme(config: Configurator):
-    registration = ResourceRegistration('Host', view=HostView, entity_type=Host)
+    registration = ResourceManager.reg('Host', default_view=HostView, entity_type=Host)
     mgr = ResourceManager(config, registration)
+    mgr.operation('view', ".HostView", [OperationArgument("id", Integer)])
+    mgr.operation('list', '.HostCollectionView', [])
+    mgr.operation('form', '.HostFormView', [])
+    config.add_resource_manager(mgr)
 
-    mgr.operation('view', ".HostView", renderer='templates/host/host.jinja2')
-    config.add_view(".HostView", name='view', context=Resource,
-                    entity_type=Host,
-                    renderer='templates/host/host.jinja2')
+    # config.add_view(".HostView", name='view', context=Resource,
+    #                 entity_type=Host,
+    #                 renderer='templates/host/view.jinja2')
 
     # config.add_view('.HostFormView', name='form',
-    #                 renderer='templates/host/host_form_main.jinja2')
+    #                 renderer='templates/host/form.jinja2')
     #
     # config.add_view(".HostCollectionView", name='list', context=ContainerResource,
     #                 entity_name='Host',
@@ -35,19 +38,26 @@ class HostView(EntityView[Host]):
     pass
 
 
-#@view_config(route_name='host_form', renderer='templates/host/host_form_main.jinja2')
+class HostCollectionView(EntityCollectionView[Host]):
+    pass
+
+
+class HostFormView(EntityFormView[Host]):
+    pass
+
+#@view_config(route_name='host_form', renderer='templates/host/form.jinja2')
 def host_form_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'route_path': request.route_path }
 
 
-#@view_config(route_name='host_list', renderer='templates/host/host_list_main.jinja2')
+#@view_config(route_name='host_list', renderer='templates/host/list.jinja2')
 def host_list_view(request: Request) -> dict:
     hosts = request.dbsession.query(Host).all()
     return { 'hosts': hosts, 'route_path': request.route_path }
 
 
-#@view_config(route_name='host', renderer='templates/host/host.jinja2')
+#@view_config(route_name='host', renderer='templates/host/view.jinja2')
 def host_view(request: Request):
     dbsession = request.dbsession # type: Session
     host = dbsession.query(Host).filter(Host.id == request.matchdict["id"]).first()
