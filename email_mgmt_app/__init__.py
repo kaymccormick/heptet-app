@@ -1,25 +1,23 @@
 import logging
 import os
 
-from pyramid.events import ContextFound
-from pyramid.renderers import RendererHelper
-from pyramid.request import Request
-
-from jinja2 import Environment
-from email_mgmt_app.template import TemplateManager
-from email_mgmt_app.util import munge_dict
-from email_mgmt_app.res import Resource, RootResource, ResourceManager
-from email_mgmt_app.entity import EntityView
-from email_mgmt_app.res import NodeNamePredicate
-from email_mgmt_app.res import register_resource
-from email_mgmt_app.predicate import EntityNamePredicate, EntityTypePredicate
-from pyramid.viewderivers import INGRESS, VIEW
-
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
+from pyramid.events import ContextFound
+from pyramid.interfaces import IViewMapperFactory, IViewMapper
+from pyramid.request import Request
+from pyramid.viewderivers import DefaultViewMapper
+from zope.interface import provider, implementer
+
+from email_mgmt_app.predicate import EntityNamePredicate, EntityTypePredicate
+from email_mgmt_app.res import NodeNamePredicate
+from email_mgmt_app.res import Resource, RootResource, ResourceManager
 from email_mgmt_app.root import RootFactory
 from email_mgmt_app.security import groupfinder
+from email_mgmt_app.template import TemplateManager
+from email_mgmt_app.util import munge_dict
+from jinja2 import Environment
 
 
 def set_renderer(event):
@@ -62,6 +60,12 @@ def main(global_config, **settings):
         f.close()
 
     config = Configurator(settings=settings, root_factory=RootFactory)
+    def _munge_view(request):
+        resp = request.wrapped_response
+        return munge_dict(request, resp)
+
+    config.add_view(_munge_view, '_munge_view')
+
     config.include('pyramid_jinja2')
     config.include('.viewderiver')
 

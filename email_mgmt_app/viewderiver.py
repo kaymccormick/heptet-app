@@ -1,10 +1,18 @@
 import logging
 
-from pyramid.viewderivers import INGRESS
+from pyramid.interfaces import IViewMapper, IViewMapperFactory
+from pyramid.viewderivers import INGRESS, VIEW, DefaultViewMapper
+from zope.interface import implementer, provider
 
 from email_mgmt_app.entity import BaseEntityRelatedView
 from email_mgmt_app.util import munge_dict
 from email_mgmt_app.entity.view import BaseView
+
+
+@implementer(IViewMapper)
+@provider(IViewMapperFactory)
+class MyViewMapper(DefaultViewMapper):
+    pass
 
 
 def munge_view(view, info):
@@ -50,6 +58,4 @@ def entity_view(view, info):
 def includeme(config):
     entity_view.options = ('operation',)
     config.add_view_deriver(entity_view)
-#    config.add_view_deriver(munge_view)
-
-
+    #config.add_view_deriver(munge_view, under='owrapped_view')
