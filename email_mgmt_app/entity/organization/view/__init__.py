@@ -11,6 +11,7 @@ def includeme(config: Configurator) -> None:
     registration = ResourceManager.reg('Organization', default_view=OrganizationView, entity_type=Organization)
     mgr = ResourceManager(config, registration)
 
+
 #    config.add_view(".OrganizationCollectionView",
 #                     route_name='organization_collection',
 #                     renderer='templates/organization/collection.jinja2')
