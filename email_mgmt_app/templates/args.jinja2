@@ -1,0 +1,38 @@
+{% extends "templates/main_child.jinja2" %}
+{% block content %}
+    <div class="container">
+        <div class="col-sm-12">
+            <div class="alert alert-danger" role="alert">
+                {{ exception.operation }}
+
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="alert alert-danger" role="alert">
+                <table class="table">
+                    <caption>{{ exception }}</caption>
+                    <tr>
+                        <th>Name</th>
+
+                        <td>
+                            {{ exception.arg.name }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-5">
+                <form>
+
+                    {% for arg in exception.operation.args %}
+
+                        {% include "templates/arg_input.jinja2" with context %}
+                    {% endfor %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -9,17 +9,12 @@ from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 
 from email_mgmt_app.util import munge_dict
+from email_mgmt_app.exceptions import OperationArgumentException
 
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
 
 
 class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
-    #     def __init__(self, request: Request) -> None:
-    #         super().__init__(request)
-    #         context = request.context # type: Resource
-    # #  TODO        self._op = request.
-    #         self._entity = None
-
     def query(self):
         return self.request.dbsession.query(self.entity_type)
 

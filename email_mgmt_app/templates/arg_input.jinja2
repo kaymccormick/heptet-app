@@ -1,0 +1,8 @@
+{% if arg.implicit_arg %}
+{% else %}
+    <div class="form-group">
+<label for="#arg_{{ arg.name }}">
+    {{ arg.label }}
+</label><input class="form-control" id="arg_{{ arg.name }}" name="{{ arg.name }}" type="{{ arg.input_type }}">
+</div>
+{% endif %}

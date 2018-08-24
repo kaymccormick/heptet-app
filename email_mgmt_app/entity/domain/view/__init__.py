@@ -1,4 +1,3 @@
-from sqlalchemy import Integer
 
 from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager, OperationArgument
 from pyramid.config import Configurator
@@ -8,6 +7,8 @@ from email_mgmt_app.entity.model.email_mgmt import Domain, Host, Organization
 from email_mgmt_app.entity import EntityView, EntityCollectionView, EntityFormView
 from email_mgmt_app.util import munge_dict
 from email_mgmt_app.res import SubpathArgumentGetter
+from email_mgmt_app.type import Integer
+from email_mgmt_app.res import ArgumentGetter
 
 
 def includeme(config: Configurator) -> None:
@@ -17,7 +18,7 @@ def includeme(config: Configurator) -> None:
     mgr.operation('view', ".DomainView",
                   [OperationArgument(
                       "id", Integer,
-                      getter=SubpathArgumentGetter())])
+                      getter=ArgumentGetter())])
 
     mgr.operation('form', ".DomainFormView", [])
     mgr.operation('list', ".DomainCollectionView", [])
