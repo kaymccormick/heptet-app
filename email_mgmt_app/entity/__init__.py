@@ -1,3 +1,5 @@
+import logging
+import sys
 from typing import TypeVar
 
 from pyramid.httpexceptions import HTTPBadRequest
@@ -7,7 +9,6 @@ from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 
 from email_mgmt_app.util import munge_dict
-from email_mgmt_app.exceptions import InvalidArgumentException
 
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
 
@@ -39,7 +40,7 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
 
     @property
     def id(self):
-        return self.request.subpath[0]
+        return self._values['id']
 
     @property
     def entity_type(self):
@@ -48,10 +49,7 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
     def __call__(self, *args, **kwargs):
         request = self.request
 
-        try:
-            self.check_args(request)
-        except:
-            raise InvalidArgumentException()
+        self.collect_args(request)
 
         self.load_entity()
         return munge_dict(self.request, { 'entity': self.entity })
