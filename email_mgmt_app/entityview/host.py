@@ -14,25 +14,6 @@ from email_mgmt_app.util import munge_dict
 from email_mgmt_app.res import ResourceRegistration, Resource, ResourceManager, OperationArgument
 
 
-def includeme(config: Configurator):
-    registration = ResourceManager.reg('Host', default_view=HostView, entity_type=Host)
-    mgr = ResourceManager(config, registration)
-    mgr.operation('view', ".HostView", [OperationArgument("id", Integer)])
-    mgr.operation('list', '.HostCollectionView', [])
-    mgr.operation('form', '.HostFormView', [])
-    config.add_resource_manager(mgr)
-
-    # config.add_view(".HostView", name='view', context=Resource,
-    #                 entity_type=Host,
-    #                 renderer='templates/host/view.jinja2')
-
-    # config.add_view('.HostFormView', name='form',
-    #                 renderer='templates/host/form.jinja2')
-    #
-    # config.add_view(".HostCollectionView", name='list', context=ContainerResource,
-    #                 entity_name='Host',
-    #                 renderer='templates/host/collection.jinja2')
-
 
 class HostView(EntityView[Host]):
     pass
@@ -106,3 +87,23 @@ def host_create_view(request: Request):
     request.dbsession.flush()
 
     return munge_dict(request, { 'host': host, 'host': host })
+
+def includeme(config: Configurator):
+    registration = ResourceManager.reg('Host', default_view=HostView, entity_type=Host)
+    mgr = ResourceManager(config, registration)
+    mgr.operation('view', HostView, [OperationArgument("id", Integer)])
+    mgr.operation('list', HostCollectionView, [])
+    mgr.operation('form', HostFormView, [])
+    config.add_resource_manager(mgr)
+
+    # config.add_view(".HostView", name='view', context=Resource,
+    #                 entity_type=Host,
+    #                 renderer='templates/host/view.jinja2')
+
+    # config.add_view('.HostFormView', name='form',
+    #                 renderer='templates/host/form.jinja2')
+    #
+    # config.add_view(".HostCollectionView", name='list', context=ContainerResource,
+    #                 entity_name='Host',
+    #                 renderer='templates/host/collection.jinja2')
+

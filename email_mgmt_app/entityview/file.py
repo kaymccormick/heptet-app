@@ -7,18 +7,20 @@ from email_mgmt_app.entity.model.email_mgmt import File
 from email_mgmt_app.entity import EntityView, EntityAddView
 
 
+
+class FileView(EntityView[File]):
+    pass
+
+
+class FileAddView(EntityAddView[File]):
+    pass
+
 def includeme(config: Configurator) -> None:
     registration = ResourceManager.reg('File', default_view=FileView, entity_type=File)
     res_mgr = ResourceManager(config, registration)
 
-    res_mgr.operation('view', ".FileView", [OperationArgument("id", Integer)])
-    config.add_view(".FileView", name='view', context=Resource,
-                    entity_type=File,
-                    )
-
-    res_mgr.operation('add', '.FileAddView', [])
-    config.add_view('.FileAddView', name='add', context=Resource,
-                    entity_type=File)
+    res_mgr.operation('view', FileView, [OperationArgument("id", Integer)])
+    res_mgr.operation('add', FileAddView, [])
     config.add_resource_manager(res_mgr)
 
     # res_mgr.operation('form', ".FileFormView")
@@ -33,10 +35,3 @@ def includeme(config: Configurator) -> None:
     #     entity_type=File,
     # )
 
-
-class FileView(EntityView[File]):
-    pass
-
-
-class FileAddView(EntityAddView[File]):
-    pass

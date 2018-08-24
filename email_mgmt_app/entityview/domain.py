@@ -10,21 +10,6 @@ from email_mgmt_app.res import SubpathArgumentGetter
 from email_mgmt_app.type import Integer
 from email_mgmt_app.res import ArgumentGetter
 
-
-def includeme(config: Configurator) -> None:
-    registration = ResourceManager.reg('Domain', default_view=DomainView, entity_type=Domain)
-    mgr = ResourceManager(config, registration)
-
-    mgr.operation('view', ".DomainView",
-                  [OperationArgument(
-                      "id", Integer,
-                      getter=ArgumentGetter())])
-
-    mgr.operation('form', ".DomainFormView", [])
-    mgr.operation('list', ".DomainCollectionView", [])
-    config.add_resource_manager(mgr)
-
-
 class DomainView(EntityView[Domain]):
     pass
 
@@ -61,3 +46,19 @@ def domain_create_view(request: Request):
     request.dbsession.flush()
 
     return munge_dict(request, { 'domain': domain })
+
+def includeme(config: Configurator) -> None:
+    registration = ResourceManager.reg('Domain', default_view=DomainView, entity_type=Domain)
+    mgr = ResourceManager(config, registration)
+
+    mgr.operation('view', DomainView,
+                  [OperationArgument(
+                      "id", Integer,
+                      getter=ArgumentGetter())])
+
+    mgr.operation('form', DomainFormView, [])
+    mgr.operation('list', DomainCollectionView, [])
+    config.add_resource_manager(mgr)
+
+
+
