@@ -94,7 +94,7 @@ BaseEntityRelatedView_RelatedEntityType = TypeVar('BaseEntityRelatedView_Related
 class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], BaseView):
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
-        self._entity_type = request.context.registration.entity_type
+        self._entity_type = request.context.resource_manager.entity_type
         self._inspect = request.context.resource_manager.inspect # type: Mapper
 
     @property

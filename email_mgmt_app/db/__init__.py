@@ -44,6 +44,11 @@ class DbAdapter:
     def __init__(self) -> None:
         self._cache = {}
 
+    def manager(self, config=None, name=None, title=None,
+                                   entity_type=None, inspect=None, node_name=None):
+        mgr = ResourceManager(config=config, name=name, title=title, entity_type=entity_type, inspect=inspect, node_name=node_name)
+        return mgr
+
     def add_action(self, config):
 
         settings = config.get_settings()
@@ -64,9 +69,8 @@ class DbAdapter:
                 logging.info("pkey_col: %s", repr(pkey_col.key))
                 pkey_args.append(OperationArgument(pkey_col.key, pkey_col.type, label=pkey_col.key.upper()))
 
-            reg = ResourceManager.reg(key, stringcase.sentencecase(key),
-                                key, class_)
-            manager = ResourceManager(config, reg, inspect)
+            manager = self.manager(config=config, name=key, title=stringcase.sentencecase(key),
+                                   entity_type=class_, inspect=inspect, node_name=key)
             manager.operation('view', EntityView, pkey_args)
             manager.operation('form', EntityFormView, [OperationArgument.SubpathArgument('action', String)])
 
