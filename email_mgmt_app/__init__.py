@@ -17,6 +17,7 @@ from email_mgmt_app.security import groupfinder
 from email_mgmt_app.template import TemplateManager
 from email_mgmt_app.util import munge_dict
 from jinja2 import Environment
+from email_mgmt_app.registry import AppSubRegistry
 
 
 def set_renderer(event):
@@ -51,10 +52,10 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings, root_factory=RootFactory)
 
-    config.add_view_predicate('entity_name', EntityNamePredicate)
+#    config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
-    config.registry.email_mgmt_app = {'myinit': 1}
+    config.registry.email_mgmt_app = AppSubRegistry()
     config.include('pyramid_jinja2')
     config.include('.events')
     config.commit()
@@ -79,7 +80,6 @@ def main(global_config, **settings):
     # we commit here prior to including .db since I dont know how to order config
     config.commit()
 
-    logging.critical('mappers = %s', config.registry.email_mgmt_app['mappers'])
 
     config.include('.db')
     config.commit()

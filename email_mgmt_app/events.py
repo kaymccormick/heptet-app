@@ -6,16 +6,12 @@ from sqlalchemy.orm import Mapper
 
 
 def includeme(config: Configurator):
-    config.registry.email_mgmt_app['mappers'] = {}
-
     def action(config: Configurator):
         pass
 
     def add_mapper(config: Configurator, mapper: Mapper):
         logging.critical("in add_mapper")
-        if not 'mappers' in config.registry.email_mgmt_app:
-            config.registry.email_mgmt_app['mappers'] = {}
-        config.registry.email_mgmt_app['mappers'][mapper.mapped_table.key] = mapper
+        config.registry.email_mgmt_app.mappers[mapper.mapped_table.key] = mapper
 
     config.add_directive('add_mapper', add_mapper)
 
@@ -31,7 +27,7 @@ def includeme(config: Configurator):
     listen(Mapper, 'mapper_configured', receive_mapper_configured)
 
     def after_configured():
-        for k, v in config.registry.email_mgmt_app['mappers'].items():
+        for k, v in config.registry.email_mgmt_app.mappers.items():
             logging.critical("%s = %s", k, v)
 
     listen(Mapper, 'after_configured', after_configured)

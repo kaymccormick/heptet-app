@@ -79,7 +79,7 @@ class DbAdapter:
 
     def populate(self, session: Session, config: Configurator):
         logging.critical("reg = %s", config.registry.email_mgmt_app)
-        for x,y in config.registry.email_mgmt_app['mappers'].items():
+        for x,y in config.registry.email_mgmt_app.mappers.items():
             # better way to do this for sure
             logging.critical("got (%s, %s)", x, y)
             self._cache[x] = y
