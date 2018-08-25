@@ -89,12 +89,13 @@ class OrgRolePerson(AssociationMixin, Mixin, Base):
 
 
 class Organization(Mixin, Base):
+    "An organization within the system, which may have a parent and children organizations."
     __tablename__ = 'organization'
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('organization.id'))
-    name = Column(String)
+    name = Column(String, doc="The name of the organization.")
     children = relationship("Organization",
-                            backref=backref('parent', remote_side=[id]))
+                            backref=backref('parent', remote_side=[id], doc="Parent organization if any."))
     roles = relationship('OrganizationRole', back_populates='organization')
 
     def __repr__(self):

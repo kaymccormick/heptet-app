@@ -75,6 +75,7 @@ EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
     typemap = {'': ['text'] }
 
+    rel_select_option_jinja_ = "templates/entity/rel_select_option.jinja2"
 
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
@@ -90,54 +91,38 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
 
     def __call__(self, *args, **kwargs):
         d = super().__call__()
-        from pyramid.renderers import get_renderer
-
-        renderer1 = get_renderer("templates/entity/field.jinja2")
-        loader = renderer1.template_loader()
-        tmpl = loader
-        logging.warning("tmpl= %s", tmpl)
 
         self.request.override_renderer = "templates/entity/form.jinja2"
         d['formcontents'] = ''
         d['header'] = stringcase.sentencecase(self.inspect.mapped_table.key)
+        d['header2'] = self.inspect.entity.__doc__
 
         suppress = {}
 
         for pkey_col in self.inspect.primary_key:
             suppress[pkey_col.key] = True
 
-
-        logging.info("relationships = %s", repr(self.inspect.relationships))
         rel: RelationshipProperty
         for rel in self.inspect.relationships:
             arg = rel.argument
-            logging.critical("rel = %s (parent = %s)", rel, rel.parent)
-
-            if rel.parent != self.inspect.mapper:
+            if rel.parent != self.inspect.mapper or rel.direction != MANYTOONE:
                 continue
-
-            if rel.direction != MANYTOONE:
-                continue
-
-
             if callable(arg):
                 rel_o = arg()
             elif isinstance(arg, Mapper):
                 rel_o = arg.entity
 
+            logging.critical("type rel_o = %s", type(rel_o))
             label_contents = stringcase.sentencecase(rel.key)
             key = rel_o.__tablename__
-            remside = rel.remote_side
-            #if remside.table != self.inspect.mapped_table
-            logging.critical("remote_side = %s", rel.direction)
-
             entities = self.request.dbsession.query(rel_o).all()
             select_contents = ''
+
             for entity in entities:
-                select_contents = select_contents + self.render("templates/entity/rel_select_option.jinja2", {
-                    'option_value': '',
-                    'option_contents': entity.display_name
-                })
+                select_contents = select_contents +\
+                                  self.render(self.rel_select_option_jinja_,
+                                              { 'option_value': '',
+                                                'option_contents': entity.display_name })
             elem_id = 'select_%s' % key
             rel_select = self.render("templates/entity/rel_select.jinja2", {'select_name': key,
                                                                             'select_id': elem_id,
@@ -175,7 +160,7 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
                  'label_html': self.label_html(elem_id, stringcase.sentencecase(x.key)),
                  'help': x.doc
             }
-            d['formcontents'] = d['formcontents'] + tmpl.render(e)
+            d['formcontents'] = d['formcontents'] + self.render("templates/entity/field.jinja2", e)
 
         return d
 

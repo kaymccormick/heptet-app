@@ -3,18 +3,16 @@ import logging
 import pyramid_tm
 import sqlalchemy
 import stringcase
-import transaction
 from pyramid.config import Configurator
 from pyramid.util import DottedNameResolver
-from sqlalchemy import Integer, Column, String
-from sqlalchemy.orm import Session, RelationshipProperty, Mapper
+from sqlalchemy import Column, String
+from sqlalchemy.orm import Session, Mapper
 
 import email_mgmt_app
-from email_mgmt_app.entity.view import BaseView
-from email_mgmt_app.res import ResourceRegistration, ResourceManager, Resource, OperationArgument
 from email_mgmt_app.entity import Base, EntityView, EntityFormView
 from email_mgmt_app.entity.model.email_mgmt import get_tm_session, get_session_factory, get_engine, AssociationMixin
-from email_mgmt_app.res import SubpathArgumentGetter
+from email_mgmt_app.entity.view import BaseView
+from email_mgmt_app.res import ResourceManager, OperationArgument
 
 
 class DbView(BaseView):
