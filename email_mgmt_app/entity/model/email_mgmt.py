@@ -11,16 +11,23 @@ from email_mgmt_app.entity.model.meta import Base
 
 from sqlalchemy import event
 
-class AssociationMixin(object):
+
+# marker class for objects which are "association tables"
+class AssociationTableMixin(object):
     pass
+
+# class ApplicationUser(Mixin, Base):
+#     __tablename__ = 'appuser'
+#     id = Column(Integer, primary_key=True)
+#     name = Column(String)
+
 
 # standard decorator style
 @event.listens_for(object, 'mapper_configured')
 def receive_mapper_configured(mapper, class_):
     "listen for the 'mapper_configured' event"
-    logging.warning("%s", class_)
+    logging.severe("omg mapper configured %s", class_)
     # ... (event handling logic) ...
-
 
 
 class Mixin(object):
@@ -31,17 +38,12 @@ class Mixin(object):
         return self.name
 
 
-
-# class ApplicationUser(Mixin, Base):
-#     __tablename__ = 'appuser'
-#     id = Column(Integer, primary_key=True)
-#     name = Column(String)
-
 class PublicKey(Base):
     __tablename__ = 'publickey'
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='keys')
+    public_key_text = Column(String)
 
 
 class File(Base):
@@ -61,7 +63,7 @@ class FileUpload(Base):
 
 
 
-class OrganizationRole(Mixin, AssociationMixin, Base):
+class OrganizationRole(Mixin, AssociationTableMixin, Base):
     __tablename__ = 'organization_role'
     id = Column(Integer, primary_key=True)
 
@@ -78,7 +80,7 @@ class OrganizationRole(Mixin, AssociationMixin, Base):
 
 
 
-class OrgRolePerson(AssociationMixin, Mixin, Base):
+class OrgRolePerson(AssociationTableMixin, Mixin, Base):
     __tablename__ = 'organization_role_person'
 
     organization_role_id = Column(Integer, ForeignKey('organization_role.id'), primary_key=True)

@@ -95,7 +95,7 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
         self.request.override_renderer = "templates/entity/form.jinja2"
         d['formcontents'] = ''
         d['header'] = stringcase.sentencecase(self.inspect.mapped_table.key)
-        d['header2'] = self.inspect.entity.__doc__
+        d['header2'] = self.inspect.entity.__doc__ or ''
 
         suppress = {}
 

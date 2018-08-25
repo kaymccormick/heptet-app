@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, Mapper
 
 import email_mgmt_app
 from email_mgmt_app.entity import Base, EntityView, EntityFormView
-from email_mgmt_app.entity.model.email_mgmt import get_tm_session, get_session_factory, get_engine, AssociationMixin
+from email_mgmt_app.entity.model.email_mgmt import get_tm_session, get_session_factory, get_engine, AssociationTableMixin
 from email_mgmt_app.entity.view import BaseView
 from email_mgmt_app.res import ResourceManager, OperationArgument
 
@@ -78,7 +78,7 @@ class DbAdapter:
         for x,y in email_mgmt_app.entity.model.email_mgmt.__dict__.items():
             # better way to do this for sure
             try:
-                if y != Base and issubclass(y, Base) and not issubclass(y, AssociationMixin):
+                if y != Base and issubclass(y, Base) and not issubclass(y, AssociationTableMixin):
                     n = sqlalchemy.inspection.inspect(y)
                     self.handle_mapping_inspect(y, n)
                     self._cache[x] = [y,n]
