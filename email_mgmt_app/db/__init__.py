@@ -28,11 +28,15 @@ class DbView(BaseView):
         inspect = sqlalchemy.inspection.inspect(dbsession.get_bind())
         logging.warning("inspect = %s", inspect)
 
+        app_reg = self.request.registry['email_mgmt_app']
+        mappers = app_reg.mappers
+
         o = {}
-        for x,y in email_mgmt_app.entity.model.email_mgmt.__dict__.items():
-            if isinstance(y, type) and y != Base and issubclass(y, Base):
-                n = sqlalchemy.inspection.inspect(y)
-                o[x] = [y,n]
+        for x,y in mappers.items():
+            logging.critical("mapper = (%s, %s)", x, y)
+            n = sqlalchemy.inspection.inspect(y)
+
+            o[x] = [y,n]
 
         d['o'] = o
         return d
@@ -55,10 +59,9 @@ class DbAdapter:
 
 #        adapter = DbAdapter()
 
-        self.populate(session)
+        self.populate(session, config)
         for key, val in self._cache.items():
-            class_ = val[0]
-            inspect = val[1] # type: Mapper
+            inspect = val # type: Mapper
 
             pkey = inspect.primary_key
             pkey_args = []
@@ -68,25 +71,21 @@ class DbAdapter:
                 pkey_args.append(OperationArgument(pkey_col.key, pkey_col.type, label=pkey_col.key.upper()))
 
             manager = self.manager(config=config, name=key, title=stringcase.sentencecase(key),
-                                   entity_type=class_, inspect=inspect, node_name=key)
+                                   entity_type=inspect.entity, inspect=inspect, node_name=key)
             manager.operation('view', EntityView, pkey_args)
             manager.operation('form', EntityFormView, [OperationArgument.SubpathArgument('action', String, default='create')])
 
             manager.add_action(config)
 
-    def populate(self, session: Session):
-        for x,y in email_mgmt_app.entity.model.email_mgmt.__dict__.items():
+    def populate(self, session: Session, config: Configurator):
+        logging.critical("reg = %s", config.registry.email_mgmt_app)
+        for x,y in config.registry.email_mgmt_app['mappers'].items():
             # better way to do this for sure
-            try:
-                if y != Base and issubclass(y, Base) and not issubclass(y, AssociationTableMixin):
-                    n = sqlalchemy.inspection.inspect(y)
-                    self.handle_mapping_inspect(y, n)
-                    self._cache[x] = [y,n]
-            except(TypeError):
-                pass
-        pass
+            logging.critical("got (%s, %s)", x, y)
+            self._cache[x] = y
 
     def handle_mapping_inspect(self, model_class, result: Mapper):
+        return
         assert result.configured
         name = model_class.__name__
         logging.info("handle_mapping_inspect(%s, )", name)
@@ -120,8 +119,6 @@ def includeme(config: Configurator):
     session = get_tm_session(factory, pyramid_tm.explicit_manager(None))
 
     adapter = DbAdapter()
-
-
     add_db_adapter(config, adapter)
     config.add_resource_manager(mgr)
     #config.add_view(".DbView", name='view', context=Resource,

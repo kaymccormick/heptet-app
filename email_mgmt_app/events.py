@@ -6,20 +6,32 @@ from sqlalchemy.orm import Mapper
 
 
 def includeme(config: Configurator):
-    mappers = {}
+    config.registry.email_mgmt_app['mappers'] = {}
+
+    def action(config: Configurator):
+        pass
+
+    def add_mapper(config: Configurator, mapper: Mapper):
+        logging.critical("in add_mapper")
+        if not 'mappers' in config.registry.email_mgmt_app:
+            config.registry.email_mgmt_app['mappers'] = {}
+        config.registry.email_mgmt_app['mappers'][mapper.mapped_table.key] = mapper
+
+    config.add_directive('add_mapper', add_mapper)
 
     # standard decorator style
     def receive_mapper_configured(mapper: Mapper, *args, **kwargs):
         "listen for the 'mapper_configured' event"
         logging.critical("omg mapper configured %s, %s", repr(args), repr(kwargs))
 
-        mappers[mapper.mapped_table.key] = mapper
+        config.add_mapper(mapper)
+        #config.registry.email_mgmt_app['mappers'][mapper.mapped_table.key] = mapper
         # ... (event handling logic) ...
 
     listen(Mapper, 'mapper_configured', receive_mapper_configured)
 
     def after_configured():
-        for k, v in mappers.items():
+        for k, v in config.registry.email_mgmt_app['mappers'].items():
             logging.critical("%s = %s", k, v)
 
     listen(Mapper, 'after_configured', after_configured)

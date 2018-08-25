@@ -50,15 +50,20 @@ def main(global_config, **settings):
         f.close()
 
     config = Configurator(settings=settings, root_factory=RootFactory)
+
+    config.add_view_predicate('entity_name', EntityNamePredicate)
+    config.add_view_predicate('entity_type', EntityTypePredicate)
+
+    config.registry.email_mgmt_app = {'myinit': 1}
+    config.include('pyramid_jinja2')
     config.include('.events')
+    config.commit()
 
     def _munge_view(request):
         resp = request.wrapped_response
         return munge_dict(request, resp)
 
     config.add_view(_munge_view, '_munge_view')
-
-    config.include('pyramid_jinja2')
     config.include('.viewderiver')
 
     # should this be in another spot!?
@@ -67,13 +72,17 @@ def main(global_config, **settings):
 
     config.include('.res')
 
+
     config.include('.exceptions')
     config.include('.entity.model.email_mgmt')
 
     # we commit here prior to including .db since I dont know how to order config
     config.commit()
 
+    logging.critical('mappers = %s', config.registry.email_mgmt_app['mappers'])
+
     config.include('.db')
+    config.commit()
 
     # now static routes only
     config.include('.routes')
@@ -91,8 +100,6 @@ def main(global_config, **settings):
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
     config.add_subscriber(set_renderer, ContextFound)
-    config.add_view_predicate('entity_name', EntityNamePredicate)
-    config.add_view_predicate('entity_type', EntityTypePredicate)
     config.commit()
 
     config.registry['email_mgmt_app_resources'] = None

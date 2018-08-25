@@ -50,6 +50,6 @@ def entity_view(view, info):
 
 
 def includeme(config):
-    entity_view.options = ('operation','inspect',)
+    entity_view.options = ('operation','inspect')
     config.add_view_deriver(entity_view)
     #config.add_view_deriver(munge_view, under='owrapped_view')
