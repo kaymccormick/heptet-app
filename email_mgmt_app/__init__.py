@@ -70,7 +70,7 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.include('.viewderiver')
 
-    config.registry.email_mgmt_app_resources = RootResource({}, ResourceManager(config, ResourceManager.reg('', 'Root Resource', '')))
+    config.registry.email_mgmt_app_resources = RootResource({}, ResourceManager(config, name='', title='', node_name=''))
     config.include('.res')
 
     #config.add_directive('')

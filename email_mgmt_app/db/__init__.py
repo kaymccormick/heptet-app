@@ -72,12 +72,11 @@ class DbAdapter:
             manager = self.manager(config=config, name=key, title=stringcase.sentencecase(key),
                                    entity_type=class_, inspect=inspect, node_name=key)
             manager.operation('view', EntityView, pkey_args)
-            manager.operation('form', EntityFormView, [OperationArgument.SubpathArgument('action', String)])
+            manager.operation('form', EntityFormView, [OperationArgument.SubpathArgument('action', String, default='create')])
 
             manager.add_action(config)
 
     def populate(self, session: Session):
-        inspect = sqlalchemy.inspection.inspect(session.get_bind())
         for x,y in email_mgmt_app.entity.model.email_mgmt.__dict__.items():
             # better way to do this for sure
             try:
@@ -114,8 +113,8 @@ class DbAdapter:
 resolver = DottedNameResolver(None)
 
 def includeme(config: Configurator):
-    registration = ResourceManager.reg('db', default_view=DbView)
-    mgr = ResourceManager(config, registration)
+
+    mgr = ResourceManager(config, name='db', title='db')
     mgr.operation('view', DbView, [], renderer="templates/db/view.jinja2")
 
     settings = config.get_settings()

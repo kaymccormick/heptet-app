@@ -76,7 +76,6 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
     typemap = {'': ['text'] }
 
 
-
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
         self._renderers = {}
