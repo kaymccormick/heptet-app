@@ -66,8 +66,13 @@ class OrganizationRole(Mixin, Base):
     role = relationship('Role', back_populates='organization_roles')
 
 
-class OrgRolePerson(Mixin, Base):
+class AssociationMixin(object):
+    pass
+
+
+class OrgRolePerson(AssociationMixin, Mixin, Base):
     __tablename__ = 'organization_role_person'
+
     organization_role_id = Column(Integer, ForeignKey('organization_role.id'), primary_key=True)
     person_id = Column(Integer, ForeignKey('person.id'), primary_key=True)
 

@@ -2,6 +2,7 @@ import logging
 import sys
 from typing import TypeVar
 
+import stringcase
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.request import Request
 
@@ -69,11 +70,44 @@ EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 
 
 class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
+    typemap = {'': ['text'] }
+
+
+
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
 
     def __call__(self, *args, **kwargs):
-        return munge_dict(self.request, {})
+        d = super().__call__()
+        from pyramid.renderers import get_renderer
+
+        renderer1 = get_renderer("templates/entity/field.jinja2")
+        loader = renderer1.template_loader()
+        tmpl = loader
+        logging.warning("tmpl= %s", tmpl)
+
+
+
+        self.request.override_renderer = "templates/entity/form.jinja2"
+        d['formcontents'] = ''
+        for x in self.inspect.columns:
+            vname = x.type.__visit_name__
+            if not vname in self.typemap:
+                kind = self.typemap[''][0]
+            else:
+                kind = self.typemap[vname][0]
+            elem_id = 'input_%s' % (x.key)
+            f = {'input_name': x.key,
+                 'input_id': elem_id,
+                 'input_value': ''}
+
+            e = {'id': elem_id,
+                 'input_html': get_renderer("templates/entity/field_%s.jinja2" % (kind)).template_loader().render(f),
+                 'label_html': get_renderer("templates/entity/label.jinja2").template_loader().render({'for_id': elem_id, 'label': stringcase.sentencecase(x.key)})
+            }
+            d['formcontents'] = d['formcontents'] + tmpl.render(e)
+
+        return d
 
 
 EntityFormActionView_EntityType = TypeVar('EntityFormActionView_EntityType')

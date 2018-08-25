@@ -59,6 +59,4 @@ class ExceptionView():
 
 def includeme(config: Configurator):
     config.add_exception_view(view=ExceptionView,context=BaseException)
-    config.add_exception_view(view=OperationArgumentExceptionView,context=OperationArgumentException)
-
-
+    config.add_exception_view(view=OperationArgumentExceptionView,context=OperationArgumentException,renderer="templates/exceptions/OperationArgumentException.jinja2")

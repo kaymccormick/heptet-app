@@ -31,6 +31,7 @@ def set_renderer(event):
     if context.entity_type:
         renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
                                                request.view_name.lower())
+
         logging.debug("selecting %s for %s", renderer, request.path_info)
 
         request.override_renderer = renderer
@@ -75,18 +76,23 @@ def main(global_config, **settings):
     #config.add_directive('')
 
     config.include('.exceptions')
-    config.include('.db')
 
     config.include('.entity.model.email_mgmt')
-    config.include('.entityview.domain')
-    config.include('.entityview.host')
-    config.include('.entityview.email_address')
-    config.include('.entityview.recipient')
-    config.include('.entityview.organization')
-    config.include('.entityview.person')
-    config.include('.entityview.publickey')
-    config.include('.entityview.file_upload')
-    config.include('.entityview.file')
+
+    config.commit()
+
+    config.include('.db')
+
+
+    # config.include('.entityview.domain')
+    # config.include('.entityview.host')
+    # config.include('.entityview.email_address')
+    # config.include('.entityview.recipient')
+    # config.include('.entityview.organization')
+    # config.include('.entityview.person')
+    # config.include('.entityview.publickey')
+    # config.include('.entityview.file_upload')
+    # config.include('.entityview.file')
 
     config.include('.routes')
     config.include('.auth')

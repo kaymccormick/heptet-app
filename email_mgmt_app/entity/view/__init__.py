@@ -3,6 +3,7 @@ import sys
 from typing import TypeVar, Generic
 
 from pyramid.request import Request
+from sqlalchemy.orm import Mapper
 
 from email_mgmt_app.exceptions import MissingArgumentException
 from email_mgmt_app.res import ResourceOperation, OperationArgument
@@ -28,10 +29,11 @@ class BaseView():
         self._request = request
         self._operation = None
         self._values = {}
+        self._response_dict = munge_dict(request, {})
 
     def __call__(self, *args, **kwargs):
         self.collect_args(self.request)
-        return munge_dict(self.request, {})
+        return self._response_dict
 
     @property
     def request(self) -> Request:
@@ -93,6 +95,7 @@ class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], Ba
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
         self._entity_type = request.context.registration.entity_type
+        self._inspect = request.context.resource_manager.inspect # type: Mapper
 
     @property
     def entity_type(self):
@@ -101,3 +104,11 @@ class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], Ba
     @entity_type.setter
     def entity_type(self, new):
         self._entity_type = new
+
+    @property
+    def inspect(self) -> Mapper:
+        return self._inspect
+
+    @inspect.setter
+    def inspect(self, new: Mapper):
+        self._inspect = new
