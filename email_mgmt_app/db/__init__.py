@@ -6,7 +6,7 @@ import stringcase
 import transaction
 from pyramid.config import Configurator
 from pyramid.util import DottedNameResolver
-from sqlalchemy import Integer, Column
+from sqlalchemy import Integer, Column, String
 from sqlalchemy.orm import Session, RelationshipProperty, Mapper
 
 import email_mgmt_app
@@ -14,6 +14,7 @@ from email_mgmt_app.entity.view import BaseView
 from email_mgmt_app.res import ResourceRegistration, ResourceManager, Resource, OperationArgument
 from email_mgmt_app.entity import Base, EntityView, EntityFormView
 from email_mgmt_app.entity.model.email_mgmt import get_tm_session, get_session_factory, get_engine, AssociationMixin
+from email_mgmt_app.res import SubpathArgumentGetter
 
 
 class DbView(BaseView):
@@ -67,7 +68,8 @@ class DbAdapter:
                                 key, class_)
             manager = ResourceManager(config, reg, inspect)
             manager.operation('view', EntityView, pkey_args)
-            manager.operation('form', EntityFormView, [])
+            manager.operation('form', EntityFormView, [OperationArgument('action', String,
+                                                                         getter=SubpathArgumentGetter())])
             manager.add_action(config)
 
         pass

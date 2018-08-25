@@ -11,6 +11,8 @@ from email_mgmt_app.entity.model.meta import Base
 
 from sqlalchemy import event
 
+class AssociationMixin(object):
+    pass
 
 # standard decorator style
 @event.listens_for(object, 'mapper_configured')
@@ -23,6 +25,11 @@ def receive_mapper_configured(mapper, class_):
 
 class Mixin(object):
     RootFactory.register_model_type()
+
+    @property
+    def display_name(self):
+        return self.name
+
 
 
 # class ApplicationUser(Mixin, Base):
@@ -54,7 +61,7 @@ class FileUpload(Base):
 
 
 
-class OrganizationRole(Mixin, Base):
+class OrganizationRole(Mixin, AssociationMixin, Base):
     __tablename__ = 'organization_role'
     id = Column(Integer, primary_key=True)
 
@@ -65,9 +72,10 @@ class OrganizationRole(Mixin, Base):
     organization = relationship('Organization', back_populates='roles')
     role = relationship('Role', back_populates='organization_roles')
 
+    @property
+    def display_name(self):
+        return "%s, %s" % (self.role.name, self.organization.name)
 
-class AssociationMixin(object):
-    pass
 
 
 class OrgRolePerson(AssociationMixin, Mixin, Base):
@@ -88,6 +96,9 @@ class Organization(Mixin, Base):
     children = relationship("Organization",
                             backref=backref('parent', remote_side=[id]))
     roles = relationship('OrganizationRole', back_populates='organization')
+
+    def __repr__(self):
+        return "Organization[%03d]: %s" % (self.id, self.name)
 
 
 class Role(Mixin, Base):
@@ -130,13 +141,15 @@ class ServiceEntry(Base):
     description = Column(String, default="")
 
 
-class Host(Base):
+class Host(Mixin, Base):
+    "A host specified by its fully qualified domain name."
     __tablename__ = 'host'
+
     id = Column(Integer, primary_key=True)
 
-    name = Column(String)
+    name = Column(String,doc="The fully qualified domain name.")
     domain_id = Column(Integer, ForeignKey('domain.id'))
-    domain = relationship('Domain', backref='hosts')
+    domain = relationship('Domain', backref='hosts', doc="The associated domain.")
 
 
 class EmailAddress(Base):

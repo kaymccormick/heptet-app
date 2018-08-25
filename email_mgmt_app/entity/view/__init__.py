@@ -52,7 +52,7 @@ class BaseView():
             return
         assert self.operation is not None
         args = self.operation.args
-        logging.debug("checking args %s", repr(args))
+        logging.critical("checking args %s", repr(args))
         values = []
         arg_context = ArgumentContext()
         arg: OperationArgument
