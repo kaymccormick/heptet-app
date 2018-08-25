@@ -3,8 +3,8 @@ import logging
 import zope.sqlalchemy
 
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, Table, LargeBinary
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
+from sqlalchemy.event import listen
+from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref, Mapper, mapper
 
 from email_mgmt_app.root import RootFactory
 from email_mgmt_app.entity.model.meta import Base
@@ -22,16 +22,10 @@ class AssociationTableMixin(object):
 #     name = Column(String)
 
 
-# standard decorator style
-@event.listens_for(object, 'mapper_configured')
-def receive_mapper_configured(mapper, class_):
-    "listen for the 'mapper_configured' event"
-    logging.severe("omg mapper configured %s", class_)
-    # ... (event handling logic) ...
-
-
 class Mixin(object):
-    RootFactory.register_model_type()
+    """
+    Standard mixin for application.
+    """
 
     @property
     def display_name(self):
@@ -39,7 +33,7 @@ class Mixin(object):
 
 
 class PublicKey(Base):
-    __tablename__ = 'publickey'
+    __tablename__ = 'public_key'
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='keys')
@@ -56,7 +50,7 @@ class File(Base):
 
 class FileUpload(Base):
     __tablename__ = 'file_upload'
-    uuid = Column(UUID, primary_key=True)
+    id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='file_uploads')
     data = Column(LargeBinary)
@@ -223,6 +217,7 @@ def includeme(config):
 
     session_factory = get_session_factory(get_engine(settings))
     config.registry['dbsession_factory'] = session_factory
+
 
     # make request.dbsession available for use in Pyramid
     config.add_request_method(

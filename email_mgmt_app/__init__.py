@@ -50,6 +50,8 @@ def main(global_config, **settings):
         f.close()
 
     config = Configurator(settings=settings, root_factory=RootFactory)
+    config.include('.events')
+
     def _munge_view(request):
         resp = request.wrapped_response
         return munge_dict(request, resp)
@@ -59,16 +61,21 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.include('.viewderiver')
 
+    # should this be in another spot!?
     config.registry.email_mgmt_app_resources = \
         RootResource({}, ResourceManager(config, name='', title='', node_name=''))
+
     config.include('.res')
 
     config.include('.exceptions')
     config.include('.entity.model.email_mgmt')
+
+    # we commit here prior to including .db since I dont know how to order config
     config.commit()
 
     config.include('.db')
 
+    # now static routes only
     config.include('.routes')
     config.include('.auth')
     config.include('.views')

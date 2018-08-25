@@ -5,7 +5,7 @@ from pyramid.interfaces import IRootFactory
 from pyramid.request import Request
 
 import email_mgmt_app
-from email_mgmt_app import RootFactory
+from email_mgmt_app import RootFactory, RootResource, ResourceManager
 from email_mgmt_app.entity.model.email_mgmt import Domain
 from pyramid import testing
 
@@ -65,6 +65,9 @@ class BaseAppTest(unittest.TestCase):
             'email_mgmt_app.authsource': 'db',
             'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
         })
+
+        self.config.registry.email_mgmt_app_resources = \
+            RootResource({}, ResourceManager(self.config, name='', title='', node_name=''))
 
         RootFactory.populate_resources(self.config)
 

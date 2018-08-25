@@ -15,6 +15,10 @@ from email_mgmt_app.entity.view import BaseView
 from email_mgmt_app.res import ResourceManager, OperationArgument
 
 
+class MapperAdapter:
+    pass
+
+
 class DbView(BaseView):
 
     def __call__(self, *args, **kwargs):
@@ -26,13 +30,9 @@ class DbView(BaseView):
 
         o = {}
         for x,y in email_mgmt_app.entity.model.email_mgmt.__dict__.items():
-            try:
-                if y != Base and issubclass(y, Base):
-                    n = sqlalchemy.inspection.inspect(y)
-                    o[x] = [y,n]
-            except:
-                pass
-
+            if isinstance(y, type) and y != Base and issubclass(y, Base):
+                n = sqlalchemy.inspection.inspect(y)
+                o[x] = [y,n]
 
         d['o'] = o
         return d
