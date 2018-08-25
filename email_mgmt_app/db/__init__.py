@@ -68,11 +68,9 @@ class DbAdapter:
                                 key, class_)
             manager = ResourceManager(config, reg, inspect)
             manager.operation('view', EntityView, pkey_args)
-            manager.operation('form', EntityFormView, [OperationArgument('action', String,
-                                                                         getter=SubpathArgumentGetter())])
-            manager.add_action(config)
+            manager.operation('form', EntityFormView, [OperationArgument.SubpathArgument('action', String)])
 
-        pass
+            manager.add_action(config)
 
     def populate(self, session: Session):
         inspect = sqlalchemy.inspection.inspect(session.get_bind())
