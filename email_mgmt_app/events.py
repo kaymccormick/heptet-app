@@ -10,7 +10,7 @@ def includeme(config: Configurator):
         pass
 
     def add_mapper(config: Configurator, mapper: Mapper):
-        #logging.critical("in add_mapper")
+        logging.warning("in add_mapper")
         config.registry.email_mgmt_app.mappers[mapper.mapped_table.key] = mapper
 
 
@@ -19,7 +19,7 @@ def includeme(config: Configurator):
     # standard decorator style
     def receive_mapper_configured(mapper: Mapper, *args, **kwargs):
         "listen for the 'mapper_configured' event"
-        logging.critical("omg mapper configured %s, %s", repr(args), repr(kwargs))
+        logging.warning("omg mapper configured %s, %s", repr(args), repr(kwargs))
 
         config.add_mapper(mapper)
         #config.registry.email_mgmt_app['mappers'][mapper.mapped_table.key] = mapper
@@ -29,6 +29,6 @@ def includeme(config: Configurator):
 
     def after_configured():
         for k, v in config.registry.email_mgmt_app.mappers.items():
-            logging.critical("%s = %s", k, v)
+            logging.warning("%s = %s", k, v)
 
     listen(Mapper, 'after_configured', after_configured)

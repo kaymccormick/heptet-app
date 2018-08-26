@@ -86,7 +86,6 @@ def main(global_config, **settings):
 
     config.include('.res')
 
-
     config.include('.exceptions')
     config.include('.entity.model.email_mgmt')
 

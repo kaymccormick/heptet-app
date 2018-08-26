@@ -40,7 +40,7 @@ class RootFactory(UserDict):
     def populate_resources(config):
         logging.warning("%s", config.registry)
         if not 'email_mgmt_app_resources' in config.registry or not config.registry.email_mgmt_app_resources:
-            logging.critical("OMG email_mgmt_app_resources not in config.registry")
+            logging.warning("OMG email_mgmt_app_resources not in config.registry")
             config.registry.email_mgmt_app_resources = RootResource({})
 
         RootFactory.resources = config.registry.email_mgmt_app_resources

@@ -1,4 +1,11 @@
 {% extends  "templates/main_child.jinja2" %}
+{% block view_script %}
+    <script type="application/javascript">
+        $(document).ready(function() {
+            {{ readycode }}
+        });
+    </script>
+{%  endblock %}
 {% block content %}
     <div class="container">
         <div class="row">

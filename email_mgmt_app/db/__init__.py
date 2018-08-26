@@ -30,7 +30,7 @@ class DbView(BaseView):
 
         o = {}
         for x,y in mappers.items():
-            logging.critical("mapper = (%s, %s)", x, y)
+            logging.warning("mapper = (%s, %s)", x, y)
 
             o[x] = [y,n]
 
@@ -74,10 +74,10 @@ class DbAdapter:
             manager.add_action(config)
 
     def populate(self, session: Session, config: Configurator):
-        logging.critical("reg = %s", config.registry.email_mgmt_app)
+        logging.warning("reg = %s", config.registry.email_mgmt_app)
         for x,y in config.registry.email_mgmt_app.mappers.items():
             # better way to do this for sure
-            logging.critical("got (%s, %s)", x, y)
+            logging.warning("got (%s, %s)", x, y)
             self._cache[x] = y
 
     def handle_mapping_inspect(self, model_class, result: Mapper):

@@ -26,8 +26,11 @@ class Mixin(object):
     def display_name(self):
         return self.name
 
+    # def __json__(self, request):
+    #     logging.warning("ie = %s", type(self))
+    #     return [self.__module__, self.__name__]
 
-class PublicKey(Base):
+class PublicKey(Mixin, Base):
     __tablename__ = 'public_key'
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
@@ -35,7 +38,7 @@ class PublicKey(Base):
     public_key_text = Column(String)
 
 
-class File(Base):
+class File(Mixin, Base):
     __tablename__ = 'file'
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
@@ -43,7 +46,7 @@ class File(Base):
     data = Column(LargeBinary)
 
 
-class FileUpload(Base):
+class FileUpload(Mixin, Base):
     __tablename__ = 'file_upload'
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
@@ -127,12 +130,10 @@ class Person(Mixin, Base):
     home_address_id = Column(Integer, ForeignKey('address.id'))
     work_address_id = Column(Integer, ForeignKey('address.id'))
     mailing_address_id = Column(Integer, ForeignKey('address.id'))
-    home_address = relationship('Address', uselist=False, foreign_keys=[home_address_id])
+    home_address = relationship('Address', uselist=False, foreign_keys=[home_address_id], info={'embed': True})
     work_address = relationship('Address', uselist=False, foreign_keys=[work_address_id])
     mailing_address = relationship('Address', uselist=False, foreign_keys=[mailing_address_id])
     organization_roles = relationship('OrgRolePerson', back_populates='person')
-
-
 
 
 class Recipient(Mixin, Base):
@@ -144,14 +145,13 @@ class Domain(Mixin, Base):
     __tablename__ = 'domain'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String,doc="Domain name.")
+
     organization_id = Column(Integer, ForeignKey('organization.id'))
-    organization = relationship('Organization', backref='domains')
+    organization = relationship('Organization', backref='domains',doc="Associated organization.")
 
-    def __json__(self, request):
-        return { 'id': self.id, 'name': self.name }
 
-class ServiceEntry(Base):
+class ServiceEntry(Mixin, Base):
     __tablename__ = 'service_entry'
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -167,12 +167,12 @@ class Host(Mixin, Base):
 
     id = Column(Integer, primary_key=True)
 
-    name = Column(String,doc="The fully qualified domain name.")
+    name = Column(String,doc="The fully qualified domain name (FQDN).")
     domain_id = Column(Integer, ForeignKey('domain.id'))
     domain = relationship('Domain', backref='hosts', doc="The associated domain.")
 
 
-class EmailAddress(Base):
+class EmailAddress(Mixin, Base):
     __tablename__ = 'email_address'
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -236,13 +236,14 @@ def includeme(config):
     config.include('pyramid_retry')
 
     if 'sqlalchemy.url' not in settings:
-        logging.critical("sqlalchemy.url not in settings!")
+        logging.warning("sqlalchemy.url not in settings!")
 
     session_factory = get_session_factory(get_engine(settings))
     config.registry['dbsession_factory'] = session_factory
 
 
     # make request.dbsession available for use in Pyramid
+    config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
     config.add_request_method(
         # r.tm is the transaction manager used by pyramid_tm
         lambda r: get_tm_session(session_factory, r.tm),

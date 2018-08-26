@@ -54,6 +54,7 @@ setup(
         ],
         'console_scripts': [
             'initialize_email_mgmt_app_db = email_mgmt_app.scripts.initializedb:main',
+            'process_model = email_mgmt_app.scripts.process_model:main',
         ],
     },
 )
