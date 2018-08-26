@@ -7,6 +7,7 @@ class AppSubRegistry:
         self._jinja2_env = None
         self._json_renderer = None
         self._dbsession = None
+        self._views = []
 
     @property
     def mappers(self) -> dict:
@@ -35,3 +36,11 @@ class AppSubRegistry:
     @dbsession.setter
     def dbsession(self, new):
         self._dbsession = new
+
+    @property
+    def views(self):
+        return self._views
+
+    @views.setter
+    def views(self, new):
+        self._views = new

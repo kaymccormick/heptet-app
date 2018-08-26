@@ -32,6 +32,9 @@ class RootFactory(UserDict):
     def __repr__(self):
         return "RootFactory(%s)" % repr(dict(self))
 
+    def __json__(self, request):
+        return self.data
+
     @staticmethod
     def register_model_type():
         pass
@@ -44,3 +47,4 @@ class RootFactory(UserDict):
             config.registry.email_mgmt_app_resources = RootResource({})
 
         RootFactory.resources = config.registry.email_mgmt_app_resources
+

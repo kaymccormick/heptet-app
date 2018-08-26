@@ -18,12 +18,16 @@ def munge_view(view, info):
 
 
 def entity_view(view, info):
+
     et = info.options.get('entity_type')
     if et is None:
         return view
     operation = info.options.get('operation')
     inspect = info.options.get('inspect')
 
+    info.registry.email_mgmt_app.views.append(info)
+
+    logging.critical("entity_view %s", info.original_view)
     def wrapper_view(context, request):
         logging.info("original view = %s", repr(info.original_view))
         original_view = info.original_view
