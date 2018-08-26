@@ -171,3 +171,12 @@ def main(argv=sys.argv):
     with open('views.json', 'w') as f:
         f.write(pp)
         f.close()
+
+    with open('entry_points.json', 'w') as f:
+        ep = {}
+        for view in request.registry.email_mgmt_app.views:
+            options_ = view['options']
+            entity_type_ = options_['entity_type']
+
+            
+        f.write(json_renderer(None)(ep, {'request': request}))
