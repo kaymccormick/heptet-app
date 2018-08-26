@@ -19,25 +19,6 @@ class MapperAdapter:
     pass
 
 
-class DbView(BaseView):
-
-    def __call__(self, *args, **kwargs):
-        super().__call__(*args, **kwargs)
-        d = self._response_dict
-
-        app_reg = self.request.registry['email_mgmt_app']
-        mappers = app_reg.mappers
-
-        o = {}
-        for x,y in mappers.items():
-            logging.warning("mapper = (%s, %s)", x, y)
-
-            o[x] = [y,n]
-
-        d['o'] = o
-        return d
-
-
 class DbAdapter:
     def __init__(self) -> None:
         self._cache = {}
@@ -52,7 +33,7 @@ class DbAdapter:
         return get_tm_session(factory, pyramid_tm.explicit_manager(None))
 
     def add_action(self, config):
-        session = self.get_db_session(self, config)
+        session = self.get_db_session(config)
         self.populate(session, config)
         for key, val in self._cache.items():
             inspect = val # type: Mapper
@@ -105,8 +86,8 @@ resolver = DottedNameResolver(None)
 
 def includeme(config: Configurator):
 
-    mgr = ResourceManager(config, name='db', title='db')
-    mgr.operation('view', DbView, [], renderer="templates/db/view.jinja2")
+#    mgr = ResourceManager(config, name='db', title='db')
+#    mgr.operation('view', DbView, [], renderer="templates/db/view.jinja2")
 
     settings = config.get_settings()
     factory = get_session_factory(get_engine(settings))
@@ -114,7 +95,7 @@ def includeme(config: Configurator):
 
     adapter = DbAdapter()
     add_db_adapter(config, adapter)
-    config.add_resource_manager(mgr)
+    #config.add_resource_manager(mgr)
     #config.add_view(".DbView", name='view', context=Resource,
 
 
