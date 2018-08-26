@@ -2,14 +2,10 @@ import logging
 from dataclasses import dataclass
 from typing import TypeVar
 
-import sqlalchemy
 import stringcase
-from jinja2.utils import concat
 from pyramid.interfaces import IRendererFactory
-from pyramid.renderers import get_renderer
 from pyramid.request import Request
 from pyramid.response import Response
-from pyramid_jinja2 import IJinja2Environment
 from sqlalchemy import Column
 from sqlalchemy.orm import RelationshipProperty, Mapper
 from sqlalchemy.orm.base import MANYTOONE
@@ -17,6 +13,7 @@ from sqlalchemy.orm.base import MANYTOONE
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 from email_mgmt_app.util import munge_dict
+from email_mgmt_app.util import render_template
 
 
 @dataclass
@@ -50,14 +47,6 @@ def template_source(request, template_name):
     f = request.registry.queryUtility(IRendererFactory, '.jinja2')
     source = f.environment.loader.get_source({}, template_name)
     return source[0]
-
-def render_template(request, template_name, d, nestlevel=0):
-    if template_name in renderers:
-        renderer = renderers[template_name]
-    else:
-        renderer = get_renderer(template_name).template_loader()
-        renderers[template_name] = renderer
-    return renderer.render(munge_dict(request, d))
 
 
 def render_entity_form_wrapper(request, inspect, outer_vars, nest_level: int=0,do_modal=False,prefix=""):
@@ -135,7 +124,7 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
                                                           'collapse_id': collapse_id,
                                                           'select_id': select_id })
 
-                buttons = buttons + render_template\
+                buttons = buttons + render_template \
                     (request,
                      templates.button_create_new,
                      {'button_id': button_id,
@@ -144,13 +133,13 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
 
 
 
-        select_contents = select_contents +\
-        render_template(request, templates.rel_select_option,
-                        {'option_value': 0,
+        select_contents = select_contents + \
+                          render_template(request, templates.rel_select_option,
+                                          {'option_value': 0,
                          'option_contents': "None"})
-        select_contents = select_contents +\
-        render_template(request, templates.rel_select_option,
-                        {'option_value': -1,
+        select_contents = select_contents + \
+                          render_template(request, templates.rel_select_option,
+                                          {'option_value': -1,
                          'option_contents': "New"})
 
         for entity in entities:
@@ -168,7 +157,7 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
                                                                      'collapse': collapse,
                                                                      })
         d['form_contents'] = d['form_contents'] + render_template(request, templates.field_relationship,
-                                                                {'input_html': rel_select,
+                                                                  {'input_html': rel_select,
                                                                  'label_html': label_html(request, select_id,
                                                                                           label_contents),
                                                                  'collapse': collapse,

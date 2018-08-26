@@ -179,7 +179,6 @@ def main(argv=sys.argv):
     none_ = json_renderer(None)(obj, {'request': request})
     pp = json.dumps(json.loads(none_), sort_keys=True,
                   indent=4, separators=(',', ': '))
-    #pp = jsonpickle.encode(obj)
     print(pp)
     with open('views.json', 'w') as f:
         f.write(pp)
@@ -194,5 +193,5 @@ def main(argv=sys.argv):
     for entry_point_key in email_reg.entry_points.keys():
         with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
 
-            f.write(helper.render({}, {'request': request}))
+            f.write(helper.render({'entry_point_js': email_reg.entry_points[entry_point_key].js}, {'request': request}))
             f.close()

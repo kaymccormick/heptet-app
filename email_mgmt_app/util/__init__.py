@@ -2,13 +2,12 @@ import inspect
 import logging
 import sys
 
+from pyramid.renderers import get_renderer
 from pyramid.request import Request
 
 
-def munge_dict(request: Request, indict: dict) -> dict:
-    view_name = request.view_name
-    context = request.context
 
+def munge_dict(request: Request, indict: dict) -> dict:
     val = request.registry.settings['email_mgmt_app.request_attrs']
     attrs = val.split(', ')
 
@@ -16,11 +15,6 @@ def munge_dict(request: Request, indict: dict) -> dict:
     for attr in attrs:
         indict['r'][attr] = request.__getattribute__(attr)
 
-    #request.resource_path()
-
-    stack = inspect.stack()
-#    class_ = stack[1][0].f_locals["self"].__class__
-#    indict['class_'] = class_
     if not "form" in indict.keys():
         indict["form"] = {}
 
@@ -49,3 +43,8 @@ def munge_dict(request: Request, indict: dict) -> dict:
     indict["route_path"] = x
 
     return indict
+
+
+def render_template(request, template_name, d, nestlevel=0):
+    renderer = get_renderer(template_name).template_loader()
+    return renderer.render(munge_dict(request, d))

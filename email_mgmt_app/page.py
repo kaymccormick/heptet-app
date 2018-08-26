@@ -4,9 +4,9 @@ from typing import AnyStr
 from pyramid.config import Configurator
 
 
-def register_entry_point(config, entry_point_key: AnyStr):
+def register_entry_point(config, entry_point: AnyStr):
     appconfig = config.registry.email_mgmt_app
-    appconfig.entry_points[entry_point_key] = entry_point_key
+    appconfig.entry_points[entry_point.key] = entry_point
 
 
 def includeme(config: Configurator):

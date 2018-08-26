@@ -4,6 +4,7 @@ const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const webpack = require('webpack')
 
 entry_points = require('./entry_points')
 plugins_ = [
@@ -25,6 +26,10 @@ plugins_ = [
                 (__dirname, 'email_mgmt_app/build/manifest.json')
             }
         ]),
+    new webpack.ProvidePlugin({
+  $: 'jquery',
+  jQuery: 'jquery'
+}),
     ]
 
 for(i = 0; i < entry_points.list.length; i++)
