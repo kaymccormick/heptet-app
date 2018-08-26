@@ -3,7 +3,7 @@
         <div class="form-group">
             {{ label_html }}
             {{ input_html }}
-            <small class="form-text text-muted">{{ help }}</small>
+            {% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}
         </div>
     </div>
 </div>

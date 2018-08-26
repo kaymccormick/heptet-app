@@ -104,12 +104,31 @@ class Role(Mixin, Base):
     name = Column(String)
     organization_roles = relationship('OrganizationRole', back_populates='role')
 
+class Address(Mixin, Base):
+    __tablename__ = 'address'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    address_line_1 = Column(String)
+    address_line_2 = Column(String)
+    address_line_3 = Column(String)
+    city = Column(String)
+    state_or_region = Column(String)
+    postcode = Column(String)
+    country = Column(String)
+
 
 class Person(Mixin, Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    email = Column(String)
+    home_address_id = Column(Integer, ForeignKey('address.id'))
+    work_address_id = Column(Integer, ForeignKey('address.id'))
+    mailing_address_id = Column(Integer, ForeignKey('address.id'))
+    home_address = relationship('Address', uselist=False, foreign_keys=[home_address_id])
     organization_roles = relationship('OrgRolePerson', back_populates='person')
+
+
 
 
 class Recipient(Mixin, Base):
