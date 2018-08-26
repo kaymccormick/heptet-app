@@ -27,7 +27,7 @@ def entity_view(view, info):
 
     info.registry.email_mgmt_app.views.append(info)
 
-    logging.critical("entity_view %s", info.original_view)
+    logging.debug("entity_view %s", info.original_view)
     def wrapper_view(context, request):
         logging.info("original view = %s", repr(info.original_view))
         original_view = info.original_view
@@ -54,6 +54,6 @@ def entity_view(view, info):
 
 
 def includeme(config):
-    entity_view.options = ('operation','inspect')
+    entity_view.options = ('operation','inspect','entry_point_key')
     config.add_view_deriver(entity_view)
     config.add_view_deriver(munge_view, under='owrapped_view')

@@ -5,8 +5,8 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-module.exports = {
-    plugins: [
+entry_points = require('./entry_points')
+plugins_ = [
 //        new CleanWebpackPlugin(['email_mgmt_app/build/dist']),
         new CopyWebpackPlugin([
             {
@@ -25,27 +25,24 @@ module.exports = {
                 (__dirname, 'email_mgmt_app/build/manifest.json')
             }
         ]),
+    ]
+
+for(i = 0; i < entry_points.list.length; i++)
+{
+    ep = entry_points.list[i]
+    html_ =
         new HtmlWebpackPlugin({
             title: '',
-            template: 'src/assets/main_layout.html',
-            filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/main_layout.jinja2'),
-            chunks: ['app'],
-            inject: false
-        }),
-        new HtmlWebpackPlugin({
-            title: '',
-            template: 'src/assets/file_upload.html',
-            filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/file_upload.jinja2'),
+            template: 'src/assets/entry_point_generic.html',
+            filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/'  + ep + '.jinja2'),
             inject: false,
-            chunks: ['fileUpload'],
-        }),
-        new HtmlWebpackPlugin({
-            title: '',
-            template: 'src/assets/domain_list_layout.html',
-            filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/domain_list_layout.jinja2'),
-            inject: false,
-        }),
-    ],
+            chunks: [ep],
+        })
+    plugins_.push(html_)
+}
+
+module.exports = {
+    plugins: plugins_,
     node: {
         fs: "empty" // avoids error messages
     },

@@ -174,11 +174,6 @@ def main(argv=sys.argv):
         f.close()
 
     with open('entry_points.json', 'w') as f:
-        ep = {}
-        for view in email_reg.views:
-            options_ = view.options
-            entity_type_ = options_['entity_type']
 
-
-
-        f.write(json_renderer(None)(ep, {'request': request}))
+        f.write(json_renderer(None)({ 'list': list(email_reg.entry_points.keys())}, {'request': request}))
+        f.close()

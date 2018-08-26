@@ -59,7 +59,11 @@ def set_json_encoder(config, encoder):
 
 
 def main(global_config, **settings):
-    """ This function returns a Pyramid WSGI application.
+    """
+    The main functionf or our pyramid application.
+    :param global_config:
+    :param settings:
+    :return: A WSGI application.
     """
     if 'pidfile' in settings.keys():
         f = open(settings['pidfile'], 'w')
@@ -67,12 +71,14 @@ def main(global_config, **settings):
         f.close()
 
     config = Configurator(settings=settings, root_factory=RootFactory)
+    config.registry.email_mgmt_app = AppSubRegistry()
+
+    # order matters here
     config.include('.viewderiver')
 
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
-    config.registry.email_mgmt_app = AppSubRegistry()
     config.include('pyramid_jinja2')
     config.include('.events')
     config.commit()
@@ -87,7 +93,9 @@ def main(global_config, **settings):
     config.registry.email_mgmt_app.resources = \
         RootResource({}, ResourceManager(config, name='', title='', node_name=''))
 
+    config.include('.page')
     config.include('.res')
+
 
     config.include('.exceptions')
     config.include('.entity.model.email_mgmt')
