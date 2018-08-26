@@ -11,6 +11,7 @@ from email_mgmt_app.entity.model.meta import Base
 class AssociationTableMixin(object):
     pass
 
+
 # class ApplicationUser(Mixin, Base):
 #     __tablename__ = 'appuser'
 #     id = Column(Integer, primary_key=True)
@@ -30,12 +31,14 @@ class Mixin(object):
     #     logging.warning("ie = %s", type(self))
     #     return [self.__module__, self.__name__]
 
+
 class PublicKey(Mixin, Base):
     __tablename__ = 'public_key'
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='keys')
     public_key_text = Column(String)
+    info = {'hide': True}
 
 
 class File(Mixin, Base):
@@ -44,6 +47,7 @@ class File(Mixin, Base):
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='files')
     data = Column(LargeBinary)
+    info = {'hide': True}
 
 
 class FileUpload(Mixin, Base):
@@ -52,6 +56,7 @@ class FileUpload(Mixin, Base):
     owner_id = Column(Integer, ForeignKey('person.id'))
     owner = relationship('Person', backref='file_uploads')
     data = Column(LargeBinary)
+    info = {'hide': True}
 
 
 
@@ -69,7 +74,6 @@ class OrganizationRole(Mixin, AssociationTableMixin, Base):
     @property
     def display_name(self):
         return "%s, %s" % (self.role.name, self.organization.name)
-
 
 
 class OrgRolePerson(AssociationTableMixin, Mixin, Base):
@@ -119,6 +123,7 @@ class Address(Mixin, Base):
 def entity_embed(*args, **kwargs):
     def embed():
         pass
+
     return embed
 
 
@@ -139,16 +144,18 @@ class Person(Mixin, Base):
 class Recipient(Mixin, Base):
     __tablename__ = 'recipient'
     id = Column(Integer, primary_key=True)
+    info = {'hide': True}
+
 
 
 class Domain(Mixin, Base):
     __tablename__ = 'domain'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String,doc="Domain name.")
+    name = Column(String, doc="Domain name.")
 
     organization_id = Column(Integer, ForeignKey('organization.id'))
-    organization = relationship('Organization', backref='domains',doc="Associated organization.")
+    organization = relationship('Organization', backref='domains', doc="Associated organization.")
 
 
 class ServiceEntry(Mixin, Base):
@@ -159,6 +166,8 @@ class ServiceEntry(Mixin, Base):
     protocol_name = Column(String)
     weight = Column(Float, default=0)
     description = Column(String, default="")
+    info = {'hide': True}
+
 
 
 class Host(Mixin, Base):
@@ -167,7 +176,7 @@ class Host(Mixin, Base):
 
     id = Column(Integer, primary_key=True)
 
-    name = Column(String,doc="The fully qualified domain name (FQDN).")
+    name = Column(String, doc="The fully qualified domain name (FQDN).")
     domain_id = Column(Integer, ForeignKey('domain.id'))
     domain = relationship('Domain', backref='hosts', doc="The associated domain.")
 
@@ -178,6 +187,7 @@ class EmailAddress(Mixin, Base):
     name = Column(String)
     host_id = Column(Integer, ForeignKey('host.id'))
     host = relationship('Host', backref='email_addresses')
+
 
 configure_mappers()
 
@@ -240,7 +250,6 @@ def includeme(config):
 
     session_factory = get_session_factory(get_engine(settings))
     config.registry['dbsession_factory'] = session_factory
-
 
     # make request.dbsession available for use in Pyramid
     config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
