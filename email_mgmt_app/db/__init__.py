@@ -42,19 +42,17 @@ class DbAdapter:
     def __init__(self) -> None:
         self._cache = {}
 
-    def manager(self, config=None, name=None, title=None,
-                                   entity_type=None, inspect=None, node_name=None):
+    def manager(self, config=None, name=None, title=None, entity_type=None, inspect=None, node_name=None):
         mgr = ResourceManager(config=config, name=name, title=title, entity_type=entity_type, inspect=inspect, node_name=node_name)
         return mgr
 
-    def add_action(self, config):
-
+    def get_db_session(self, config: Configurator):
         settings = config.get_settings()
         factory = get_session_factory(get_engine(settings))
-        session = get_tm_session(factory, pyramid_tm.explicit_manager(None))
+        return get_tm_session(factory, pyramid_tm.explicit_manager(None))
 
-#        adapter = DbAdapter()
-
+    def add_action(self, config):
+        session = self.get_db_session(self, config)
         self.populate(session, config)
         for key, val in self._cache.items():
             inspect = val # type: Mapper

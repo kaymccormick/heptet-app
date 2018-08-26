@@ -8,6 +8,7 @@ class AppSubRegistry:
         self._json_renderer = None
         self._dbsession = None
         self._views = []
+        self._resources = None
 
     @property
     def mappers(self) -> dict:
@@ -44,3 +45,11 @@ class AppSubRegistry:
     @views.setter
     def views(self, new):
         self._views = new
+
+    @property
+    def resources(self):
+        return self._resources
+
+    @resources.setter
+    def resources(self, new):
+        self._resources = new

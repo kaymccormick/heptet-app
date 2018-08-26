@@ -23,8 +23,6 @@ class RootFactory(UserDict):
 
         :param request:
         """
-        if not 'email_mgmt_app_resources' in request.registry:
-            logging.warning("registry does not have resources")
         super().__init__()
         self.data = RootFactory.resources
         self.entity_type = None
@@ -42,9 +40,6 @@ class RootFactory(UserDict):
     @staticmethod
     def populate_resources(config):
         logging.warning("%s", config.registry)
-        if not 'email_mgmt_app_resources' in config.registry or not config.registry.email_mgmt_app_resources:
-            logging.warning("OMG email_mgmt_app_resources not in config.registry")
-            config.registry.email_mgmt_app_resources = RootResource({})
-
-        RootFactory.resources = config.registry.email_mgmt_app_resources
+        assert config.registry.email_mgmt_app.resources is not None
+        RootFactory.resources = config.registry.email_mgmt_app.resources
 

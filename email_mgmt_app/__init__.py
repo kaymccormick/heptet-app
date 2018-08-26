@@ -4,7 +4,7 @@ import os
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from pyramid.events import ContextFound, NewRequest
+from pyramid.events import ContextFound, NewRequest, ApplicationCreated
 from pyramid.renderers import get_renderer
 from pyramid.request import Request
 
@@ -17,6 +17,9 @@ from email_mgmt_app.util import munge_dict
 from jinja2.exceptions import TemplateNotFound
 
 def on_new_request(event):
+    pass
+
+def on_application_created(event):
     pass
 
 def set_renderer(event):
@@ -81,7 +84,7 @@ def main(global_config, **settings):
     config.add_view(_munge_view, '_munge_view')
 
     # should this be in another spot!?
-    config.registry.email_mgmt_app_resources = \
+    config.registry.email_mgmt_app.resources = \
         RootResource({}, ResourceManager(config, name='', title='', node_name=''))
 
     config.include('.res')
@@ -117,9 +120,8 @@ def main(global_config, **settings):
     config.add_renderer(None, renderer_pkg)
     config.add_subscriber(set_renderer, ContextFound)
     config.add_subscriber(on_new_request, NewRequest)
+    config.add_subscriber(on_application_created, ApplicationCreated)
     config.commit()
-
-    config.registry['email_mgmt_app_resources'] = None
 
     # THIS MAY BE AGAINST PYRAMID PATTERNS
     RootFactory.populate_resources(config)

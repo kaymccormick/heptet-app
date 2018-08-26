@@ -1,9 +1,4 @@
 from dataclasses import dataclass
 
-
-@dataclass
-class EntryPoints:
-    pass
-
-class Page:
+def register_entry_point():
     pass

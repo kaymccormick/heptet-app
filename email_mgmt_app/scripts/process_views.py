@@ -159,9 +159,10 @@ def main(argv=sys.argv):
 
     #print(json_renderer(None)([EntityView], {'request': request}))
 
-    request.registry.email_mgmt_app.json_renderer = json_renderer
+    email_reg = request.registry.email_mgmt_app
+    email_reg.json_renderer = json_renderer
 
-    obj = { 'views': request.registry.email_mgmt_app.views,
+    obj = { 'views': email_reg.views,
             'root': RootFactory(request) }
     none_ = json_renderer(None)(obj, {'request': request})
     pp = json.dumps(json.loads(none_), sort_keys=True,
@@ -174,9 +175,10 @@ def main(argv=sys.argv):
 
     with open('entry_points.json', 'w') as f:
         ep = {}
-        for view in request.registry.email_mgmt_app.views:
-            options_ = view['options']
+        for view in email_reg.views:
+            options_ = view.options
             entity_type_ = options_['entity_type']
 
-            
+
+
         f.write(json_renderer(None)(ep, {'request': request}))
