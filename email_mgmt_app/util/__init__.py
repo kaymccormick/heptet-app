@@ -10,7 +10,6 @@ def munge_dict(request: Request, indict: dict) -> dict:
     context = request.context
 
     val = request.registry.settings['email_mgmt_app.request_attrs']
-    logging.debug("attrs = %s", repr(val))
     attrs = val.split(', ')
 
     indict['r'] = { }

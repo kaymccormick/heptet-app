@@ -1,15 +1,10 @@
 import logging
 
 import zope.sqlalchemy
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, LargeBinary
+from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
 
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, Table, LargeBinary
-from sqlalchemy.event import listen
-from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref, Mapper, mapper
-
-from email_mgmt_app.root import RootFactory
 from email_mgmt_app.entity.model.meta import Base
-
-from sqlalchemy import event
 
 
 # marker class for objects which are "association tables"
@@ -103,6 +98,7 @@ class Role(Mixin, Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     organization_roles = relationship('OrganizationRole', back_populates='role')
+
 
 class Address(Mixin, Base):
     __tablename__ = 'address'

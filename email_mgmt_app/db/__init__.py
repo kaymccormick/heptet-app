@@ -24,9 +24,6 @@ class DbView(BaseView):
     def __call__(self, *args, **kwargs):
         super().__call__(*args, **kwargs)
         d = self._response_dict
-        dbsession = self.request.dbsession # type: Session
-        inspect = sqlalchemy.inspection.inspect(dbsession.get_bind())
-        logging.warning("inspect = %s", inspect)
 
         app_reg = self.request.registry['email_mgmt_app']
         mappers = app_reg.mappers
@@ -34,7 +31,6 @@ class DbView(BaseView):
         o = {}
         for x,y in mappers.items():
             logging.critical("mapper = (%s, %s)", x, y)
-            n = sqlalchemy.inspection.inspect(y)
 
             o[x] = [y,n]
 
