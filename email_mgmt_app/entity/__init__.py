@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from typing import TypeVar
 
 import sqlalchemy
@@ -14,17 +15,33 @@ from email_mgmt_app.entity.view import BaseEntityRelatedView
 from email_mgmt_app.util import munge_dict
 
 
+@dataclass
+class Templates:
+    label:              str = "templates/entity/label.jinja2"
+    rel_select_option:  str = "templates/entity/rel_select_option.jinja2"
+    rel_select:         str = "templates/entity/rel_select.jinja2"
+    modal:              str = 'templates/entity/modal.jinja2'
+    field:              str = "templates/entity/field.jinja2"
+    form:               str = "templates/entity/form.jinja2"
+    form_enclosure:     str = "templates/entity/form_enclosure.jinja2"
+    form_wrapper:       str = "templates/entity/form_wrapper.jinja2"
+    button_create_new:  str = "templates/entity/button_create_new.jinja2"
+    collapse:           str = "templates/entity/collapse.jinja2"
+
+
+templates = Templates()
+
+
 def label_html(request, elem_id, label_content):
-    return render_template(request, "templates/entity/label.jinja2",
+    return render_template(request, templates.label,
                            {'for_id': elem_id, 'label': label_content})
 
 
 typemap = {'': ['text']}
-rel_select_option_jinja_ = "templates/entity/rel_select_option.jinja2"
 renderers = {}
 
 
-def render_template(request, template_name, d):
+def render_template(request, template_name, d, nestlevel=0):
     if template_name in renderers:
         renderer = renderers[template_name]
     else:
@@ -32,10 +49,13 @@ def render_template(request, template_name, d):
         renderers[template_name] = renderer
     return renderer.render(munge_dict(request, d))
 
+def render_entity_form_wrapper(request, inspect, nest_level: int=0,do_modal=False,prefix=""):
+    form = render_entity_form(request, inspect, nest_level, do_modal, prefix)
+    return render_template(request, templates.form_wrapper, {'form': form})
 
-def render_entity_form(request, inspect):
+def render_entity_form(request, inspect, nest_level: int=0,do_modal=False,prefix=""):
     logging.info("Rendering entity form for %s" % inspect.mapped_table)
-    d = {'formcontents': '', 'header': stringcase.sentencecase(inspect.mapped_table.key),
+    d = {'form_contents': '', 'header': stringcase.sentencecase(inspect.mapped_table.key),
          'header2': inspect.entity.__doc__ or '',
          'modals': ''}
 
@@ -66,33 +86,49 @@ def render_entity_form(request, inspect):
         select_contents = ''
 
         modal_id = 'modal_%s' % rel.key
-        d['modals'] = d['modals'] + render_template \
-            (request, 'templates/entity/modal.jinja2',
-             {
-                 'is_modal': True,
-                 'modal_id': modal_id, 'modal_title': label_contents,
-                 'modal_body': render_entity_form(request,
-                                                  request.registry.email_mgmt_app.mappers[rel_o.__name__.lower()])
-             }
-             )
+        buttons = ''
+        collapse = ''
+
+        if nest_level == 0:
+            logging.critical("keys = %s", repr(request.registry.email_mgmt_app.mappers.keys()))
+            do_modal = False
+
+            entity_form = render_entity_form(request, rel.mapper, nest_level + 1, do_modal=do_modal, prefix="%s." % rel.key)
+
+            if do_modal:
+                d['modals'] = d['modals'] + render_template \
+                    (request, templates.modal,
+                     {
+                         'is_modal': True,
+                         'modal_id': modal_id, 'modal_title': label_contents,
+                         'modal_body': entity_form
+                     })
+                # buttons = buttons + render_template(request, templates.button_create_new_modal, { 'modal_id': modal_id })
+            else:
+                collapse_id = 'collapse_%s' % rel.key
+                collapse = render_template(request, templates.collapse, {'collapse_contents': entity_form,
+                                                                         'collapse_id': collapse_id})
+
+                buttons = buttons + render_template(request, templates.button_create_new, {'collapse_id': collapse_id})
 
         for entity in entities:
             select_contents = select_contents + \
-                              render_template(request, rel_select_option_jinja_,
+                              render_template(request, templates.rel_select_option,
                                               {'option_value': '',
                                                'option_contents': entity.display_name})
         elem_id = 'select_%s' % key
-        rel_select = render_template(request, "templates/entity/rel_select.jinja2", {'select_name': key,
-                                                                                     'select_id': elem_id,
-                                                                                     'modal_id': modal_id,
-                                                                                     'select_value': None,
-                                                                                     'select_contents': select_contents})
-        d['formcontents'] = d['formcontents'] + render_template(request, "templates/entity/field.jinja2",
+        rel_select = render_template(request, templates.rel_select, {'select_name': prefix + key,
+                                                                     'select_id': elem_id,
+                                                                     'select_value': None,
+                                                                     'select_contents': select_contents,
+                                                                     'buttons': buttons,
+
+                                                                     'collapse': collapse,
+                                                                     })
+        d['form_contents'] = d['form_contents'] + render_template(request, templates.field,
                                                                 {'input_html': rel_select,
                                                                  'label_html': label_html(request, elem_id,
-                                                                                          label_contents
-
-                                                                                          ),
+                                                                                          label_contents),
                                                                  'help': rel.doc})
 
         for x in rel.local_columns:
@@ -113,7 +149,7 @@ def render_entity_form(request, inspect):
             kind = typemap[vname][0]
 
         elem_id = 'input_%s' % (x.key)
-        f = {'input_name': x.key,
+        f = {'input_name': prefix + x.key,
              'input_id': elem_id,
              'input_value': ''}
 
@@ -124,9 +160,9 @@ def render_entity_form(request, inspect):
              'label_html': label_html(request, elem_id, stringcase.sentencecase(x.key)),
              'help': x.doc
              }
-        d['formcontents'] = d['formcontents'] + render_template(request, "templates/entity/field.jinja2", e)
+        d['form_contents'] = d['form_contents'] + render_template(request, templates.field, e)
 
-    return render_template(request, "templates/entity/form.jinja2", d)
+    return render_template(request, templates.form, d)
 
 
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
@@ -192,9 +228,8 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
         self._renderers = {}
 
     def __call__(self, *args, **kwargs):
-        entity_form_enclosure_jinja_ = "templates/entity/form_enclosure.jinja2"
-        return Response(render_template(self.request, entity_form_enclosure_jinja_,
-                                        {'form_content': render_entity_form(self.request, self.inspect)}))
+        return Response(render_template(self.request, templates.form_enclosure,
+                                        {'form_content': render_entity_form_wrapper(self.request, self.inspect)}))
 
 
 EntityFormActionView_EntityType = TypeVar('EntityFormActionView_EntityType')

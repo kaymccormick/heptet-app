@@ -13,6 +13,7 @@ def includeme(config: Configurator):
         #logging.critical("in add_mapper")
         config.registry.email_mgmt_app.mappers[mapper.mapped_table.key] = mapper
 
+
     config.add_directive('add_mapper', add_mapper)
 
     # standard decorator style

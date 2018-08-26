@@ -36,6 +36,8 @@ def set_renderer(event):
                 return True
             except TemplateNotFound as ex:
                 return False
+            except:
+                return True
 
         renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
                                                request.view_name.lower())

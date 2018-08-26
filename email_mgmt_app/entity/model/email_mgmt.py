@@ -80,7 +80,7 @@ class OrgRolePerson(AssociationTableMixin, Mixin, Base):
 
 
 class Organization(Mixin, Base):
-    "An organization within the system, which may have a parent and children organizations."
+    "An organization."
     __tablename__ = 'organization'
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('organization.id'))
