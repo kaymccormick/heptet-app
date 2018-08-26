@@ -4,8 +4,9 @@ from typing import TypeVar
 
 import stringcase
 from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.renderers import get_renderer
+from pyramid.renderers import get_renderer, RendererHelper
 from pyramid.request import Request
+from pyramid.response import Response
 from sqlalchemy.orm import RelationshipProperty, Mapper
 from sqlalchemy.orm.base import MANYTOONE
 
@@ -85,6 +86,8 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
         if template_name in self._renderers:
             renderer = self._renderers[template_name]
         else:
+            # helper = RendererHelper(template_name, package=self._package,
+            #             registry=self._registry)
             renderer = get_renderer(template_name).template_loader()
             self._renderers[template_name] = renderer
         return renderer.render(d)
@@ -162,7 +165,7 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
             }
             d['formcontents'] = d['formcontents'] + self.render("templates/entity/field.jinja2", e)
 
-        return d
+        return Response(self.render("templates/entity/form.jinja2", d))
 
     def label_html(self, elem_id, label_content):
         return self.render("templates/entity/label.jinja2",
