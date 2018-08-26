@@ -45,11 +45,11 @@ def entity_view(view, info):
         response = view(context, request)
         return response
 
-    logging.info("returning wrapper_view = %s", wrapper_view)
+    #logging.info("returning wrapper_view = %s", wrapper_view)
     return wrapper_view
 
 
 def includeme(config):
     entity_view.options = ('operation','inspect')
     config.add_view_deriver(entity_view)
-    #config.add_view_deriver(munge_view, under='owrapped_view')
+    config.add_view_deriver(munge_view, under='owrapped_view')

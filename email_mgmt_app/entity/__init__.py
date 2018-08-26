@@ -10,6 +10,7 @@ from pyramid.response import Response
 from sqlalchemy.orm import RelationshipProperty, Mapper
 from sqlalchemy.orm.base import MANYTOONE
 
+import email_mgmt_app
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 
@@ -78,6 +79,8 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
 
     rel_select_option_jinja_ = "templates/entity/rel_select_option.jinja2"
 
+
+
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
         self._renderers = {}
@@ -95,7 +98,10 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
     def __call__(self, *args, **kwargs):
         d = super().__call__()
 
-        self.request.override_renderer = "templates/entity/form.jinja2"
+        # from email_mgmt_app.templates.entity.field import Template
+        # t = Template()
+
+        #self.request.override_renderer = "templates/entity/form.jinja2"
         d['formcontents'] = ''
         d['header'] = stringcase.sentencecase(self.inspect.mapped_table.key)
         d['header2'] = self.inspect.entity.__doc__ or ''

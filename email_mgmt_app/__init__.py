@@ -4,21 +4,20 @@ import os
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from pyramid.events import ContextFound
-from pyramid.interfaces import IViewMapperFactory, IViewMapper
+from pyramid.events import ContextFound, NewRequest
+from pyramid.renderers import get_renderer
 from pyramid.request import Request
-from pyramid.viewderivers import DefaultViewMapper
-from zope.interface import provider, implementer
 
-from email_mgmt_app.predicate import EntityNamePredicate, EntityTypePredicate
+from email_mgmt_app.predicate import EntityTypePredicate
+from email_mgmt_app.registry import AppSubRegistry
 from email_mgmt_app.res import Resource, RootResource, ResourceManager
 from email_mgmt_app.root import RootFactory
 from email_mgmt_app.security import groupfinder
-from email_mgmt_app.template import TemplateManager
 from email_mgmt_app.util import munge_dict
-from jinja2 import Environment
-from email_mgmt_app.registry import AppSubRegistry
+from jinja2.exceptions import TemplateNotFound
 
+def on_new_request(event):
+    pass
 
 def set_renderer(event):
     """
@@ -29,8 +28,20 @@ def set_renderer(event):
     request = event.request # type: Request
     context = request.context # type: Resource
     if context.entity_type:
+        # sets incorrect template
+        def try_template(template_name):
+            try:
+                logging.debug("trying template %s", template_name)
+                get_renderer(template_name).template_loader().render({})
+                return True
+            except TemplateNotFound as ex:
+                return False
+
         renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
                                                request.view_name.lower())
+
+        if not try_template(renderer):
+            renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
 
         logging.debug("selecting %s for %s", renderer, request.path_info)
 
@@ -51,6 +62,7 @@ def main(global_config, **settings):
         f.close()
 
     config = Configurator(settings=settings, root_factory=RootFactory)
+    config.include('.viewderiver')
 
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
@@ -65,7 +77,6 @@ def main(global_config, **settings):
         return munge_dict(request, resp)
 
     config.add_view(_munge_view, '_munge_view')
-    config.include('.viewderiver')
 
     # should this be in another spot!?
     config.registry.email_mgmt_app_resources = \
@@ -80,6 +91,10 @@ def main(global_config, **settings):
     # we commit here prior to including .db since I dont know how to order config
     config.commit()
 
+    from email_mgmt_app.templates.entity.field import Template
+    t = Template()
+
+    config.include('.templates.entity.field')
 
     config.include('.db')
     config.commit()
@@ -100,6 +115,7 @@ def main(global_config, **settings):
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
     config.add_subscriber(set_renderer, ContextFound)
+    config.add_subscriber(on_new_request, NewRequest)
     config.commit()
 
     config.registry['email_mgmt_app_resources'] = None
