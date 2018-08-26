@@ -20,8 +20,8 @@ def munge_dict(request: Request, indict: dict) -> dict:
     #request.resource_path()
 
     stack = inspect.stack()
-    class_ = stack[1][0].f_locals["self"].__class__
-    indict['class_'] = class_
+#    class_ = stack[1][0].f_locals["self"].__class__
+#    indict['class_'] = class_
     if not "form" in indict.keys():
         indict["form"] = {}
 

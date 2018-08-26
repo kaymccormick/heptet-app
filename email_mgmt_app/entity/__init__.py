@@ -1,21 +1,112 @@
 import logging
-import sys
 from typing import TypeVar
 
 import stringcase
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.renderers import get_renderer, RendererHelper
+from pyramid.renderers import get_renderer
 from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.orm import RelationshipProperty, Mapper
 from sqlalchemy.orm.base import MANYTOONE
 
-import email_mgmt_app
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
-
 from email_mgmt_app.util import munge_dict
-from email_mgmt_app.exceptions import OperationArgumentException
+
+def label_html(request, elem_id, label_content):
+    return render_template(request, "templates/entity/label.jinja2",
+        {'for_id': elem_id, 'label': label_content})
+
+typemap = {'': ['text'] }
+rel_select_option_jinja_ = "templates/entity/rel_select_option.jinja2"
+renderers = {}
+def render_template(request, template_name, d):
+    if template_name in renderers:
+        renderer = renderers[template_name]
+    else:
+            # helper = RendererHelper(template_name, package=self._package,
+            #             registry=self._registry)
+        renderer = get_renderer(template_name).template_loader()
+        renderers[template_name] = renderer
+    return renderer.render(munge_dict(request, d))
+
+def render_entity_form(request, inspect):
+    d = {}
+
+    # from email_mgmt_app.templates.entity.field import Template
+    # t = Template()
+
+    # self.request.override_renderer = "templates/entity/form.jinja2"
+    d['formcontents'] = ''
+    d['header'] = stringcase.sentencecase(inspect.mapped_table.key)
+    d['header2'] = inspect.entity.__doc__ or ''
+
+    suppress = {}
+
+    for pkey_col in inspect.primary_key:
+        suppress[pkey_col.key] = True
+
+    rel: RelationshipProperty
+    for rel in inspect.relationships:
+        arg = rel.argument
+        if rel.parent != inspect.mapper or rel.direction != MANYTOONE:
+            continue
+        if callable(arg):
+            rel_o = arg()
+        elif isinstance(arg, Mapper):
+            rel_o = arg.entity
+
+        logging.critical("type rel_o = %s", type(rel_o))
+        label_contents = stringcase.sentencecase(rel.key)
+        key = rel_o.__tablename__
+        entities = request.dbsession.query(rel_o).all()
+        select_contents = ''
+
+        # elf.render('modal.jinja2', { 'modal_title': label_contents, 'modal_content' = #})
+
+        for entity in entities:
+            select_contents = select_contents + \
+                              render_template(request, rel_select_option_jinja_,
+                                          {'option_value': '',
+                                           'option_contents': entity.display_name})
+        elem_id = 'select_%s' % key
+        rel_select = render_template(request, "templates/entity/rel_select.jinja2", {'select_name': key,
+                                                                        'select_id': elem_id,
+                                                                        'select_value': None,
+                                                                        'select_contents': select_contents})
+        d['formcontents'] = d['formcontents'] + render_template(request, "templates/entity/field.jinja2",
+                                                            {'input_html': rel_select,
+                                                             'label_html': label_html(request, elem_id,
+                                                                                           label_contents
+
+                                                                                           ),
+                                                             'help': rel.doc})
+
+        for x in rel.local_columns:
+            logging.critical("(%s) %s", rel_o, x.key)
+            suppress[x.key] = True
+
+    for x in inspect.columns:
+        if x.key in suppress and suppress[x.key]:
+            continue
+        vname = x.type.__visit_name__
+        if not vname in typemap:
+            kind = typemap[''][0]
+        else:
+            kind = typemap[vname][0]
+
+        elem_id = 'input_%s' % (x.key)
+        f = {'input_name': x.key,
+             'input_id': elem_id,
+             'input_value': ''}
+
+        e = {'id': elem_id,
+             'input_html': render_template(request, "templates/entity/field_%s.jinja2" % kind, f),
+             'label_html': label_html(request, elem_id, stringcase.sentencecase(x.key)),
+             'help': x.doc
+             }
+        d['formcontents'] = d['formcontents'] + render_template(request, "templates/entity/field.jinja2", e)
+        return render_template(request, "templates/entity/form.jinja2", d)
+
 
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
 
@@ -75,107 +166,16 @@ EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 
 
 class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
-    typemap = {'': ['text'] }
-
-    rel_select_option_jinja_ = "templates/entity/rel_select_option.jinja2"
-
-
 
     def __init__(self, request: Request = None) -> None:
         super().__init__(request)
         self._renderers = {}
 
-    def render(self, template_name, d):
-        if template_name in self._renderers:
-            renderer = self._renderers[template_name]
-        else:
-            # helper = RendererHelper(template_name, package=self._package,
-            #             registry=self._registry)
-            renderer = get_renderer(template_name).template_loader()
-            self._renderers[template_name] = renderer
-        return renderer.render(d)
 
     def __call__(self, *args, **kwargs):
-        d = super().__call__()
+        entity_form_enclosure_jinja_ = "templates/entity/form_enclosure.jinja2"
+        return Response(render_template(self.request, entity_form_enclosure_jinja_, { 'form_content': render_entity_form(self.request, self.inspect)}))
 
-        # from email_mgmt_app.templates.entity.field import Template
-        # t = Template()
-
-        #self.request.override_renderer = "templates/entity/form.jinja2"
-        d['formcontents'] = ''
-        d['header'] = stringcase.sentencecase(self.inspect.mapped_table.key)
-        d['header2'] = self.inspect.entity.__doc__ or ''
-
-        suppress = {}
-
-        for pkey_col in self.inspect.primary_key:
-            suppress[pkey_col.key] = True
-
-        rel: RelationshipProperty
-        for rel in self.inspect.relationships:
-            arg = rel.argument
-            if rel.parent != self.inspect.mapper or rel.direction != MANYTOONE:
-                continue
-            if callable(arg):
-                rel_o = arg()
-            elif isinstance(arg, Mapper):
-                rel_o = arg.entity
-
-            logging.critical("type rel_o = %s", type(rel_o))
-            label_contents = stringcase.sentencecase(rel.key)
-            key = rel_o.__tablename__
-            entities = self.request.dbsession.query(rel_o).all()
-            select_contents = ''
-
-            for entity in entities:
-                select_contents = select_contents +\
-                                  self.render(self.rel_select_option_jinja_,
-                                              { 'option_value': '',
-                                                'option_contents': entity.display_name })
-            elem_id = 'select_%s' % key
-            rel_select = self.render("templates/entity/rel_select.jinja2", {'select_name': key,
-                                                                            'select_id': elem_id,
-                                                                            'select_value': None,
-                                                                            'select_contents': select_contents})
-            d['formcontents'] = d['formcontents'] + self.render("templates/entity/field.jinja2",
-                                                                {'input_html': rel_select,
-                                                                 'label_html': self.label_html(elem_id,
-                                                                                               label_contents
-
-                                                                                               ),
-                                                                 'help': rel.doc})
-
-            for x in rel.local_columns:
-                logging.critical("(%s) %s", rel_o, x.key)
-                suppress[x.key] = True
-
-        for x in self.inspect.columns:
-            if x.key in suppress and suppress[x.key]:
-                continue
-            vname = x.type.__visit_name__
-            if not vname in self.typemap:
-                kind = self.typemap[''][0]
-            else:
-                kind = self.typemap[vname][0]
-
-
-            elem_id = 'input_%s' % (x.key)
-            f = {'input_name': x.key,
-                 'input_id': elem_id,
-                 'input_value': ''}
-
-            e = {'id': elem_id,
-                 'input_html': get_renderer("templates/entity/field_%s.jinja2" % (kind)).template_loader().render(f),
-                 'label_html': self.label_html(elem_id, stringcase.sentencecase(x.key)),
-                 'help': x.doc
-            }
-            d['formcontents'] = d['formcontents'] + self.render("templates/entity/field.jinja2", e)
-
-        return Response(self.render("templates/entity/form.jinja2", d))
-
-    def label_html(self, elem_id, label_content):
-        return self.render("templates/entity/label.jinja2",
-            {'for_id': elem_id, 'label': label_content})
 
 
 

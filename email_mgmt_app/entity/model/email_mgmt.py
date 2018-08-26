@@ -117,6 +117,12 @@ class Address(Mixin, Base):
     country = Column(String)
 
 
+def entity_embed(*args, **kwargs):
+    def embed():
+        pass
+    return embed
+
+
 class Person(Mixin, Base):
     __tablename__ = 'person'
     id = Column(Integer, primary_key=True)
@@ -126,6 +132,8 @@ class Person(Mixin, Base):
     work_address_id = Column(Integer, ForeignKey('address.id'))
     mailing_address_id = Column(Integer, ForeignKey('address.id'))
     home_address = relationship('Address', uselist=False, foreign_keys=[home_address_id])
+    work_address = relationship('Address', uselist=False, foreign_keys=[work_address_id])
+    mailing_address = relationship('Address', uselist=False, foreign_keys=[mailing_address_id])
     organization_roles = relationship('OrgRolePerson', back_populates='person')
 
 
