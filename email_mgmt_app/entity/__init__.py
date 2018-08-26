@@ -4,9 +4,12 @@ from typing import TypeVar
 
 import sqlalchemy
 import stringcase
+from jinja2.utils import concat
+from pyramid.interfaces import IRendererFactory
 from pyramid.renderers import get_renderer
 from pyramid.request import Request
 from pyramid.response import Response
+from pyramid_jinja2 import IJinja2Environment
 from sqlalchemy import Column
 from sqlalchemy.orm import RelationshipProperty, Mapper
 from sqlalchemy.orm.base import MANYTOONE
@@ -43,6 +46,10 @@ def label_html(request, elem_id, label_content):
 typemap = {'': ['text']}
 renderers = {}
 
+def template_source(request, template_name):
+    f = request.registry.queryUtility(IRendererFactory, '.jinja2')
+    source = f.environment.loader.get_source({}, template_name)
+    return source[0]
 
 def render_template(request, template_name, d, nestlevel=0):
     if template_name in renderers:
@@ -269,7 +276,12 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
             outer_vars = {}
             wrapper = render_entity_form_wrapper(self.request, self.inspect, outer_vars)
             return Response(render_template(self.request, templates.form_enclosure,
-                                            {**outer_vars, 'form_content': wrapper}))
+                                            {**outer_vars, 'entry_point_template':
+                                                'build/templates/entry_point/%s.jinja2' % self.entry_point_key,
+                                                
+                                                'form_content': wrapper}))
+
+        #this is for post!
         r = self.entity_type.__new__(self.entity_type)
         r.__init__()
 

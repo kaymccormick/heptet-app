@@ -16,11 +16,14 @@ from email_mgmt_app.security import groupfinder
 from email_mgmt_app.util import munge_dict
 from jinja2.exceptions import TemplateNotFound
 
+
 def on_new_request(event):
     pass
 
+
 def on_application_created(event):
     pass
+
 
 def set_renderer(event):
     """
@@ -73,13 +76,14 @@ def main(global_config, **settings):
     config = Configurator(settings=settings, root_factory=RootFactory)
     config.registry.email_mgmt_app = AppSubRegistry()
 
+    config.include('pyramid_jinja2')
+    config.commit()
     # order matters here
     config.include('.viewderiver')
 
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
-    config.include('pyramid_jinja2')
     config.include('.events')
     config.commit()
 
@@ -95,8 +99,6 @@ def main(global_config, **settings):
 
     config.include('.page')
     config.include('.res')
-
-
     config.include('.exceptions')
     config.include('.entity.model.email_mgmt')
 
@@ -107,7 +109,6 @@ def main(global_config, **settings):
     t = Template()
 
     config.include('.templates.entity.field')
-
     config.include('.db')
     config.commit()
 

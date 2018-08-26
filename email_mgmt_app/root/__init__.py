@@ -30,8 +30,9 @@ class RootFactory(UserDict):
     def __repr__(self):
         return "RootFactory(%s)" % repr(dict(self))
 
-    def __json__(self, request):
-        return self.data
+    @staticmethod
+    def __json__(request):
+        return RootFactory.resources
 
     @staticmethod
     def register_model_type():

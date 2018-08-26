@@ -3,6 +3,14 @@
 const path = require('path');
 const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
+entry_points = require('./entry_points')
+
+entry_ = {}
+for(i = 0; i < entry_points.list.length; i++) {
+    ep = entry_points.list[i]
+    entry_[ep] = './src/entry_point/' + ep + '.js'
+}
+
 
 module.exports = merge(common, {
     mode: 'development', // https://webpack.js.org/concepts/mode/
@@ -13,11 +21,7 @@ module.exports = merge(common, {
         path: path.resolve(__dirname, 'email_mgmt_app/build/dist'),
         publicPath: '/build/dist',
     },
-    entry: {
-        app: './src/index.prod.js',
-        domainList: './src/domain_list.js',
-        fileUpload: './src/file_upload.js',
-    },
+    entry: entry_,
 
     devServer: {
         contentBase: './dist'

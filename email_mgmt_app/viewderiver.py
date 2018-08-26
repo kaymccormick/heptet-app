@@ -18,10 +18,8 @@ def munge_view(view, info):
 
 
 def entity_view(view, info):
-
     et = info.options.get('entity_type')
-    if et is None:
-        return view
+
     operation = info.options.get('operation')
     inspect = info.options.get('inspect')
 
@@ -33,15 +31,17 @@ def entity_view(view, info):
         original_view = info.original_view
 
         renderer = None
-        if issubclass(original_view, BaseView):
-            original_view.operation = operation
+        if isinstance(original_view, type):
+            if issubclass(original_view, BaseView):
+                original_view.operation = operation
+                original_view.entry_point_key = info.options['entry_point_key']
 
-        if issubclass(original_view, BaseEntityRelatedView):
-            # is this still in effect? (why wouldn't it be in effect?)
+            if issubclass(original_view, BaseEntityRelatedView):
+                # is this still in effect? (why wouldn't it be in effect?)
 
-            logging.warning("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
-            original_view.entity_type = et
-            #original_view.inspect = inspect
+                logging.warning("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
+                original_view.entity_type = et
+                #original_view.inspect = inspect
 
         if renderer:
             request.override_renderer = renderer

@@ -4,8 +4,9 @@ import logging
 import jsonpickle
 from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
-from pyramid.renderers import JSON
+from pyramid.renderers import JSON, RendererHelper
 from pyramid.request import Request
+from pyramid_jinja2 import Jinja2RendererFactory
 from pyramid_tm import explicit_manager
 from sqlalchemy import Column, ForeignKey, Table, PrimaryKeyConstraint, inspect
 from sqlalchemy.engine.reflection import Inspector
@@ -33,11 +34,21 @@ def usage(argv):
           '(example: "%s development.ini")' % (cmd, cmd))
     sys.exit(1)
 
+def function_adapter(func, request):
+    return repr(func)
+
+def repr_adapter(o, request):
+    return repr(o)
+
 def view_deriver_info_adapter(info: ViewDeriverInfo, request):
     o={}
+    skip = ('renderer_')
     for x, y in info.options.items():
-        if y:
+        if y and x not in skip:
             o[x] = y
+
+    if callable(o['view']):
+        o['view'] = repr(o['view'])
 
     return { 'options': o }
 
@@ -125,6 +136,7 @@ def main(argv=sys.argv):
 
     json_renderer = JSON()
     json_renderer.add_adapter(Mapper, mapper_adapter)
+    json_renderer.add_adapter(RendererHelper, repr_adapter)
     json_renderer.add_adapter(type, entity_adapter)
     json_renderer.add_adapter(Column, column_adapter)
     json_renderer.add_adapter(ForeignKey, foreignkey_adapter)
@@ -174,6 +186,13 @@ def main(argv=sys.argv):
         f.close()
 
     with open('entry_points.json', 'w') as f:
-
         f.write(json_renderer(None)({ 'list': list(email_reg.entry_points.keys())}, {'request': request}))
         f.close()
+
+    helper = RendererHelper(name="scripts/templates/entry_point.js.jinja2",
+                            registry=app.registry)
+    for entry_point_key in email_reg.entry_points.keys():
+        with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
+
+            f.write(helper.render({}, {'request': request}))
+            f.close()

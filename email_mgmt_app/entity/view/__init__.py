@@ -30,9 +30,13 @@ class BaseView():
         self._operation = None
         self._values = {}
         self._response_dict = munge_dict(request, {})
+        self._entry_point_key = None
 
     def __call__(self, *args, **kwargs):
         self.collect_args(self.request)
+        self._response_dict['entry_point_key'] = self.entry_point_key
+        self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % self.entry_point_key
+
         return self._response_dict
 
     @property
@@ -46,6 +50,14 @@ class BaseView():
     @operation.setter
     def operation(self, new) -> None:
         self._operation = new
+
+    @property
+    def entry_point_key(self):
+        return self._entry_point_key
+
+    @entry_point_key.setter
+    def entry_point_key(self, new):
+        self._entry_point_key = new
 
     def collect_args(self, request):
         if self.operation is None:
