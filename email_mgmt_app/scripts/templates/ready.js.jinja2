@@ -1,3 +1,7 @@
+{% if ready_js_stmts|length > 0 %}
 $(document).ready(function() {
-{{ ready_js_stmts }}
+{% for stmt in ready_js_stmts %}
+{{ stmt }}
+{% endfor %}
 });
+{% endif %}

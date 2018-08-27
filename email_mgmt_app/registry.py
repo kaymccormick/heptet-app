@@ -10,6 +10,7 @@ class AppSubRegistry:
         self._views = []
         self._resources = None
         self._entry_points = {}
+        self._alchemy = None
 
     @property
     def mappers(self) -> dict:
@@ -62,3 +63,11 @@ class AppSubRegistry:
     @entry_points.setter
     def entry_points(self, new):
         self._entry_points = new
+
+    @property
+    def alchemy(self):
+        return self._alchemy
+
+    @alchemy.setter
+    def alchemy(self, new):
+        self._alchemy = new

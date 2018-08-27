@@ -8,6 +8,7 @@ from pyramid.events import ContextFound, NewRequest, ApplicationCreated
 from pyramid.renderers import get_renderer
 from pyramid.request import Request
 
+from email_mgmt_app.adapter import AlchemyInfo
 from email_mgmt_app.predicate import EntityTypePredicate
 from email_mgmt_app.registry import AppSubRegistry
 from email_mgmt_app.res import Resource, RootResource, ResourceManager
@@ -86,6 +87,22 @@ def main(global_config, **settings):
 
     config.include('.events')
     config.commit()
+
+    alchemy = None
+    try:
+        with open('alchemy.json', 'r') as f:
+            lines = f.readlines()
+            s="\n".join(lines)
+            alchemy = AlchemyInfo.from_json(s)
+            f.close()
+    except FileNotFoundError:
+        pass
+    except:
+        raise
+    assert alchemy
+
+    logging.critical("a = %s", alchemy)
+    config.registry.email_mgmt_app.alchemy = alchemy
 
     def _munge_view(request):
         resp = request.wrapped_response

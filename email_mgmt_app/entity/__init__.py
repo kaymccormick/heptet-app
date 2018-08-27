@@ -10,6 +10,7 @@ from sqlalchemy import Column
 from sqlalchemy.orm import RelationshipProperty, Mapper
 from sqlalchemy.orm.base import MANYTOONE
 
+from email_mgmt_app import AlchemyInfo
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 from email_mgmt_app.util import munge_dict
@@ -62,8 +63,13 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
 
     suppress = {}
 
-    for pkey_col in inspect.primary_key:
-        suppress[pkey_col.key] = True
+    alchemy: AlchemyInfo
+    alchemy = request.registry.email_mgmt_app.alchemy
+    mapper = alchemy.mappers[inspect.mapped_table.name]
+    assert mapper
+
+    # for pkey_col in inspect.primary_key:
+    #     suppress[pkey_col.key] = True
 
     relationships = list(inspect.relationships)
     logging.info("iterating over relationships: %s", repr(relationships))

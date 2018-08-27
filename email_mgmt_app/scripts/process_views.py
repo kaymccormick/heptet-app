@@ -1,31 +1,47 @@
 import json
 import logging
 
-import jsonpickle
-from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.renderers import JSON, RendererHelper
-from pyramid.request import Request
-from pyramid_jinja2 import Jinja2RendererFactory
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+
+from email_mgmt_app.adapter import AlchemyAdapter
+from email_mgmt_app.info import ColumnInfo, InfoContainer
 from pyramid_tm import explicit_manager
 from sqlalchemy import Column, ForeignKey, Table, PrimaryKeyConstraint, inspect
 from sqlalchemy.engine.reflection import Inspector
-from sqlalchemy.orm import Mapper, RelationshipProperty
+from sqlalchemy.orm import Mapper, RelationshipProperty, ColumnProperty
 
 from email_mgmt_app import RootFactory
 from email_mgmt_app.entity.model.meta import metadata
-from jinja2 import Environment, PackageLoader, select_autoescape
 import os
 import sys
 
 from pyramid.paster import (
     get_appsettings,
-    setup_logging,
-    )
+)
 
 from pyramid.scripts.common import parse_vars
 
 import email_mgmt_app
+
+old_default = json.JSONEncoder.default
+
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        v = None
+        if isinstance(obj, Column):
+            return ['Column', obj.name, obj.table.name]
+
+        try:
+            v = old_default(self, obj)
+        except:
+
+            assert False, type(obj)
+        return v
+
+
+json.JSONEncoder.default = MyEncoder.default
 
 
 def usage(argv):
@@ -87,13 +103,10 @@ def column_adapter(column: Column, request):
 
 def mapper_adapter(mapper: Mapper, request):
     cols = []
+
     column: Column
-
-    env = request.registry.email_mgmt_app.jinja2_env
-
     for column in mapper.columns:
         cols.append("%s.%s" % (column.table.key, column.key))
-        #colren = env.get_template('column.jinja2').render(**coldict)
 
     rels = []
     rel: RelationshipProperty
@@ -125,6 +138,19 @@ def mapper_adapter(mapper: Mapper, request):
 
 
 
+
+def process_attribute(attribute: InstrumentedAttribute):
+    if attribute.is_property:
+        assert False
+
+    prop = attribute.property
+    if isinstance(prop, ColumnProperty):
+        i = ColumnInfo(key=prop.key)
+        logging.critical("i2 = %s", i)
+
+    logging.critical("pop = %s", prop.__class__)
+
+
 def main(argv=sys.argv):
     if len(argv) < 2:
         usage(argv)
@@ -133,6 +159,14 @@ def main(argv=sys.argv):
     #setup_logging(config_uri)
     logging.basicConfig(level=logging.CRITICAL)
     settings = get_appsettings(config_uri, options=options)
+
+    from jinja2 import Environment, PackageLoader, select_autoescape
+    env = Environment(
+        loader=PackageLoader('email_mgmt_app', 'templates'),
+        autoescape=select_autoescape(default=False)
+    )
+
+    adapter = AlchemyAdapter()
 
     json_renderer = JSON()
     json_renderer.add_adapter(Mapper, mapper_adapter)
@@ -155,24 +189,17 @@ def main(argv=sys.argv):
     dbsession = app.registry.email_mgmt_app.dbsession[0](request)
     db = inspect(dbsession.get_bind()) #type: Inspector
 
+    email_reg = request.registry.email_mgmt_app
+    email_reg.json_renderer = json_renderer
+
+    info = InfoContainer(mappers=[],tables=[])
+
     tables = {}
     for table in db.get_table_names():
         table_o = Table(table, metadata)
+        t = adapter.process_table(table, table_o)
+        info.tables.append(t)
         tables[table_o.key] = table_o
-
-    env = Environment(loader=PackageLoader('email_mgmt_app.scripts', 'templates'),
-                      autoescape=select_autoescape(default=False))
-    #request.registry.email_mgmt_app.jinja2_env = env
-    mapper: Mapper
-    _m = {}
-    for k,mapper in mappers.items():
-#        print(json_renderer(None)(mapper, {'request': request}))
-        _m[k] = mapper
-
-    #print(json_renderer(None)([EntityView], {'request': request}))
-
-    email_reg = request.registry.email_mgmt_app
-    email_reg.json_renderer = json_renderer
 
     obj = { 'views': email_reg.views,
             'root': RootFactory(request) }
@@ -188,10 +215,49 @@ def main(argv=sys.argv):
         f.write(json_renderer(None)({ 'list': list(email_reg.entry_points.keys())}, {'request': request}))
         f.close()
 
-    helper = RendererHelper(name="scripts/templates/entry_point.js.jinja2",
-                            registry=app.registry)
+
+
+    for mapper_key,mapper in mappers.items():
+        m_info = adapter.process_mapper(mapper_key, mapper)
+        info.mappers.append(m_info)
+
+    json_ = adapter.info.to_json()
+    with open('adapter.json', 'w') as f:
+        f.write(json_)
+        f.close()
+
+
+
+    none_ = json_renderer(None)({ 'mappers': mappers,
+                                  'tables': tables,
+                                  }, {'request': request})
+    pp = json.dumps(json.loads(none_), sort_keys=True,
+                  indent=4, separators=(',', ': '))
+
+    with open('model.json', 'w') as f:
+        f.write(pp)
+        f.close()
+
+
+    # original code follows
+    #
+    # helper = RendererHelper(name="scripts/templates/entry_point.js.jinja2",
+    #                         registry=app.registry)
+    # for entry_point_key in email_reg.entry_points.keys():
+    #     with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
+    #
+    #         f.write(helper.render({'entry_point_js': email_reg.entry_points[entry_point_key].js}, {'request': request}))
+    #         f.close()
+
+    entry_point_js_template = env.get_template('entry_point.js.jinja2')
     for entry_point_key in email_reg.entry_points.keys():
         with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
-
-            f.write(helper.render({'entry_point_js': email_reg.entry_points[entry_point_key].js}, {'request': request}))
+            js = email_reg.entry_points[entry_point_key].js
+            content = entry_point_js_template.render(
+                js_imports=[],
+                js_stmts=[],
+                extra_js_stmts=[],
+            )
+            logging.debug("content for %s = %s", entry_point_key, content)
+            f.write(content)
             f.close()

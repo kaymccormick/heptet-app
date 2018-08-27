@@ -71,6 +71,8 @@ class OrganizationRole(Mixin, AssociationTableMixin, Base):
     organization = relationship('Organization', back_populates='roles')
     role = relationship('Role', back_populates='organization_roles')
 
+    info = { 'hide': True }
+
     @property
     def display_name(self):
         return "%s, %s" % (self.role.name, self.organization.name)
@@ -84,6 +86,8 @@ class OrgRolePerson(AssociationTableMixin, Mixin, Base):
 
     person = relationship('Person', back_populates='organization_roles')
     organization_role = relationship('OrganizationRole', back_populates='role_persons')
+
+    info = {'hide': True }
 
 
 class Organization(Mixin, Base):
@@ -156,6 +160,8 @@ class Domain(Mixin, Base):
 
     organization_id = Column(Integer, ForeignKey('organization.id'))
     organization = relationship('Organization', backref='domains', doc="Associated organization.")
+
+    info = {'hide': True }
 
 
 class ServiceEntry(Mixin, Base):
