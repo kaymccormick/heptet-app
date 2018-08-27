@@ -46,5 +46,21 @@ def munge_dict(request: Request, indict: dict) -> dict:
 
 
 def render_template(request, template_name, d, nestlevel=0):
+    logging.critical("template = %s", template_name)
     renderer = get_renderer(template_name).template_loader()
     return renderer.render(munge_dict(request, d))
+
+
+def get_exception_entry_point_key(request, exception):
+    return 'exception_' + exception.__name__
+
+
+def get_entry_point_key(request, resource, op_name):
+    epstr = request.resource_path(resource).replace('/', '_')
+    if epstr[0] == '_':
+        epstr = epstr[1:]
+    if epstr[len(epstr) - 1] != '_':
+        epstr = epstr + '_'
+    epstr = epstr + op_name
+    return epstr
+

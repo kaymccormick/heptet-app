@@ -10,7 +10,6 @@ def includeme(config: Configurator):
         pass
 
     def add_mapper(config: Configurator, mapper: Mapper):
-        logging.warning("in add_mapper")
         config.registry.email_mgmt_app.mappers[mapper.mapped_table.key] = mapper
 
 

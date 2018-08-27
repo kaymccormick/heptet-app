@@ -10,7 +10,8 @@ from sqlalchemy import Column
 from sqlalchemy.orm import RelationshipProperty, Mapper
 from sqlalchemy.orm.base import MANYTOONE
 
-from email_mgmt_app import AlchemyInfo
+from email_mgmt_app.info import MapperInfo
+from email_mgmt_app.adapter import AlchemyInfo
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 from email_mgmt_app.util import munge_dict
@@ -55,61 +56,63 @@ def render_entity_form_wrapper(request, inspect, outer_vars, nest_level: int=0,d
     return render_template(request, templates.form_wrapper, {'form': form})
 
 
-def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=False,prefix=""):
-    logging.info("Rendering entity form for %s" % inspect.mapped_table)
-    d = {'form_contents': '', 'header': stringcase.sentencecase(inspect.mapped_table.key),
-         'header2': inspect.entity.__doc__ or '',
+def render_entity_form(request, mapper: MapperInfo, outer_vars, nest_level: int=0,do_modal=False,prefix=""):
+    mapped_table = "poop"
+    logging.info("Rendering entity form for %s" % mapped_table)
+    d = {'form_contents': '', 'header': stringcase.sentencecase(mapped_table),
+         'header2': mapper['doc'] or '',
          'modals': ''}
 
     suppress = {}
 
     alchemy: AlchemyInfo
     alchemy = request.registry.email_mgmt_app.alchemy
-    mapper = alchemy.mappers[inspect.mapped_table.name]
+
     assert mapper
 
     # for pkey_col in inspect.primary_key:
     #     suppress[pkey_col.key] = True
 
-    relationships = list(inspect.relationships)
-    logging.info("iterating over relationships: %s", repr(relationships))
     readycode = ''
 
-    rel: RelationshipProperty
-    for rel in relationships:
-        arg = rel.argument
-        logging.debug("rel.argument = %s", repr(arg))
-        if rel.parent != inspect.mapper or rel.direction != MANYTOONE:
+    for rel in mapper['relationships']:
+        if rel['direction'] == MANYTOONE:
             continue
-        if callable(arg):
-            rel_o = arg()
-            logging.debug("rel.argument is callable, got %s", repr(rel_o))
-        elif isinstance(arg, Mapper):
-            rel_o = arg.entity
-            logging.debug("rel.argument is instance of mapper, entity is %s", repr(rel_o))
+        arg = rel['argument']
+        rel_o = arg
 
-        pairs = rel.local_remote_pairs
-        pair = pairs[0]
-        local = pair[0]
-        remote = pair[1]
+        pairs = rel['local_remote_pairs']
+        local = pairs[0]['local']
+        remote = pairs[0]['remote']
 
-        label_contents = stringcase.sentencecase(rel.key)
-        key = rel_o.__tablename__
-        entities = request.dbsession.query(rel_o).all()
+        key_ = rel['key']
+        label_contents = stringcase.sentencecase(key_)
+        if isinstance(rel_o, Base):
+            entities = request.dbsession.query(rel_o).all()
+        else:
+            entities = []
+
         select_contents = ''
 
-        modal_id = 'modal_%s' % rel.key
+        modal_id = 'modal_%s%s' % (prefix, key_)
         buttons = ''
         collapse = ''
-        select_id = 'select_%s' % key
-        button_id = 'button_%s%s' % (prefix, key)
-
+        select_id = 'select_%s%s' % (prefix, key_)
+        button_id = 'button_%s%s' % (prefix, key_)
 
         if nest_level < 1:
             logging.warning("keys = %s", repr(request.registry.email_mgmt_app.mappers.keys()))
             do_modal = False
 
-            entity_form = render_entity_form(request, rel.mapper, outer_vars, nest_level + 1, do_modal=do_modal, prefix="%s%s." % (prefix, rel.key))
+            key = rel['key']
+            entity_form = render_entity_form\
+                ( request                           ,
+                  alchemy.mappers[remote['table']]     ,
+                  outer_vars                        ,
+                  nest_level + 1                    ,
+                  do_modal=do_modal                 ,
+                  prefix="%s%s." % (prefix, key),
+                  )
 
             if do_modal:
                 d['modals'] = d['modals'] + render_template \
@@ -121,7 +124,7 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
                      })
                 # buttons = buttons + render_template(request, templates.button_create_new_modal, { 'modal_id': modal_id })
             else:
-                collapse_id = 'collapse_%s' % rel.key
+                collapse_id = 'collapse_%s' % key
                 collapse = render_template(request, templates.collapse, {'collapse_contents': entity_form,
                                                                          'collapse_id': collapse_id})
 
@@ -153,8 +156,9 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
                               render_template(request, templates.rel_select_option,
                                               {'option_value': entity.__dict__[remote.name],
                                                'option_contents': entity.display_name})
-        col = (list(rel.local_columns))[0] # type: Column
-        rel_select = render_template(request, templates.rel_select, {'select_name': prefix + col.key,
+
+
+        rel_select = render_template(request, templates.rel_select, {'select_name': prefix + local['column'],
                                                                      'select_id': select_id,
                                                                      'select_value': None,
                                                                      'select_contents': select_contents,
@@ -167,27 +171,25 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
                                                                  'label_html': label_html(request, select_id,
                                                                                           label_contents),
                                                                  'collapse': collapse,
-                                                                 'help': rel.doc})
+                                                                 'help': rel['doc']})
 
-        for x in rel.local_columns:
-            logging.warning("(%s) %s", rel_o, x.key)
-            suppress[x.key] = True
+        suppress[local['column']] = True
 
-    cols = list(inspect.columns)
-    logging.debug("iterating over columns: %s", repr(cols))
-    for x in inspect.columns:
-        if x.key in suppress and suppress[x.key]:
-            logging.debug("skipping suppressed column %s", x.key)
+    for x in mapper['columns']:
+        key = x['key']
+        if key in suppress and suppress[key]:
+            logging.debug("skipping suppressed column %s", key)
             continue
 
-        vname = x.type.__visit_name__
-        if not vname in typemap:
-            kind = typemap[''][0]
-        else:
-            kind = typemap[vname][0]
+        # vname = x.type.__visit_name__
+        # if not vname in typemap:
+        #     kind = typemap[''][0]
+        # else:
+        #     kind = typemap[vname][0]
 
-        select_id = 'input_%s' % (x.key)
-        f = {'input_name': prefix + x.key,
+        kind = 'text'
+        select_id = 'input_%s' % (key)
+        f = {'input_name': prefix + key,
              'input_id': select_id,
              'input_value': ''}
 
@@ -195,8 +197,8 @@ def render_entity_form(request, inspect, outer_vars, nest_level: int=0,do_modal=
         logging.info("input_html = %s", input_html)
         e = {'id': select_id,
              'input_html': input_html,
-             'label_html': label_html(request, select_id, stringcase.sentencecase(x.key)),
-             'help': x.doc
+             'label_html': label_html(request, select_id, stringcase.sentencecase(key)),
+             'help': x['doc']
              }
         d['form_contents'] = d['form_contents'] + render_template(request, templates.field, e)
 
@@ -235,21 +237,19 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
         return self._entity_type
 
     def __call__(self, *args, **kwargs):
+        d = super().__call__(*args, **kwargs)
         request = self.request
 
         self.collect_args(request)
 
         self.load_entity()
-        return munge_dict(self.request, {'entity': self.entity})
+        return {**d, 'entity': self.entity}
 
 
 EntityCollectionView_EntityType = TypeVar('EntityCollectionView_EntityType')
 
 
 class EntityCollectionView(BaseEntityRelatedView[EntityCollectionView_EntityType]):
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
-
     def __call__(self, *args, **kwargs):
         assert self.request is not None
         assert self._entity_type is not None
@@ -261,19 +261,17 @@ EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 
 
 class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
-
-    def __init__(self, request: Request = None) -> None:
-        super().__init__(request)
-        self._renderers = {}
-
     def __call__(self, *args, **kwargs):
         if self.request.method == "GET":
             outer_vars = {}
-            wrapper = render_entity_form_wrapper(self.request, self.inspect, outer_vars)
+            wrapper = render_entity_form_wrapper(
+                self.request,
+                self.request.registry.email_mgmt_app.alchemy.mappers\
+                    [self.inspect.mapped_table.key],
+                outer_vars)
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
                                                 'build/templates/entry_point/%s.jinja2' % self.entry_point_key,
-                                                
                                                 'form_content': wrapper}))
 
         #this is for post!
@@ -297,9 +295,7 @@ EntityFormActionView_EntityType = TypeVar('EntityFormActionView_EntityType')
 
 
 class EntityFormActionView(BaseEntityRelatedView[EntityFormActionView_EntityType]):
-    def __call__(self, *args, **kwargs):
-        return munge_dict(self.request, {})
-
+    pass
 
 EntityAddView_EntityType = TypeVar('EntityAddView_EntityType')
 

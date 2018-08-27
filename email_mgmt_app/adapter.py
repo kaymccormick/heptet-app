@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import AnyStr, Sequence, Mapping, MutableSequence, Dict
+from typing import AnyStr, Sequence, Mapping, MutableSequence, Dict, List
 
 from sqlalchemy import Table, Column
 from sqlalchemy.orm import Mapper, RelationshipProperty
@@ -11,8 +11,8 @@ from email_mgmt_app.info import TableInfo, ColumnInfo, InfoBase, TypeInfo, Mappe
 
 @dataclass
 class AlchemyInfo(InfoBase):
-    tables: dict
-    mappers: Dict[AnyStr, MapperInfo]
+    tables: dict=None
+    mappers: dict=None
 
 class AlchemyAdapter:
     def __init__(self) -> None:
@@ -53,7 +53,9 @@ class AlchemyAdapter:
         :return:
         """
 
-        mi = MapperInfo(columns=[], relationships=[])
+        mapped_table = mapper.mapped_table # type: Table
+        mi = MapperInfo(columns=[], relationships=[],
+                        mapped_table=mapped_table.key)
 
         colinfos = []
         col: Column
@@ -63,7 +65,7 @@ class AlchemyAdapter:
             i = ColumnInfo(key=col.key,compiled=str(col.compile()),
                            table = t.name,
                            type=TypeInfo(compiled=str(col.type.compile())),)
-            logging.critical("i = %s", i)
+
             colinfos.append(i)
 
         mi.columns = colinfos
@@ -102,7 +104,9 @@ class AlchemyAdapter:
                 print(rel.backref)
 
             i = RelationshipInfo(local_remote_pairs=pairs,argument=[z.__module__, z.__name__],
+                                key=rel.key,
                              secondary=secondary,backref=rel.backref,
+                                 direction=rel.direction.name,
                              )
         return i
 

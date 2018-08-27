@@ -11,8 +11,7 @@ from sqlalchemy.orm import Session, Mapper
 import email_mgmt_app
 from email_mgmt_app.entity import Base, EntityView, EntityFormView
 from email_mgmt_app.entity.model.email_mgmt import get_tm_session, get_session_factory, get_engine, AssociationTableMixin
-from email_mgmt_app.entity.view import BaseView
-from email_mgmt_app.res import ResourceManager, OperationArgument
+from email_mgmt_app.res import ResourceManager, OperationArgument, ArgumentGetter
 
 
 class MapperAdapter:
@@ -43,7 +42,7 @@ class DbAdapter:
             pkey_col: Column
             for pkey_col in pkey:
                 logging.info("pkey_col: %s", repr(pkey_col.key))
-                pkey_args.append(OperationArgument(pkey_col.key, pkey_col.type, label=pkey_col.key.upper()))
+                pkey_args.append(OperationArgument(pkey_col.key, pkey_col.type, label=pkey_col.key.upper(), getter=ArgumentGetter()))
 
             manager = self.manager(config=config, name=key, title=stringcase.sentencecase(key),
                                    entity_type=inspect.entity, inspect=inspect, node_name=key)

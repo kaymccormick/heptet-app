@@ -1,7 +1,9 @@
 import logging
 
+from pyramid.tweens import INGRESS
+
 from email_mgmt_app.entity import BaseEntityRelatedView
-from email_mgmt_app.entity.view import BaseView
+from email_mgmt_app.view import BaseView
 from email_mgmt_app.util import munge_dict
 
 
@@ -54,6 +56,6 @@ def entity_view(view, info):
 
 
 def includeme(config):
-    entity_view.options = ('operation','inspect','entry_point_key')
-    config.add_view_deriver(entity_view)
+    entity_view.options = ('operation','inspect','entry_point_key','node_name')
+    config.add_view_deriver(entity_view,under=INGRESS)
     config.add_view_deriver(munge_view, under='owrapped_view')

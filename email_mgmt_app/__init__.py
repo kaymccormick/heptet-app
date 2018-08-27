@@ -4,7 +4,7 @@ import os
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from pyramid.events import ContextFound, NewRequest, ApplicationCreated
+from pyramid.events import ContextFound, NewRequest, ApplicationCreated, BeforeRender
 from pyramid.renderers import get_renderer
 from pyramid.request import Request
 
@@ -25,6 +25,10 @@ def on_new_request(event):
 def on_application_created(event):
     pass
 
+def on_before_render(event):
+    val = event.rendering_val
+
+
 
 def set_renderer(event):
     """
@@ -34,6 +38,9 @@ def set_renderer(event):
     """
     request = event.request # type: Request
     context = request.context # type: Resource
+
+
+
     if context.entity_type:
         # sets incorrect template
         def try_template(template_name):
@@ -115,17 +122,17 @@ def main(global_config, **settings):
         RootResource({}, ResourceManager(config, name='', title='', node_name=''))
 
     config.include('.page')
+    config.commit()
+
+    config.include('.view')
     config.include('.res')
-    config.include('.exceptions')
+
     config.include('.entity.model.email_mgmt')
 
     # we commit here prior to including .db since I dont know how to order config
     config.commit()
 
-    from email_mgmt_app.templates.entity.field import Template
-    t = Template()
-
-    config.include('.templates.entity.field')
+#    config.include('.templates.entity.field')
     config.include('.db')
     config.commit()
 
@@ -145,6 +152,7 @@ def main(global_config, **settings):
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
     config.add_subscriber(set_renderer, ContextFound)
+    config.add_subscriber(on_before_render, BeforeRender)
     config.add_subscriber(on_new_request, NewRequest)
     config.add_subscriber(on_application_created, ApplicationCreated)
     config.commit()
