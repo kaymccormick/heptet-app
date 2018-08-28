@@ -7,7 +7,6 @@ from pyramid.request import Request
 
 from email_mgmt_app.argument import ArgumentContext
 from email_mgmt_app.exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
-from email_mgmt_app.res import ResourceOperation, OperationArgument
 from email_mgmt_app.entrypoint import EntryPoint
 from email_mgmt_app.util import get_exception_entry_point_key
 
@@ -45,7 +44,7 @@ class BaseView:
         self._request = new
 
     @property
-    def operation(self) -> ResourceOperation:
+    def operation(self) -> 'ResourceOperation':
         return self._operation
 
     @operation.setter
@@ -68,7 +67,7 @@ class BaseView:
 #        logging.warning("checking args %s", repr(args))
         values = []
         arg_context = ArgumentContext()
-        arg: OperationArgument
+        arg=None # type: 'OperationArgument'
         for arg in args:
             has_value = arg.has_value(request, arg_context)
             got_value = False
@@ -113,7 +112,7 @@ class OperationArgumentExceptionView(ExceptionView):
 
 def includeme(config: Configurator):
     def action():
-        logger.info("Executing config action.")
+        logger.info("Executing config action [exception views].")
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
         request.registry = config.registry
 

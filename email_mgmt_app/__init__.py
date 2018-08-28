@@ -58,6 +58,7 @@ def set_renderer(event):
             except:
                 return True
 
+        logger.info("Type of entity_type is %s", type(context.entity_type))
         renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
                                                request.view_name.lower())
 
@@ -74,6 +75,25 @@ def set_renderer(event):
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
+
+
+def load_alchemy_json(config):
+    alchemy = None
+    try:
+        with open('alchemy.json', 'r') as f:
+            lines = f.readlines()
+            s="\n".join(lines)
+            alchemy = AlchemyInfo.from_json(s)
+            f.close()
+    except FileNotFoundError:
+        pass
+    except:
+        raise
+    assert alchemy
+
+    config.registry.email_mgmt_app.alchemy = alchemy
+    return alchemy
+
 
 
 def main(global_config, **settings):
@@ -104,44 +124,28 @@ def main(global_config, **settings):
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
-    #config.include('.events')
+    # this is required to collect the list
+    # of mappers
+    config.include('.events')
     config.commit()
 
-    alchemy = None
-    try:
-        with open('alchemy.json', 'r') as f:
-            lines = f.readlines()
-            s="\n".join(lines)
-            alchemy = AlchemyInfo.from_json(s)
-            f.close()
-    except FileNotFoundError:
-        pass
-    except:
-        raise
-    assert alchemy
-
-
-    config.registry.email_mgmt_app.alchemy = alchemy
-
-    # def _munge_view(request):
-    #     resp = request.wrapped_response
-    #     return munge_dict(request, resp)
-    #
-    # config.add_view(_munge_view, '_munge_view')
+    alchemy = load_alchemy_json(config)
 
     # should this be in another spot!?
     # this is confusing because resourcemanager
     config.registry.email_mgmt_app.resources = \
-        RootResource({}, ResourceManager(config, name='', title='', node_name=''))
+        RootResource({}, ResourceManager(config, title='', node_name=''))
 
     config.include('.page')
     config.commit()
 
     config.include('.view')
-    config.include('.res')
     config.commit()
 
     config.include('.entity.model.email_mgmt')
+    config.commit()
+    config.include('.res')
+
 
     # we commit here prior to including .db since I dont know how to order config
     config.commit()

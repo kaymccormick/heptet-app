@@ -1,7 +1,11 @@
 from dataclasses import dataclass
-from typing import AnyStr, Sequence, MutableSequence, List, Tuple
+from typing import AnyStr, Sequence, MutableSequence, List, Tuple, Dict
 from dataclasses_json import DataClassJsonMixin
+from sqlalchemy import Integer
 from sqlalchemy.orm import RelationshipProperty
+
+
+
 
 @dataclass
 class InfoBase(DataClassJsonMixin):
@@ -31,7 +35,7 @@ class LocalRemotePairInfo(Mixin, InfoBase):
 @dataclass
 class RelationshipInfo(KeyMixin, Mixin, InfoBase):
     argument: object=None
-    mapper: 'MapperInfo'=None
+    mapper_key: AnyStr=None
     secondary: object=None
     backref: AnyStr=None
     local_remote_pairs: Sequence[LocalRemotePairInfo]=None
@@ -40,7 +44,7 @@ class RelationshipInfo(KeyMixin, Mixin, InfoBase):
 
 @dataclass
 class ColumnInfo(KeyMixin, CompiledMixin, Mixin, InfoBase):
-    type: 'TypeInfo'=None
+    type_: 'TypeInfo'=None
     table: AnyStr=None
     name: AnyStr=None
     pass
@@ -49,8 +53,10 @@ class ColumnInfo(KeyMixin, CompiledMixin, Mixin, InfoBase):
 
 @dataclass
 class MapperInfo(Mixin, InfoBase):
+    mapper_key: AnyStr=None
     primary_key: Sequence[Tuple[AnyStr, AnyStr]]=None
     columns: MutableSequence[ColumnInfo]=None
+    column_map: Dict[AnyStr, Integer]=None
     relationships: MutableSequence[RelationshipInfo]=None
     mapped_table: AnyStr=None
     pass

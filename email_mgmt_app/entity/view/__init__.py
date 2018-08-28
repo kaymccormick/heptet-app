@@ -12,7 +12,6 @@ class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], Ba
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
         self._entity_type = request.context.resource_manager.entity_type
-        self._inspect = request.context.resource_manager.inspect # type: Mapper
 
     @property
     def entity_type(self):
@@ -22,10 +21,10 @@ class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], Ba
     def entity_type(self, new):
         self._entity_type = new
 
-    @property
-    def inspect(self) -> Mapper:
-        return self._inspect
-
-    @inspect.setter
-    def inspect(self, new: Mapper):
-        self._inspect = new
+    # @property
+    # def inspect(self) -> Mapper:
+    #     return self._inspect
+    #
+    # @inspect.setter
+    # def inspect(self, new: Mapper):
+    #     self._inspect = new

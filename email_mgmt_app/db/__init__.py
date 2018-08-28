@@ -23,6 +23,8 @@ class DbAdapter:
         self._cache = {}
 
     def manager(self, config=None, name=None, title=None, entity_type=None, inspect=None, node_name=None):
+        """"""
+        assert False
         mgr = ResourceManager(config=config, name=name, title=title, entity_type=entity_type, inspect=inspect, node_name=node_name)
         return mgr
 

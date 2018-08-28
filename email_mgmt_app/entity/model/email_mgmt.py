@@ -2,10 +2,19 @@ import logging
 
 import zope.sqlalchemy
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, LargeBinary
-from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
+from sqlalchemy.event import listen
+from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref, Mapper
 
 from email_mgmt_app.entity.model.meta import Base
 
+
+mappers = {}
+def receive_mapper_configured(mapper: Mapper, *args, **kwargs):
+    "listen for the 'mapper_configured' event"
+    logging.warning("mapper configured %s, %s", repr(args), repr(kwargs))
+    mappers[mapper.mapped_table.key] = mapper
+
+listen(Mapper, 'mapper_configured', receive_mapper_configured)
 
 # marker class for objects which are "association tables"
 class AssociationTableMixin(object):
@@ -101,7 +110,7 @@ class Organization(Mixin, Base):
     roles = relationship('OrganizationRole', back_populates='organization')
 
     def __repr__(self):
-        return "Organization[%03d]: %s" % (self.id, self.name)
+        return "Organization[%s]: %s" % (self.id, self.name)
 
 
 class Role(Mixin, Base):
@@ -242,6 +251,11 @@ def includeme(config):
     Activate this setup using ``config.include('email_mgmt_app.models')``.
 
     """
+
+    def action():
+        for key,val in mappers.items():
+            config.add_mapper(val)
+
     settings = config.get_settings()
     settings['tm.manager_hook'] = 'pyramid_tm.explicit_manager'
 
@@ -265,3 +279,4 @@ def includeme(config):
         'dbsession',
         reify=True
     )
+    config.action(None, action)

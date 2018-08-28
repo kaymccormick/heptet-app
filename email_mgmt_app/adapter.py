@@ -10,6 +10,10 @@ from email_mgmt_app.info import TableInfo, ColumnInfo, InfoBase, TypeInfo, Mappe
 
 logger = logging.getLogger(__name__)
 
+# to avoid confusion, this adapts SQLalchemy-related information
+# to our @dataclasses. There needs to be another layer
+# to adapt the data class information into application objects
+# such as ResourceManager, ResourceOperation.
 
 class IAdapter:
     pass
@@ -65,25 +69,36 @@ class AlchemyAdapter(IAdapter):
         for pkey in mapper.primary_key:
             primary_key.append([pkey.table.key, pkey.key])
 
+        column_map = {}
         columns = []
+        col_index = 0
         col: Column
         for col in mapper.columns:
             coltyp = col.type
             t = col.table  # type: Table
             i = ColumnInfo(key=col.key, compiled=str(col.compile()),
                            table=t.name,
-                           type=TypeInfo(compiled=str(col.type.compile())), )
+                           type_=TypeInfo(compiled=str(col.type.compile())), )
 
             columns.append(i)
+            if t.key not in column_map:
+                column_map[t.key] = { col.key: col_index }
+            else:
+                column_map[t.key][col.key] = col_index
+
+
+            col_index = col_index + 1
 
         relationships = []
         for relationship in mapper.relationships:
-            relationships.append(self.process_relationship(relationship))
+            relationships.append(self.process_relationship(mapper_key, relationship))
 
         mi = MapperInfo(columns=columns,
                         relationships=relationships,
                         primary_key=primary_key,
-                        mapped_table=mapped_table.key)
+                        mapped_table=mapped_table.key,
+                        column_map=column_map,
+                        mapper_key=mapper_key)
         self.info.mappers[mapper_key] = mi
 
         return mi
@@ -97,7 +112,7 @@ class AlchemyAdapter(IAdapter):
     #     if desc.is_property:
     #         assert False
     #
-    def process_relationship(self, rel: RelationshipProperty):
+    def process_relationship(self, mapper_key, rel: RelationshipProperty):
         y = rel.argument
         if callable(y):
             z = y()
@@ -115,7 +130,8 @@ class AlchemyAdapter(IAdapter):
             if rel.backref and not isinstance(rel.backref, str):
                 print(rel.backref)
 
-            i = RelationshipInfo(local_remote_pairs=pairs, argument=[z.__module__, z.__name__],
+            i = RelationshipInfo(mapper_key=mapper_key,
+                                 local_remote_pairs=pairs, argument=[z.__module__, z.__name__],
                                  key=rel.key,
                                  secondary=secondary, backref=rel.backref,
                                  direction=rel.direction.name,

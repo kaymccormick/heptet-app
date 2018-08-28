@@ -24,7 +24,7 @@ def entity_view(view, info):
     et = info.options.get('entity_type')
 
     operation = info.options.get('operation')
-    inspect = info.options.get('inspect')
+    mapper_info = info.options.get('mapper_info')
 
     info.registry.email_mgmt_app.views.append(info)
 
@@ -44,7 +44,7 @@ def entity_view(view, info):
 
                 #logger.warning("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
                 original_view.entity_type = et
-                #original_view.inspect = inspect
+                original_view.mapper_info = mapper_info
 
         # if renderer:
         #     request.override_renderer = renderer
@@ -60,13 +60,14 @@ def test_view_deriver(view_callable, info):
         logger.debug("calling view")
         #request.override_renderer = "poop.htnk"
         result = view_callable(context, request)
-        logger.debug("view result is %s", result)
+        logger.debug("view result is %s", result.status)
+        return result
 
     return derive_view
 
 
 def includeme(config):
-    entity_view.options = ('operation','inspect','entry_point_key','node_name')
+    entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
     config.add_view_deriver(entity_view,under=INGRESS)
     config.add_view_deriver(munge_view, under='owrapped_view')
     config.add_view_deriver(test_view_deriver,over='mapped_view')

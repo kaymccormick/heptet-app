@@ -213,7 +213,8 @@ def main(argv=sys.argv):
     #     f.close()
 
     with open('entry_points.json', 'w') as f:
-        #f.write(json_renderer(None)({ 'list': list(myapp_subreg.entry_points.keys())}, {'request': request}))
+        json.dump({'list': list(myapp_subreg.entry_points.keys())},
+                  f)
         f.close()
 
     mappers = myapp_subreg.mappers

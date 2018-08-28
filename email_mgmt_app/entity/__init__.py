@@ -56,9 +56,10 @@ def render_entity_form_wrapper(request, inspect, outer_vars, nest_level: int=0,d
 
 
 def render_entity_form(request, mapper: MapperInfo, outer_vars, nest_level: int=0,do_modal=False,prefix=""):
-    mapped_table = "poop"
-    logging.info("Rendering entity form for %s" % mapped_table)
-    d = {'form_contents': '', 'header': stringcase.sentencecase(mapped_table),
+
+    mapper_key = mapper['mapper_key']
+    logging.info("Rendering entity form for %s" % mapper_key)
+    d = {'form_contents': '', 'header': stringcase.sentencecase(mapper_key),
          'header2': mapper['doc'] or '',
          'modals': ''}
 
@@ -268,7 +269,7 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
             wrapper = render_entity_form_wrapper(
                 self.request,
                 self.request.registry.email_mgmt_app.alchemy.mappers\
-                    [self.inspect.mapped_table.key],
+                    [self.mapper_info['mapper_key']],
                 outer_vars)
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
