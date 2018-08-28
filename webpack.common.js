@@ -36,6 +36,8 @@ for(i = 0; i < entry_points.list.length; i++)
 {
     ep = entry_points.list[i]
     html_ =
+        // all of this data can be supplied by entry point
+        // if we wish!
         new HtmlWebpackPlugin({
             title: '',
             template: 'src/assets/entry_point_generic.html',

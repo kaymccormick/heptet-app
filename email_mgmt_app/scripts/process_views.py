@@ -21,33 +21,15 @@ import sys
 
 from pyramid.paster import (
     get_appsettings,
-    setup_logging)
+    setup_logging
+)
 
 from pyramid.scripts.common import parse_vars
 
 import email_mgmt_app
 
 from email_mgmt_app.entrypoint import EntryPoint
-from email_mgmt_app.process import ProcessContext
-
-old_default = json.JSONEncoder.default
-
-class MyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        logging.critical("type = %s", type(obj))
-        v = None
-        if isinstance(obj, Column):
-            return ['Column', obj.name, obj.table.name]
-
-        try:
-            v = old_default(self, obj)
-        except:
-
-            assert False, type(obj)
-        return v
-
-
-json.JSONEncoder.default = MyEncoder.default
+from email_mgmt_app.process import ProcessContext, setup_jsonencoder
 
 
 def usage(argv):
@@ -150,9 +132,9 @@ def process_attribute(attribute: InstrumentedAttribute):
     prop = attribute.property
     if isinstance(prop, ColumnProperty):
         i = ColumnInfo(key=prop.key)
-        logging.critical("i2 = %s", i)
+        #logging.critical("i2 = %s", i)
 
-    logging.critical("pop = %s", prop.__class__)
+    #logging.critical("pop = %s", prop.__class__)
 
 
 def template_env():
@@ -164,46 +146,55 @@ def template_env():
     return env
 
 
+def get_request(request_factory, myapp_reg):
+    request = request_factory({})
+    request.registry = myapp_reg
+    request.tm = explicit_manager(request)
+    return request
+
+
 def main(argv=sys.argv):
+
+    # begin arg parsing
     if len(argv) < 2:
         usage(argv)
     config_uri = argv[1]
     options = parse_vars(argv[2:])
+    # end arg parsing: vars=config_uri,options
 
+    # setup_logging ...
     setup_logging(config_uri)
 
+    # get_appsettings
     settings = get_appsettings(config_uri, options=options)
 
-    pcontext = ProcessContext(settings=settings,
-                              template_env=template_env())
-
+    # Our SQLAlchemy adapter
     adapter = AlchemyAdapter()
 
-    json_renderer = JSON()
-    json_renderer.add_adapter(Mapper, mapper_adapter)
-    json_renderer.add_adapter(RendererHelper, repr_adapter)
-    json_renderer.add_adapter(type, entity_adapter)
-    json_renderer.add_adapter(Column, column_adapter)
-    json_renderer.add_adapter(ForeignKey, foreignkey_adapter)
-    json_renderer.add_adapter(Table, table_adapter)
-    json_renderer.add_adapter(ViewDeriverInfo, view_deriver_info_adapter)
-    json_renderer.add_adapter(PrimaryKeyConstraint, primary_key_constraint_adapter)
+    # first custom code
+    pcontext = ProcessContext(settings=settings,
+                              template_env=template_env(),
+                              adapter=adapter)
 
+    # this sets up the json.JSONENcoder.default
+    setup = setup_jsonencoder()
+    setup()
+
+    # initilialize application
     myapp = email_mgmt_app.main(None, **settings)
     myapp_reg = myapp.registry
     myapp_subreg = myapp_reg.email_mgmt_app
-    mappers = myapp_subreg.mappers
 
-    request = myapp.request_factory({})
-    request.registry = myapp_reg
-    request.tm = explicit_manager(request)
+    # generate a request
+    request = get_request(myapp.request_factory, myapp_reg)
 
-    dbsession = myapp_reg.email_mgmt_app.dbsession[0](request)
+    # this looks weird
+    app_dbsession = myapp_reg.email_mgmt_app.dbsession
+
+    dbsession = app_dbsession[0](request)
     db = inspect(dbsession.get_bind()) #type: Inspector
 
-    test_app = TestApp(myapp)
-
-    myapp_subreg.json_renderer = json_renderer
+    #myapp_subreg.json_renderer = json_renderer
 
     tables = {}
     for table in db.get_table_names():
@@ -211,21 +202,21 @@ def main(argv=sys.argv):
         t = adapter.process_table(table, table_o)
 
     obj = { 'views': myapp_subreg.views,
-            'root': RootFactory(request) }
-    none_ = json_renderer(None)(obj, {'request': request})
-    pp = json.dumps(json.loads(none_), sort_keys=True,
-                  indent=4, separators=(',', ': '))
+            'root':  RootFactory(request) }
+    #none_ = json_renderer(None)(obj, {'request': request})
+    none_ = ""
+#    pp = json.dumps(json.loads(none_), sort_keys=True,
+#                  indent=4, separators=(',', ': '))
     #print(pp)
-    with open('views.json', 'w') as f:
-        f.write(pp)
-        f.close()
+    # with open('views.json', 'w') as f:
+    #     f.write(pp)
+    #     f.close()
 
     with open('entry_points.json', 'w') as f:
-        f.write(json_renderer(None)({ 'list': list(myapp_subreg.entry_points.keys())}, {'request': request}))
+        #f.write(json_renderer(None)({ 'list': list(myapp_subreg.entry_points.keys())}, {'request': request}))
         f.close()
 
-
-
+    mappers = myapp_subreg.mappers
     for mapper_key,mapper in mappers.items():
         m_info = adapter.process_mapper(mapper_key, mapper)
 
@@ -234,15 +225,15 @@ def main(argv=sys.argv):
         f.write(json_)
         f.close()
 
-    none_ = json_renderer(None)({ 'mappers': mappers,
-                                  'tables': tables,
-                                  }, {'request': request})
-    pp = json.dumps(json.loads(none_), sort_keys=True,
-                  indent=4, separators=(',', ': '))
+    #none_ = json_renderer(None)({ 'mappers': mappers,
+#                                  'tables': tables,
+#                                  }, {'request': request})
+#    pp = json.dumps(json.loads(none_), sort_keys=True,
+#                  indent=4, separators=(',', ': '))
 
-    with open('model.json', 'w') as f:
-        f.write(pp)
-        f.close()
+    # with open('model.json', 'w') as f:
+    #     f.write(pp)
+    #     f.close()
 
     # original code follows
     #
@@ -254,11 +245,13 @@ def main(argv=sys.argv):
     #         f.write(helper.render({'entry_point_js': email_reg.entry_points[entry_point_key].js}, {'request': request}))
     #         f.close()
 
+    test_app = TestApp(myapp)
+
     entry_point_js_template = pcontext.template_env.get_template('entry_point.js.jinja2')
     for entry_point_key in myapp_subreg.entry_points.keys():
 
         ep = myapp_subreg.entry_points[entry_point_key] # type: EntryPoint
-        logging.critical("xx %s", repr(ep.view))
+        #logging.critical("xx %s", repr(ep.view))
 
         js = ep.js
 
@@ -268,7 +261,7 @@ def main(argv=sys.argv):
                 js_stmts=[],
                 extra_js_stmts=[],
             )
-            logging.debug("content for %s = %s", entry_point_key, content)
+            #logging.debug("content for %s = %s", entry_point_key, content)
             f.write(content)
             f.close()
 
@@ -277,14 +270,19 @@ def main(argv=sys.argv):
             continue
 
         uri = '/' + ep.view['node_name'] + '/' + ep.view['name']
-        logging.critical("uri = %s", uri)
+
         try:
+            if ep.view['name'] == 'view':
+                params = '?id=1'
+                uri = uri + params
+
+            logging.debug("uri = %s", uri)
             resp = test_app.get(uri)
             with open('temp/%s.html' % ep.key, 'w') as fout:
                 fout.write(resp.text)
                 fout.close()
-
         except Exception as ex:
+            traceback.print_exc()
             traceback.print_tb(sys.exc_info()[2])
-            logging.critical("exception: %s", repr(ex))
+            #logging.critical("exception: %s", repr(ex))
 

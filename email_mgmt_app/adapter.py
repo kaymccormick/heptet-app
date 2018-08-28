@@ -8,15 +8,22 @@ from sqlalchemy.orm import Mapper, RelationshipProperty
 from email_mgmt_app.info import TableInfo, ColumnInfo, InfoBase, TypeInfo, MapperInfo, RelationshipInfo, \
     LocalRemotePairInfo, PairInfo
 
+logger = logging.getLogger(__name__)
+
+
+class IAdapter:
+    pass
+
 
 @dataclass
 class AlchemyInfo(InfoBase):
-    tables: dict=None
-    mappers: dict=None
+    tables: dict = None
+    mappers: dict = None
 
-class AlchemyAdapter:
+
+class AlchemyAdapter(IAdapter):
     def __init__(self) -> None:
-        self._info = AlchemyInfo(tables={},mappers={})
+        self._info = AlchemyInfo(tables={}, mappers={})
         pass
 
     @property
@@ -30,7 +37,7 @@ class AlchemyAdapter:
     def process_table(self, table_name: AnyStr, table: Table) -> TableInfo:
         assert table_name == table.name
         i = TableInfo(name=table.name, key=table.key,
-                      columns=[],primary_key=[]
+                      columns=[], primary_key=[]
                       )
         self.info.tables[table_name] = i
 
@@ -40,11 +47,10 @@ class AlchemyAdapter:
 
         col: Column
         for col in table.columns:
-            _i = ColumnInfo(name=col.name,key=col.key)
+            _i = ColumnInfo(name=col.name, key=col.key)
             i.columns.append(_i)
 
         return i
-
 
     def process_mapper(self, mapper_key, mapper: Mapper):
         """
@@ -53,27 +59,33 @@ class AlchemyAdapter:
         :return:
         """
 
-        mapped_table = mapper.mapped_table # type: Table
-        mi = MapperInfo(columns=[], relationships=[],
-                        mapped_table=mapped_table.key)
+        mapped_table = mapper.mapped_table  # type: Table
 
-        colinfos = []
+        primary_key = []
+        for pkey in mapper.primary_key:
+            primary_key.append([pkey.table.key, pkey.key])
+
+        columns = []
         col: Column
         for col in mapper.columns:
             coltyp = col.type
-            t = col.table # type: Table
-            i = ColumnInfo(key=col.key,compiled=str(col.compile()),
-                           table = t.name,
-                           type=TypeInfo(compiled=str(col.type.compile())),)
+            t = col.table  # type: Table
+            i = ColumnInfo(key=col.key, compiled=str(col.compile()),
+                           table=t.name,
+                           type=TypeInfo(compiled=str(col.type.compile())), )
 
-            colinfos.append(i)
+            columns.append(i)
 
-        mi.columns = colinfos
-
+        relationships = []
         for relationship in mapper.relationships:
-            mi.relationships.append(self.process_relationship(relationship))
+            relationships.append(self.process_relationship(relationship))
 
+        mi = MapperInfo(columns=columns,
+                        relationships=relationships,
+                        primary_key=primary_key,
+                        mapped_table=mapped_table.key)
         self.info.mappers[mapper_key] = mi
+
         return mi
 
     # desc: InspectionAttr
@@ -103,10 +115,9 @@ class AlchemyAdapter:
             if rel.backref and not isinstance(rel.backref, str):
                 print(rel.backref)
 
-            i = RelationshipInfo(local_remote_pairs=pairs,argument=[z.__module__, z.__name__],
-                                key=rel.key,
-                             secondary=secondary,backref=rel.backref,
+            i = RelationshipInfo(local_remote_pairs=pairs, argument=[z.__module__, z.__name__],
+                                 key=rel.key,
+                                 secondary=secondary, backref=rel.backref,
                                  direction=rel.direction.name,
-                             )
+                                 )
         return i
-

@@ -1,15 +1,19 @@
 <nav class="col-md-2 d-none d-md-block bg-light sidebar">
     <div class="sidebar-sticky">
         <ul class="list-group">
-            {% for x in r.root.data %}
-                {% if not r.root[x].entity_type.info %}
-                    <li class="list-group-item tk-trajan-sans-pro">{{ r.root[x].title }}</li>
-                    {% for y in r.root[x].resource_manager._ops %}
-                        <li class="list-group-item" style="padding-left: 3.25rem"><a
-                                href="{{ r.root[x].url() }}{{ y._name }}">{{ y._name }}</a></li>
-                    {% endfor %}
-                {% endif %}
-            {% endfor %}
+            {% if not request %}
+                <span>Request is false!</span>
+            {% else %}
+                {% for x in request.root.data %}
+                    {% if not request.root[x].entity_type.info %}
+                        <li class="list-group-item tk-trajan-sans-pro">{{ request.root[x].title }}</li>
+                        {% for y in request.root[x].resource_manager._ops %}
+                            <li class="list-group-item" style="padding-left: 3.25rem"><a
+                                    href="{{ request.root[x].url() }}{{ y._name }}">{{ y._name }}</a></li>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         </ul>
     </div>
 </nav>

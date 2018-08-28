@@ -7,7 +7,10 @@ from zope.interface import implementer
 
 @implementer(IExceptionResponse)
 class BaseAppException(HTTPClientError):
-    pass
+    def __init__(self, message):
+        super().__init__(detail=message,comment=message)
+        self.message = message
+
 
 @implementer(IExceptionResponse)
 class OperationException(BaseAppException):
@@ -15,14 +18,14 @@ class OperationException(BaseAppException):
     title = 'Operation Exception'
     explanation = 'Operation Exception'
 
-    def __init__(self, operation):
-        super().__init__()
+    def __init__(self, operation, message):
+        super().__init__(message)
         self.operation = operation
 
 @implementer(IExceptionResponse)
 class OperationArgumentException(OperationException):
-    def __init__(self, operation, arg):
-        super().__init__(operation)
+    def __init__(self, operation, arg, message):
+        super().__init__(operation, message)
         self.arg = arg
 
 @implementer(IExceptionResponse)

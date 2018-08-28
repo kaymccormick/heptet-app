@@ -14,7 +14,6 @@ from email_mgmt_app.info import MapperInfo
 from email_mgmt_app.adapter import AlchemyInfo
 from email_mgmt_app.entity.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
-from email_mgmt_app.util import munge_dict
 from email_mgmt_app.util import render_template
 
 
@@ -70,6 +69,8 @@ def render_entity_form(request, mapper: MapperInfo, outer_vars, nest_level: int=
 
     assert mapper
 
+    # TODO - re-implement using dictionary loaded via json
+
     # for pkey_col in inspect.primary_key:
     #     suppress[pkey_col.key] = True
 
@@ -101,7 +102,7 @@ def render_entity_form(request, mapper: MapperInfo, outer_vars, nest_level: int=
         button_id = 'button_%s%s' % (prefix, key_)
 
         if nest_level < 1:
-            logging.warning("keys = %s", repr(request.registry.email_mgmt_app.mappers.keys()))
+            #logging.warning("keys = %s", repr(request.registry.email_mgmt_app.mappers.keys()))
             do_modal = False
 
             key = rel['key']
@@ -254,7 +255,7 @@ class EntityCollectionView(BaseEntityRelatedView[EntityCollectionView_EntityType
         assert self.request is not None
         assert self._entity_type is not None
         collection = self.request.dbsession.query(self._entity_type).all()
-        return munge_dict(self.request, {'entities': collection})
+        return {'entities': collection}
 
 
 EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')

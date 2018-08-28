@@ -14,9 +14,11 @@ from email_mgmt_app.registry import AppSubRegistry
 from email_mgmt_app.res import Resource, RootResource, ResourceManager
 from email_mgmt_app.root import RootFactory
 from email_mgmt_app.security import groupfinder
-from email_mgmt_app.util import munge_dict
 from jinja2.exceptions import TemplateNotFound
+from email_mgmt_app.view import ExceptionView
+from pyramid.response import Response
 
+logger = logging.getLogger(__name__)
 
 def on_new_request(event):
     pass
@@ -27,8 +29,11 @@ def on_application_created(event):
 
 def on_before_render(event):
     val = event.rendering_val
+    logger.critical("VAL=%s", val)
 
 
+
+# this function does too much
 
 def set_renderer(event):
     """
@@ -45,7 +50,7 @@ def set_renderer(event):
         # sets incorrect template
         def try_template(template_name):
             try:
-                logging.debug("trying template %s", template_name)
+                logger.debug("trying template %s", template_name)
                 get_renderer(template_name).template_loader().render({})
                 return True
             except TemplateNotFound as ex:
@@ -57,11 +62,13 @@ def set_renderer(event):
                                                request.view_name.lower())
 
         if not try_template(renderer):
-            renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
+            renderer = None
+            if request.view_name:
+                renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
 
-        logging.debug("selecting %s for %s", renderer, request.path_info)
-
-        request.override_renderer = renderer
+        if renderer:
+            logger.debug("selecting %s for %s", renderer, request.path_info)
+            request.override_renderer = renderer
         return True
 
 
@@ -82,17 +89,22 @@ def main(global_config, **settings):
         f.close()
 
     config = Configurator(settings=settings, root_factory=RootFactory)
+                          #exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
     config.registry.email_mgmt_app = AppSubRegistry()
 
     config.include('pyramid_jinja2')
     config.commit()
+
+    renderer_pkg = 'pyramid_jinja2.renderer_factory'
+    config.add_renderer(None, renderer_pkg)
+
     # order matters here
     config.include('.viewderiver')
 
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
-    config.include('.events')
+    #config.include('.events')
     config.commit()
 
     alchemy = None
@@ -108,16 +120,17 @@ def main(global_config, **settings):
         raise
     assert alchemy
 
-    logging.critical("a = %s", alchemy)
+
     config.registry.email_mgmt_app.alchemy = alchemy
 
-    def _munge_view(request):
-        resp = request.wrapped_response
-        return munge_dict(request, resp)
-
-    config.add_view(_munge_view, '_munge_view')
+    # def _munge_view(request):
+    #     resp = request.wrapped_response
+    #     return munge_dict(request, resp)
+    #
+    # config.add_view(_munge_view, '_munge_view')
 
     # should this be in another spot!?
+    # this is confusing because resourcemanager
     config.registry.email_mgmt_app.resources = \
         RootResource({}, ResourceManager(config, name='', title='', node_name=''))
 
@@ -126,6 +139,7 @@ def main(global_config, **settings):
 
     config.include('.view')
     config.include('.res')
+    config.commit()
 
     config.include('.entity.model.email_mgmt')
 
@@ -149,8 +163,6 @@ def main(global_config, **settings):
        ACLAuthorizationPolicy()
     )
 
-    renderer_pkg = 'pyramid_jinja2.renderer_factory'
-    config.add_renderer(None, renderer_pkg)
     config.add_subscriber(set_renderer, ContextFound)
     config.add_subscriber(on_before_render, BeforeRender)
     config.add_subscriber(on_new_request, NewRequest)

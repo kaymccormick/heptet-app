@@ -1,5 +1,9 @@
+import json
 from typing import Dict
 
+from sqlalchemy import Column
+
+from email_mgmt_app.adapter import IAdapter
 from pyramid_jinja2 import Environment
 
 SettingsType = Dict[str, str]
@@ -7,7 +11,7 @@ TemplateEnvironmentType = Environment
 
 
 class ProcessContext:
-    def __init__(self, settings: SettingsType, template_env: TemplateEnvironmentType):
+    def __init__(self, settings: SettingsType, template_env: TemplateEnvironmentType, adapter: IAdapter):
         self._settings = settings
         self._template_env = template_env
 
@@ -48,3 +52,25 @@ class ModelProcessor:
     pass
 
 
+def setup_jsonencoder():
+    def do_setup():
+        old_default = json.JSONEncoder.default
+
+        class MyEncoder(json.JSONEncoder):
+            def default(self, obj):
+                # logging.critical("type = %s", type(obj))
+                v = None
+                # This is not a mistake.
+                if isinstance(obj, Column):
+                    return ['Column', obj.name, obj.table.name]
+
+                try:
+                    v = old_default(self, obj)
+                except:
+
+                    assert False, type(obj)
+                return v
+
+        json.JSONEncoder.default = MyEncoder.default
+
+    return do_setup

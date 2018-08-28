@@ -2,7 +2,16 @@ from typing import AnyStr
 
 
 class EntryPoint:
+    """
+
+    """
     def __init__(self, key: AnyStr, js=None, view=None) -> None:
+        """
+
+        :param key:
+        :param js:
+        :param view:
+        """
         self._key = key
         self._js = js
         self._view = view

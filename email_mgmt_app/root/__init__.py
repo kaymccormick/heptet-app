@@ -40,7 +40,7 @@ class RootFactory(UserDict):
 
     @staticmethod
     def populate_resources(config):
-        logging.warning("%s", config.registry)
+        #logging.warning("%s", config.registry)
         assert config.registry.email_mgmt_app.resources is not None
         RootFactory.resources = config.registry.email_mgmt_app.resources
 

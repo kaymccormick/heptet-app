@@ -3,7 +3,7 @@
     <div class="container">
         <div class="col-sm-12">
             <div class="alert alert-danger" role="alert">
-                {{ exception.operation }}
+                {#                {{ exception.operation }}#}
 
             </div>
         </div>
@@ -15,7 +15,7 @@
                         <th>Name</th>
 
                         <td>
-                            {{ exception.arg.name }}
+                            {#                            {{ exception.arg.name }}#}
                         </td>
                     </tr>
                 </table>
@@ -25,11 +25,11 @@
         <div class="row">
             <div class="col-sm-5">
                 <form>
-
-                    {% for arg in exception.operation.args %}
-
-                        {% include "templates/arg_input.jinja2" with context %}
-                    {% endfor %}
+                    {% if operation %}
+                        {% for arg in operation.args %}
+                            {% include "templates/arg_input.jinja2" with context %}
+                        {% endfor %}
+                    {% endif %}
                 </form>
             </div>
         </div>

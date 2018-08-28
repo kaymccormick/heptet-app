@@ -5,13 +5,13 @@ from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 
-from email_mgmt_app import munge_dict
 from email_mgmt_app.argument import ArgumentContext
 from email_mgmt_app.exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
 from email_mgmt_app.res import ResourceOperation, OperationArgument
 from email_mgmt_app.entrypoint import EntryPoint
 from email_mgmt_app.util import get_exception_entry_point_key
 
+logger = logging.getLogger(__name__)
 
 class ViewConfig:
     pass
@@ -23,8 +23,11 @@ class BaseView:
         self._request = request
         self._operation = None
         self._values = {}
-        self._response_dict = munge_dict(request, {})
+        self._response_dict = { 'request': request,
+                                'context': context } # give it a nice default?
         self._entry_point_key = None
+        #renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
+        #request.override_renderer = renderer
 
     def __call__(self, *args, **kwargs):
         self.collect_args(self.request)
@@ -62,7 +65,7 @@ class BaseView:
             return
         assert self.operation is not None
         args = self.operation.args
-        logging.warning("checking args %s", repr(args))
+#        logging.warning("checking args %s", repr(args))
         values = []
         arg_context = ArgumentContext()
         arg: OperationArgument
@@ -86,7 +89,7 @@ class BaseView:
 
             if not has_value:
                 if not arg.optional:
-                    raise MissingArgumentException(self.operation, arg)
+                    raise MissingArgumentException(self.operation, arg, "Missing argument %s for operation %s" % (arg.name, self.operation.name))
 
             if not got_value:
                 value = arg.get_value(request, arg_context)
@@ -99,7 +102,7 @@ class BaseView:
 class ExceptionView(BaseView):
     def __init__(self, context, request) -> None:
         super().__init__(context, request)
-        request.override_renderer = "templates/exception.jinja2"
+        #request.override_renderer = "templates/exception.jinja2"
 
 
 class OperationArgumentExceptionView(ExceptionView):
@@ -109,19 +112,25 @@ class OperationArgumentExceptionView(ExceptionView):
 
 
 def includeme(config: Configurator):
-    request = config.registry.queryUtility(IRequestFactory, default=Request)({})
-    request.registry = config.registry
+    def action():
+        logger.info("Executing config action.")
+        request = config.registry.queryUtility(IRequestFactory, default=Request)({})
+        request.registry = config.registry
 
-    entry_point_key = get_exception_entry_point_key(request, BaseAppException)
-    config.add_exception_view(view=ExceptionView, context=BaseAppException,
-                              renderer="templates/exception/exception.jinja2",
-                              entry_point_key=entry_point_key)
-    entry_point = EntryPoint(entry_point_key)
-    config.register_entry_point(entry_point)
+        entry_point_key = get_exception_entry_point_key(request, Exception)
+        config.add_exception_view(view=ExceptionView, context=Exception,
+                                  renderer="templates/exception/exception.jinja2",
+                                  entry_point_key=entry_point_key)
 
-    config.add_exception_view(view=OperationArgumentExceptionView, context=OperationArgumentException,
-                              renderer="templates/exceptions/OperationArgumentException.jinja2",
-                              entry_point_key=entry_point_key)
-    entry_point_key = get_exception_entry_point_key(request, OperationArgumentException)
-    entry_point = EntryPoint(entry_point_key)
-    config.register_entry_point(entry_point)
+        # need to issue more context!
+        entry_point = EntryPoint(entry_point_key)
+        config.register_entry_point(entry_point)
+
+
+        config.add_exception_view(view=OperationArgumentExceptionView, context=OperationArgumentException,
+                                  renderer="templates/exceptions/OperationArgumentException.jinja2",
+                                  entry_point_key=entry_point_key)
+        entry_point_key = get_exception_entry_point_key(request, OperationArgumentException)
+        entry_point = EntryPoint(entry_point_key)
+        config.register_entry_point(entry_point)
+    config.action(None, action)

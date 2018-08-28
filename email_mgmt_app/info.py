@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import AnyStr, Sequence, MutableSequence
+from typing import AnyStr, Sequence, MutableSequence, List, Tuple
 from dataclasses_json import DataClassJsonMixin
 from sqlalchemy.orm import RelationshipProperty
 
@@ -49,6 +49,7 @@ class ColumnInfo(KeyMixin, CompiledMixin, Mixin, InfoBase):
 
 @dataclass
 class MapperInfo(Mixin, InfoBase):
+    primary_key: Sequence[Tuple[AnyStr, AnyStr]]=None
     columns: MutableSequence[ColumnInfo]=None
     relationships: MutableSequence[RelationshipInfo]=None
     mapped_table: AnyStr=None

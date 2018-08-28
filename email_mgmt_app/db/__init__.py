@@ -48,14 +48,15 @@ class DbAdapter:
                                    entity_type=inspect.entity, inspect=inspect, node_name=key)
             manager.operation('view', EntityView, pkey_args)
             manager.operation('form', EntityFormView, [OperationArgument.SubpathArgument('action', String, default='create')])
-
-            manager.add_action(config)
+            config.add_resource_manager(manager)
+            # was this
+#            manager.add_action(config)
 
     def populate(self, session: Session, config: Configurator):
-        logging.warning("reg = %s", config.registry.email_mgmt_app)
+        #logging.warning("reg = %s", config.registry.email_mgmt_app)
         for x,y in config.registry.email_mgmt_app.mappers.items():
             # better way to do this for sure
-            logging.warning("got (%s, %s)", x, y)
+            #logging.warning("got (%s, %s)", x, y)
             self._cache[x] = y
 
     def handle_mapping_inspect(self, model_class, result: Mapper):
@@ -92,10 +93,8 @@ def includeme(config: Configurator):
     factory = get_session_factory(get_engine(settings))
     session = get_tm_session(factory, pyramid_tm.explicit_manager(None))
 
-    adapter = DbAdapter()
-    add_db_adapter(config, adapter)
-    #config.add_resource_manager(mgr)
-    #config.add_view(".DbView", name='view', context=Resource,
+    #adapter = DbAdapter()
+    #add_db_adapter(config, adapter)
 
 
 def add_db_adapter(config: Configurator, adapter: DbAdapter):
