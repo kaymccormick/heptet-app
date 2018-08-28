@@ -50,6 +50,7 @@ class DbAdapter:
                                    entity_type=inspect.entity, inspect=inspect, node_name=key)
             manager.operation('view', EntityView, pkey_args)
             manager.operation('form', EntityFormView, [OperationArgument.SubpathArgument('action', String, default='create')])
+            manager.operation('design', EntityDesignView, [])
             config.add_resource_manager(manager)
             # was this
 #            manager.add_action(config)

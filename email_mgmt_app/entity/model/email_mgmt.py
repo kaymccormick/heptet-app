@@ -8,10 +8,11 @@ from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backre
 from email_mgmt_app.entity.model.meta import Base
 
 
+logger = logging.getLogger(__name__)
 mappers = {}
 def receive_mapper_configured(mapper: Mapper, *args, **kwargs):
     "listen for the 'mapper_configured' event"
-    logging.warning("mapper configured %s, %s", repr(args), repr(kwargs))
+    logger.debug("mapper configured %s: %s, %s", mapper, repr(args), repr(kwargs))
     mappers[mapper.mapped_table.key] = mapper
 
 listen(Mapper, 'mapper_configured', receive_mapper_configured)
@@ -97,6 +98,10 @@ class OrgRolePerson(AssociationTableMixin, Mixin, Base):
     organization_role = relationship('OrganizationRole', back_populates='role_persons')
 
     info = {'hide': True }
+
+    @property
+    def display_name(self):
+        return self.organization_role.display_name + ': ' + self.person.display_name
 
 
 class Organization(Mixin, Base):

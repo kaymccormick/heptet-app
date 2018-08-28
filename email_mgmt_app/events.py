@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapper
 
 
 
+
 def includeme(config: Configurator):
     def action():
         pass
@@ -17,10 +18,4 @@ def includeme(config: Configurator):
 
     config.add_directive('add_mapper', add_mapper)
 
-    def after_configured():
-        logging.info("after_configured")
-        # for k, v in config.registry.email_mgmt_app.mappers.items():
-        #     logging.warning("%s = %s", k, v)
-
-    listen(Mapper, 'after_configured', after_configured)
     config.action(None, action)

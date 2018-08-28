@@ -4,9 +4,6 @@ from dataclasses_json import DataClassJsonMixin
 from sqlalchemy import Integer
 from sqlalchemy.orm import RelationshipProperty
 
-
-
-
 @dataclass
 class InfoBase(DataClassJsonMixin):
     doc: AnyStr=None
@@ -72,5 +69,18 @@ class TableInfo(KeyMixin, Mixin, InfoBase):
     primary_key: Sequence[AnyStr]=None
     columns: Sequence[ColumnInfo]=None
     pass
+
+
+class MapperInfosMixin:
+    @property
+    def mapper_infos(self) -> dict:
+        return self._mapper_infos
+
+    def get_mapper_info(self, mapper_key: AnyStr) -> MapperInfo:
+        assert mapper_key in self.mapper_infos
+        return self.mapper_infos[mapper_key]
+
+    def set_mapper_info(self, mapper_key: AnyStr, mapper_info: MapperInfo) -> None:
+        self.mapper_infos[mapper_key] = mapper_info
 
 

@@ -3,6 +3,7 @@ import logging
 import traceback
 
 from pyramid.config.views import ViewDeriverInfo
+from pyramid.path import DottedNameResolver
 from pyramid.renderers import JSON, RendererHelper
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from webtest import TestApp
@@ -23,6 +24,7 @@ from pyramid.paster import (
     get_appsettings,
     setup_logging
 )
+from pyramid.request import Request
 
 from pyramid.scripts.common import parse_vars
 
@@ -132,9 +134,9 @@ def process_attribute(attribute: InstrumentedAttribute):
     prop = attribute.property
     if isinstance(prop, ColumnProperty):
         i = ColumnInfo(key=prop.key)
-        #logging.critical("i2 = %s", i)
+        #logger.critical("i2 = %s", i)
 
-    #logging.critical("pop = %s", prop.__class__)
+    #logger.critical("pop = %s", prop.__class__)
 
 
 def template_env():
@@ -165,6 +167,8 @@ def main(argv=sys.argv):
     # setup_logging ...
     setup_logging(config_uri)
 
+    _logger = logging.getLogger(__name__)
+
     # get_appsettings
     settings = get_appsettings(config_uri, options=options)
 
@@ -180,18 +184,21 @@ def main(argv=sys.argv):
     setup = setup_jsonencoder()
     setup()
 
+    resolver = DottedNameResolver()
+
     # initilialize application
     myapp = email_mgmt_app.main(None, **settings)
     myapp_reg = myapp.registry
     myapp_subreg = myapp_reg.email_mgmt_app
 
     # generate a request
-    request = get_request(myapp.request_factory, myapp_reg)
+    request = get_request(myapp.request_factory, myapp_reg) # type: Request
 
     # this looks weird
     app_dbsession = myapp_reg.email_mgmt_app.dbsession
 
     dbsession = app_dbsession[0](request)
+
     db = inspect(dbsession.get_bind()) #type: Inspector
 
     #myapp_subreg.json_renderer = json_renderer
@@ -212,8 +219,10 @@ def main(argv=sys.argv):
     #     f.write(pp)
     #     f.close()
 
+    entry_points = myapp_subreg.entry_points
+
     with open('entry_points.json', 'w') as f:
-        json.dump({'list': list(myapp_subreg.entry_points.keys())},
+        json.dump({'list': list(entry_points.keys())},
                   f)
         f.close()
 
@@ -248,36 +257,58 @@ def main(argv=sys.argv):
 
     test_app = TestApp(myapp)
 
-    entry_point_js_template = pcontext.template_env.get_template('entry_point.js.jinja2')
-    for entry_point_key in myapp_subreg.entry_points.keys():
 
-        ep = myapp_subreg.entry_points[entry_point_key] # type: EntryPoint
-        #logging.critical("xx %s", repr(ep.view))
+    entry_point_js_template = pcontext.template_env.get_template('entry_point.js.jinja2')
+    for entry_point_key in entry_points.keys():
+        ep = entry_points[entry_point_key]  # type: EntryPoint
+        logger = logging.LoggerAdapter(_logger, extra = {
+            'entry_point': entry_point_key })
+
+        js_imports = []
+        if ep.view_kwargs and 'view' in ep.view_kwargs:
+            view = resolver.maybe_resolve(ep.view_kwargs['view'])
+            ep.view = view
+
+            if view.entry_point_generator:
+
+                generator = view.entry_point_generator(ep, None, request)
+                if generator:
+                    js_imports = generator.js_imports()
+                    if js_imports:
+                        for stmt in js_imports:
+                            logger.debug("import: %s", stmt)
+
+                    js_stmts = generator.js_stmts()
+                    if js_stmts:
+                        for stmt in js_stmts:
+                            logger.debug("js: %s", stmt)
+
+        #logger.critical("xx %s", repr(ep.view_kwargs))
 
         js = ep.js
 
         with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
             content = entry_point_js_template.render(
-                js_imports=[],
+                js_imports=js_imports,
                 js_stmts=[],
                 extra_js_stmts=[],
             )
-            #logging.debug("content for %s = %s", entry_point_key, content)
+            #logger.debug("content for %s = %s", entry_point_key, content)
             f.write(content)
             f.close()
 
 
-        if not ep.view:
+        if not ep.view_kwargs:
             continue
 
-        uri = '/' + ep.view['node_name'] + '/' + ep.view['name']
+        uri = '/' + ep.view_kwargs['node_name'] + '/' + ep.view_kwargs['name']
 
         try:
-            if ep.view['name'] == 'view':
+            if ep.view_kwargs['name'] == 'view':
                 params = '?id=1'
                 uri = uri + params
 
-            logging.debug("uri = %s", uri)
+            logger.debug("uri = %s", uri)
             resp = test_app.get(uri)
             with open('temp/%s.html' % ep.key, 'w') as fout:
                 fout.write(resp.text)
@@ -285,5 +316,7 @@ def main(argv=sys.argv):
         except Exception as ex:
             traceback.print_exc()
             traceback.print_tb(sys.exc_info()[2])
-            #logging.critical("exception: %s", repr(ex))
+            #logger.critical("exception: %s", repr(ex))
+
+    logger = None
 

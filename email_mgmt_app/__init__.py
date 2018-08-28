@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -29,7 +30,7 @@ def on_application_created(event):
 
 def on_before_render(event):
     val = event.rendering_val
-    logger.critical("VAL=%s", val)
+    logger.debug("VAL=%s", val)
 
 
 
@@ -58,7 +59,7 @@ def set_renderer(event):
             except:
                 return True
 
-        logger.info("Type of entity_type is %s", type(context.entity_type))
+        logger.debug("Type of entity_type is %s", type(context.entity_type))
         renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
                                                request.view_name.lower())
 
@@ -78,12 +79,18 @@ def set_json_encoder(config, encoder):
 
 
 def load_alchemy_json(config):
+    """
+
+    :param config:
+    :return:
+    """
     alchemy = None
     try:
         with open('alchemy.json', 'r') as f:
             lines = f.readlines()
             s="\n".join(lines)
-            alchemy = AlchemyInfo.from_json(s)
+            alchemy = json.loads(s)
+            #alchemy = AlchemyInfo.from_json(s)
             f.close()
     except FileNotFoundError:
         pass

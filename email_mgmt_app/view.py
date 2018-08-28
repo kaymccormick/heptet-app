@@ -17,6 +17,7 @@ class ViewConfig:
 
 
 class BaseView:
+    entry_point_generator = None
     def __init__(self, context, request: Request=None) -> None:
         self._context = context
         self._request = request

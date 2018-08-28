@@ -28,9 +28,8 @@ def entity_view(view, info):
 
     info.registry.email_mgmt_app.views.append(info)
 
-    logger.debug("entity_view %s", info.original_view)
     def wrapper_view(context, request):
-        logger.info("original view = %s", repr(info.original_view))
+        logger.debug("original view = %s", repr(info.original_view))
         original_view = info.original_view
 
         # renderer = None
