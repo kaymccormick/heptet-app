@@ -261,7 +261,8 @@ EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 
 
 class FormViewEntryPointGenerator(EntryPointGenerator):
-
+    def extra_js_stmts(self):
+        return []
     def js_imports(self):
         return []
     def js_stmts(self):
@@ -269,8 +270,8 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
 
 
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-    def __init__(self, ep: EntryPoint, context, request, **kwargs) -> None:
-        super().__init__(ep, context, request, **kwargs)
+    def __init__(self, entry_point: EntryPoint, context, request, **kwargs) -> None:
+        super().__init__(entry_point, context, request, **kwargs)
         outer_vars={}
         self._form = self.form_representation(self._request,
                     self.get_mapper_info(self.entry_point.operation.resource_manager.mapper_info['mapper_key']), outer_vars)
@@ -450,7 +451,13 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         return form.as_html()
 
     def js_stmts(self):
-        pass
+        return []
+
+    def extra_js_stmts(self):
+        return []
+
+    def js_imports(self):
+        return []
 
 
 class DesignViewEntryPointGenerator(EntryPointGenerator):
@@ -458,6 +465,9 @@ class DesignViewEntryPointGenerator(EntryPointGenerator):
         return ["'../design.js'"]
 
     def js_stmts(self):
+        return ['window.view_name = \'%s\';' % self._request.view_name]
+
+    def extra_js_stmts(self):
         return []
 
 

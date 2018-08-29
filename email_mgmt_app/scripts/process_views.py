@@ -267,6 +267,9 @@ def main(argv=sys.argv):
         })
 
         js_imports = []
+        js_stmts = []
+        extra_js_stmts = []
+
         if ep.view_kwargs and 'view' in ep.view_kwargs:
             view = resolver.maybe_resolve(ep.view_kwargs['view'])
             ep.view = view
@@ -276,6 +279,7 @@ def main(argv=sys.argv):
                 new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
                                                          extra={**logger.extra, 'abbrname': logger.extra['abbrname'] + '.entry_point_generator'})
                 new_logger.debug("!!! generator = %s", view.entry_point_generator)
+                request.view_name = ep.view_kwargs['name']
                 generator = view.entry_point_generator(ep, None, request, logger=new_logger)
 
 
@@ -290,15 +294,16 @@ def main(argv=sys.argv):
                         for stmt in js_stmts:
                             logger.debug("js: %s", stmt)
 
-        #logger.critical("xx %s", repr(ep.view_kwargs))
-
-        js = ep.js
+                    extra_js_stmts = generator.extra_js_stmts()
+                    if extra_js_stmts:
+                        for stmt in extra_js_stmts:
+                            logger.debug("js: %s", stmt)
 
         with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
             content = entry_point_js_template.render(
                 js_imports=js_imports,
-                js_stmts=[],
-                extra_js_stmts=[],
+                js_stmts=js_stmts,
+                extra_js_stmts=extra_js_stmts,
             )
             #logger.debug("content for %s = %s", entry_point_key, content)
             f.write(content)

@@ -65,14 +65,27 @@ class EntryPoint:
 
 
 class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
-    def __init__(self, ep: EntryPoint, context, request, logger=None) -> None:
+    """
+
+    """
+    def __init__(self, entry_point: EntryPoint, context, request, logger=None) -> None:
+        """
+
+        :param entry_point:
+        :param context:
+        :param request:
+        :param logger:
+        """
         super().__init__()
+
+        self._entry_point = entry_point
+        # TODO we will need to handle more than a single mapper info
+        info = entry_point.operation.resource_manager.mapper_info
+        self._mapper_infos = {}
+        self._mapper_infos[info['mapper_key']] = info
         self._context = context
         self._request = request
-        self._mapper_infos = {}
-        self._entry_point = ep
-        info = ep.operation.resource_manager.mapper_info
-        self._mapper_infos[info['mapper_key']] = info
+
         self.logger = logger
 
     @property
@@ -86,6 +99,11 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def js_imports(self):
         pass
+
+    @abc.abstractmethod
+    def extra_js_stmts(self):
+        pass
+
 
 
 
