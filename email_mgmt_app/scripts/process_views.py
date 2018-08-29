@@ -259,6 +259,7 @@ def main(argv=sys.argv):
 
 
     entry_point_js_template = pcontext.template_env.get_template('entry_point.js.jinja2')
+    failures = []
     for entry_point_key in entry_points.keys():
         ep = entry_points[entry_point_key]  # type: EntryPoint
         logger = logging.LoggerAdapter(_logger, extra = {
@@ -308,6 +309,11 @@ def main(argv=sys.argv):
             #logger.debug("content for %s = %s", entry_point_key, content)
             f.write(content)
             f.close()
+            continue
+
+
+        continue
+
 
 
         if not ep.view_kwargs:
@@ -326,6 +332,7 @@ def main(argv=sys.argv):
                 fout.write(resp.text)
                 fout.close()
         except Exception as ex:
+            logger.exception(sys.exc_info()[1])
             traceback.print_exc()
             traceback.print_tb(sys.exc_info()[2])
             #logger.critical("exception: %s", repr(ex))
