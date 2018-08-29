@@ -462,7 +462,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
 class DesignViewEntryPointGenerator(EntryPointGenerator):
     def js_imports(self):
-        return ["'../design.js'"]
+        return []#"'../design.js'"]
 
     def js_stmts(self):
         return ['window.view_name = \'%s\';' % self._request.view_name]

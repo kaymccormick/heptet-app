@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+import argparse
 
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.path import DottedNameResolver
@@ -88,8 +89,8 @@ def column_adapter(column: Column, request):
                'foreign_keys': list(column.foreign_keys),
                'table': column.table.key }
 
-
     return coldict
+
 
 def mapper_adapter(mapper: Mapper, request):
     cols = []
@@ -309,12 +310,8 @@ def main(argv=sys.argv):
             #logger.debug("content for %s = %s", entry_point_key, content)
             f.write(content)
             f.close()
-            continue
-
 
         continue
-
-
 
         if not ep.view_kwargs:
             continue

@@ -25,6 +25,7 @@ from email_mgmt_app.viewdecorator import view_decorator
 
 logger = logging.getLogger(__name__)
 
+
 class ResourceOperationTemplate:
     def __init__(self, name: AnyStr) -> None:
         self._name = name
@@ -37,6 +38,7 @@ class ResourceOperationTemplate:
     def name(self, new) -> None:
         self._name = new
 
+
 # mixin for something that has a request property
 class HasRequestMixin:
     @property
@@ -47,15 +49,16 @@ class HasRequestMixin:
     def request(self, new):
         self._request = new
 
+
 class OperationArgumentGetter(metaclass=abc.ABCMeta):
     @abstractmethod
     def get_value(self, arg, request, arg_context):
         pass
 
+
 class ArgumentGetter(OperationArgumentGetter):
     def get_value(self, arg, request: Request, arg_context):
         return request.params[arg.name]
-
 
 
 class SubpathArgumentGetter(OperationArgumentGetter):
@@ -601,4 +604,3 @@ def includeme(config: Configurator):
     config.add_directive('add_resource_manager', add_resource_manager)
     adapter = AlchemyInfoResourceAdapter(config, config.registry.email_mgmt_app.alchemy)
     logger.debug("Adding directive 'add_resource_manager'")
-
