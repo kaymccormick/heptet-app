@@ -65,7 +65,7 @@ class EntryPoint:
 
 
 class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
-    def __init__(self, ep: EntryPoint, context, request) -> None:
+    def __init__(self, ep: EntryPoint, context, request, logger=None) -> None:
         super().__init__()
         self._context = context
         self._request = request
@@ -73,6 +73,7 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
         self._entry_point = ep
         info = ep.operation.resource_manager.mapper_info
         self._mapper_infos[info['mapper_key']] = info
+        self.logger = logger
 
     @property
     def entry_point(self) -> EntryPoint:

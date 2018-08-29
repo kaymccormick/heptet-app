@@ -54,182 +54,6 @@ def template_source(request, template_name):
     return source[0]
 
 
-def render_entity_form_wrapper(request, inspect, outer_vars, nest_level: int=0,do_modal=False,prefix=""):
-    form = render_entity_form(request, inspect, outer_vars, nest_level, do_modal, prefix)
-    return render_template(request, templates.form_wrapper, {'form': form})
-
-
-def form_representation(request,
-                        mapper: dict,
-                        outer_vars,
-                        nest_level: int=0,
-                        do_modal=False,
-                        prefix=""):
-    d = {'form_contents': ''}
-    aform = Form()
-
-    # smell TODO - we can have multiple mappers
-    mapper_key = mapper['mapper_key']
-    aform.set_mapper_info(mapper_key, mapper)
-
-    script = html.Element('script')
-    script.text = "mapper = %s;" % json.dumps(mapper)
-    aform.element.append(script)
-
-    logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
-
-    suppress = {}
-
-    alchemy: AlchemyInfo
-    alchemy = request.registry.email_mgmt_app.alchemy
-
-    # store these or just skip?
-    for (pkey_table, pkey_col) in mapper['primary_key']:
-        assert pkey_table == mapper['mapped_table']
-
-        suppress[pkey_col] = True
-
-    ## PROCESS RELATIONSHIP
-    # for each relationship
-    # where its appropriate, embed or supply a subordinate
-    # form
-    # additionally, supply a form variable
-    # and mapping for the relevant column.
-    for rel in mapper['relationships']:
-        if rel['direction'] == MANYTOONE:
-            continue
-
-        argument = rel     ['argument']
-        pairs    = rel     ['local_remote_pairs']
-        local    = pairs[0]['local']
-        remote   = pairs[0]['remote']
-
-        key_ = rel['key']
-        label_contents = stringcase.sentencecase(key_)
-
-        # decide here what control to use ....
-        #
-        select_id = 'select_%s%s' % (prefix, key_)
-        select_name = prefix + local['column']
-
-        # generate a list of available
-        # entities - eventually we will
-        # wish to constrain the query some.
-        resolver = DottedNameResolver()
-        join = '.'.join(argument)
-
-        class_ = resolver.resolve(join)
-        if issubclass(class_, Base) and 'dbsession' in request.__dict__:
-            entities = request.dbsession.query(class_).all()
-        else:
-            entities = []
-
-        select_contents = ''
-
-        modal_id = 'modal_%s%s' % (prefix, key_)
-        buttons = []
-        collapse = ''
-        button_id = 'button_%s%s' % (prefix, key_)
-        collapse_id = 'collapse_%s%s' % (prefix, key_)
-
-        mappers_ = alchemy['mappers']
-        # control excessive nesting
-        if nest_level < 1:
-            key = rel['key']
-
-            entity_form = form_representation\
-                (request,
-                 mappers_[remote['table']],
-                 outer_vars,
-                 nest_level + 1,
-                 do_modal=do_modal,
-                 prefix="%s%s." % (prefix, key),
-                 )
-
-            # we use label_contents for the title of our modal
-
-            collapse = ''#render_template(request, templates.collapse, {'collapse_contents': entity_form,
-                         #                                            'collapse_id': collapse_id})
-                        #
-            # readycode = readycode + render_template(request, templates.button_create_new_click_js,
-            #                                         { 'button_id': button_id,
-            #                                           'collapse_id': collapse_id,
-            #                                           'select_id': select_id })
-
-#<button id="{{ button_id }}" type="button" class="btn btn-primary">Create New</button>
-
-            button = FormButton('button',
-                                {'id': button_id,
-                                 'class': 'btn btn-primary'})
-            button.element.text = 'Create New'
-            buttons.append(button)
-
-        options = []
-        #<option value="{{ option_value|e }}">{{ option_contents|e }}</option>
-        # select_contents = select_contents + \
-        #                   render_template(request, templates.rel_select_option,
-        #                                   {'option_value': 0,
-        #                  'option_contents': "None"})
-
-        # select_contents = select_contents + \
-        #                   render_template(request, templates.rel_select_option,
-        #                                   {'option_value': -1,
-        #                  'option_contents': "New"})
-
-        for entity in entities:
-            option = FormOptionElement(entity.display_name, entity.__dict__[remote['column']])
-            options.append(option)
-
-        select= FormSelect(name=select_name, id=select_id, options=options)
-        label = FormLabel(form_control=select, label_contents=label_contents)
-
-        rel_select = select.as_html()
-        logger.debug("select = %s", rel_select)
-
-        # d['form_contents'] = d['form_contents'] + render_template(request, templates.field_relationship,
-        #                                                           {'input_html': rel_select,
-        #                                                          'label_html': label_html(request, select_id,
-        #                                                                                   label_contents),
-        #                                                          'collapse': collapse,
-        #                                                          'help': rel['doc']})
-
-        logger.debug("suppressing column %s", local['column'])
-        suppress[local['column']] = True
-
-    for x in mapper['columns']:
-        key = x['key']
-        if key in suppress and suppress[key]:
-            logger.debug("skipping suppressed column %s", key)
-            continue
-
-        # vname = x.type.__visit_name__
-        # if not vname in typemap:
-        #     kind = typemap[''][0]
-        # else:
-        #     kind = typemap[vname][0]
-
-        kind = 'text'
-        select_id = 'input_%s' % (key)
-        f = {'input_name': prefix + key,
-             'input_id': select_id,
-             'input_value': ''}
-
-        # input_html = render_template(request, "templates/entity/field_%s.jinja2" % kind, f)
-        #logger.info("input_html = %s", input_html)
-        e = {'id': select_id,
-             'input_html': '',
-             'label_html': label_html(request, select_id, stringcase.sentencecase(key)),
-             'help': x['doc']
-             }
-#        d['form_contents'] = d['form_contents'] + render_template(request, templates.field, e)
-
-    # outer_vars['readycode'] = readycode
-    return aform
-
-
-def render_entity_form(request, mapper: MapperInfo, outer_vars, nest_level: int=0,do_modal=False,prefix=""):
-    form = form_representation(request, mapper, outer_vars, nest_level,do_modal, prefix)
-    return form.as_html()
     #
     # mapper_key = mapper['mapper_key']
     # logger.info("Rendering entity form for %s" % mapper_key)
@@ -437,6 +261,7 @@ EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 
 
 class FormViewEntryPointGenerator(EntryPointGenerator):
+
     def js_imports(self):
         return []
     def js_stmts(self):
@@ -444,13 +269,185 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
 
 
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-
-    def __init__(self, ep: EntryPoint, context, request) -> None:
-        super().__init__(ep, context, request)
+    def __init__(self, ep: EntryPoint, context, request, **kwargs) -> None:
+        super().__init__(ep, context, request, **kwargs)
         outer_vars={}
-        self._form = form_representation(self._request,
+        self._form = self.form_representation(self._request,
                     self.get_mapper_info(self.entry_point.operation.resource_manager.mapper_info['mapper_key']), outer_vars)
 
+    def form_representation(self, request,
+                            mapper: dict,
+                            outer_vars,
+                            nest_level: int = 0,
+                            do_modal=False,
+                            prefix=""):
+        the_form = Form()
+
+        # smell TODO - we can have multiple mappers
+        mapper_key = mapper['mapper_key']
+        the_form.set_mapper_info(mapper_key, mapper)
+
+        script = html.Element('script')
+        script.text = "mapper = %s;" % json.dumps(mapper)
+        the_form.element.append(script)
+
+        self.logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
+
+        suppress = {}
+
+        alchemy: AlchemyInfo
+        alchemy = request.registry.email_mgmt_app.alchemy
+
+        # store these or just skip?
+        for (pkey_table, pkey_col) in mapper['primary_key']:
+            assert pkey_table == mapper['mapped_table']
+
+            suppress[pkey_col] = True
+
+        ## PROCESS RELATIONSHIP
+        # for each relationship
+        # where its appropriate, embed or supply a subordinate
+        # form
+        # additionally, supply a form variable
+        # and mapping for the relevant column.
+        for rel in mapper['relationships']:
+            if rel['direction'] == MANYTOONE:
+                continue
+
+            argument = rel['argument']
+            pairs = rel['local_remote_pairs']
+            local = pairs[0]['local']
+            remote = pairs[0]['remote']
+
+            key_ = rel['key']
+            label_contents = stringcase.sentencecase(key_)
+
+            # decide here what control to use ....
+            #
+            select_id = 'select_%s%s' % (prefix, key_)
+            select_name = prefix + local['column']
+
+            # generate a list of available
+            # entities - eventually we will
+            # wish to constrain the query some.
+            resolver = DottedNameResolver()
+            join = '.'.join(argument)
+
+            class_ = resolver.resolve(join)
+            if issubclass(class_, Base) and 'dbsession' in request.__dict__:
+                entities = request.dbsession.query(class_).all()
+            else:
+                entities = []
+
+            select_contents = ''
+
+            modal_id = 'modal_%s%s' % (prefix, key_)
+            buttons = []
+            collapse = ''
+            button_id = 'button_%s%s' % (prefix, key_)
+            collapse_id = 'collapse_%s%s' % (prefix, key_)
+
+            mappers_ = alchemy['mappers']
+            # control excessive nesting
+            if nest_level < 1:
+                key = rel['key']
+
+                entity_form = self.form_representation \
+                    (request,
+                     mappers_[remote['table']],
+                     outer_vars,
+                     nest_level + 1,
+                     do_modal=do_modal,
+                     prefix="%s%s." % (prefix, key),
+                     )
+
+                # we use label_contents for the title of our modal
+
+                collapse = ''  # render_template(request, templates.collapse, {'collapse_contents': entity_form,
+                #                                            'collapse_id': collapse_id})
+                #
+                # readycode = readycode + render_template(request, templates.button_create_new_click_js,
+                #                                         { 'button_id': button_id,
+                #                                           'collapse_id': collapse_id,
+                #                                           'select_id': select_id })
+
+                # <button id="{{ button_id }}" type="button" class="btn btn-primary">Create New</button>
+
+                button = FormButton('button',
+                                    {'id': button_id,
+                                     'class': 'btn btn-primary'})
+                button.element.text = 'Create New'
+                buttons.append(button)
+
+            options = []
+            # <option value="{{ option_value|e }}">{{ option_contents|e }}</option>
+            # select_contents = select_contents + \
+            #                   render_template(request, templates.rel_select_option,
+            #                                   {'option_value': 0,
+            #                  'option_contents': "None"})
+
+            # select_contents = select_contents + \
+            #                   render_template(request, templates.rel_select_option,
+            #                                   {'option_value': -1,
+            #                  'option_contents': "New"})
+
+            for entity in entities:
+                option = FormOptionElement(entity.display_name, entity.__dict__[remote['column']])
+                options.append(option)
+
+            select = FormSelect(name=select_name, id=select_id, options=options)
+            label = FormLabel(form_control=select, label_contents=label_contents)
+
+            rel_select = select.as_html()
+            self.logger.debug("select = %s", rel_select, extra={'element': select})
+
+            # d['form_contents'] = d['form_contents'] + render_template(request, templates.field_relationship,
+            #                                                           {'input_html': rel_select,
+            #                                                          'label_html': label_html(request, select_id,
+            #                                                                                   label_contents),
+            #                                                          'collapse': collapse,
+            #                                                          'help': rel['doc']})
+
+            self.logger.debug("suppressing column %s", local['column'])
+            suppress[local['column']] = True
+
+        for x in mapper['columns']:
+            key = x['key']
+            if key in suppress and suppress[key]:
+                self.logger.debug("skipping suppressed column %s", key)
+                continue
+
+            # vname = x.type.__visit_name__
+            # if not vname in typemap:
+            #     kind = typemap[''][0]
+            # else:
+            #     kind = typemap[vname][0]
+
+            kind = 'text'
+            select_id = 'input_%s' % (key)
+            f = {'input_name': prefix + key,
+                 'input_id': select_id,
+                 'input_value': ''}
+
+            # input_html = render_template(request, "templates/entity/field_%s.jinja2" % kind, f)
+            # self.logger.info("input_html = %s", input_html)
+            e = {'id': select_id,
+                 'input_html': '',
+                 'label_html': label_html(request, select_id, stringcase.sentencecase(key)),
+                 'help': x['doc']
+                 }
+        #        d['form_contents'] = d['form_contents'] + render_template(request, templates.field, e)
+
+        # outer_vars['readycode'] = readycode
+        return the_form
+
+    def render_entity_form_wrapper(self, request, inspect, outer_vars, nest_level: int = 0, do_modal=False, prefix=""):
+        form = self.render_entity_form(request, inspect, outer_vars, nest_level, do_modal, prefix)
+        return render_template(request, templates.form_wrapper, {'form': form})
+
+    def render_entity_form(self, request, mapper: MapperInfo, outer_vars, nest_level: int = 0, do_modal=False, prefix=""):
+        form = self.form_representation(request, mapper, outer_vars, nest_level, do_modal, prefix)
+        return form.as_html()
 
     def js_stmts(self):
         pass
@@ -462,7 +459,6 @@ class DesignViewEntryPointGenerator(EntryPointGenerator):
 
     def js_stmts(self):
         return []
-        pass
 
 
 class EntityDesignViewEntryPointGenerator(DesignViewEntryPointGenerator):
@@ -475,9 +471,10 @@ class EntityDesignView(BaseEntityRelatedView):
 class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
     entry_point_generator = EntityFormViewEntryPointGenerator
     def __call__(self, *args, **kwargs):
+        self.entry_point_generator()
         if self.request.method == "GET":
             outer_vars = {}
-            wrapper = render_entity_form_wrapper(
+            wrapper = self.render_entity_form_wrapper(
                 self.request,
                 self.request.registry.email_mgmt_app.alchemy['mappers']\
                     [self.mapper_info['mapper_key']],
@@ -495,7 +492,7 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
         for col in cols:
             if col.key in self.request.params:
                 v = self.request.params[col.key]
-                logger.info("%s = %s", col.key, v)
+                self.logger.info("%s = %s", col.key, v)
                 r.__setattr__(col.key, v)
 
         self.request.dbsession.add(r)

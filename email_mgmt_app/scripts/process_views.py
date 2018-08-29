@@ -262,7 +262,9 @@ def main(argv=sys.argv):
     for entry_point_key in entry_points.keys():
         ep = entry_points[entry_point_key]  # type: EntryPoint
         logger = logging.LoggerAdapter(_logger, extra = {
-            'entry_point': entry_point_key })
+            'entry_point': entry_point_key,
+            'abbrname': _logger.name.split('.')[-1]
+        })
 
         js_imports = []
         if ep.view_kwargs and 'view' in ep.view_kwargs:
@@ -271,7 +273,12 @@ def main(argv=sys.argv):
 
             if view.entry_point_generator:
 
-                generator = view.entry_point_generator(ep, None, request)
+                new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
+                                                         extra={**logger.extra, 'abbrname': logger.extra['abbrname'] + '.entry_point_generator'})
+                new_logger.debug("!!! generator = %s", view.entry_point_generator)
+                generator = view.entry_point_generator(ep, None, request, logger=new_logger)
+
+
                 if generator:
                     js_imports = generator.js_imports()
                     if js_imports:
