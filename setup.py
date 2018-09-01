@@ -18,7 +18,7 @@ requires = [
     'psycopg2',
     'pyramid_ldap3',
     'lxml',
-    'bcrypt',
+    'bcrypt', 'stringcase'
 ]
 
 tests_require = [

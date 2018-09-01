@@ -77,7 +77,7 @@ def set_renderer(event):
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
 
-
+# this ought to be relocated
 def load_alchemy_json(config):
     """
 
@@ -98,7 +98,9 @@ def load_alchemy_json(config):
         raise
     assert alchemy
 
-    config.registry.email_mgmt_app.alchemy = alchemy
+    # dont want to propogate this way
+    if False:
+        config.registry.email_mgmt_app.alchemy = alchemy
     return alchemy
 
 
@@ -122,6 +124,7 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.commit()
 
+    RootFactory.resources = config.registry.email_mgmt_app.resources
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
 
@@ -129,6 +132,7 @@ def main(global_config, **settings):
     config.include('.viewderiver')
 
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
+    # does this need to be in a particular spot?
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
     # this is required to collect the list
@@ -136,7 +140,8 @@ def main(global_config, **settings):
     config.include('.events')
     config.commit()
 
-    alchemy = load_alchemy_json(config)
+    # test remove
+    #alchemy = load_alchemy_json(config)
 
     # should this be in another spot!?
     # this is confusing because resourcemanager
@@ -181,6 +186,8 @@ def main(global_config, **settings):
     config.commit()
 
     # THIS MAY BE AGAINST PYRAMID PATTERNS
+    # not to mention my patterns  - all this does is :
+    # RootFactory.resources = config.registry.email_mgmt_app.resources
     RootFactory.populate_resources(config)
 
     return config.make_wsgi_app()

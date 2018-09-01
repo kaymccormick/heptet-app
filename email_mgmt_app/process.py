@@ -45,6 +45,11 @@ class BaseProcessor:
         self._pcontex = new
 
 class ViewProcessor(BaseProcessor):
+    def __init__(self, obj):
+        self._obj = obj
+
+    def process(self):
+        return
     pass
 
 

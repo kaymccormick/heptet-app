@@ -1,31 +1,39 @@
+# to avoid confusion, this adapts SQLalchemy-related information
+# to our @dataclasses. There needs to be another layer
+# to adapt the data class information into application objects
+# such as ResourceManager, ResourceOperation.
+
 import logging
 from dataclasses import dataclass
 from typing import AnyStr, Sequence, Mapping, MutableSequence, Dict, List
 
 from sqlalchemy import Table, Column
 from sqlalchemy.orm import Mapper, RelationshipProperty
+from zope.interface import implements, implementer, Interface
 
 from email_mgmt_app.info import TableInfo, ColumnInfo, InfoBase, TypeInfo, MapperInfo, RelationshipInfo, \
     LocalRemotePairInfo, PairInfo
 
 logger = logging.getLogger(__name__)
 
-# to avoid confusion, this adapts SQLalchemy-related information
-# to our @dataclasses. There needs to be another layer
-# to adapt the data class information into application objects
-# such as ResourceManager, ResourceOperation.
 
-class IAdapter:
+class IAdapter(Interface):
     pass
 
 
 @dataclass
 class AlchemyInfo(InfoBase):
+    """
+    This is a bit of a silly structure.
+    The "dataclass json" deserialization doesn't seem to like
+    creating anything but dicts. So we deserialize into a diff structure
+
+    """
     tables: dict = None
     mappers: dict = None
 
-
-class AlchemyAdapter(IAdapter):
+@implementer(IAdapter)
+class AlchemyAdapter():
     def __init__(self) -> None:
         self._info = AlchemyInfo(tables={}, mappers={})
         pass
@@ -78,7 +86,7 @@ class AlchemyAdapter(IAdapter):
             t = col.table  # type: Table
             i = ColumnInfo(key=col.key, compiled=str(col.compile()),
                            table=t.name,
-                           type_=TypeInfo(compiled=str(col.type.compile())), )
+                           type_=TypeInfo(compiled=str(coltyp.compile())), )
 
             columns.append(i)
             if t.key not in column_map:

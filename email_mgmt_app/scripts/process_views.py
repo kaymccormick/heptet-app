@@ -1,54 +1,43 @@
+import argparse
 import json
 import logging
-import traceback
-import argparse
+import os
+import sys
 
-from pyramid.config.views import ViewDeriverInfo
-from pyramid.path import DottedNameResolver
-from pyramid.renderers import JSON, RendererHelper
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-from webtest import TestApp
-
-from email_mgmt_app.adapter import AlchemyAdapter
-from email_mgmt_app.info import ColumnInfo
 from pyramid_tm import explicit_manager
 from sqlalchemy import Column, ForeignKey, Table, PrimaryKeyConstraint, inspect
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.orm import Mapper, RelationshipProperty, ColumnProperty
-
-from email_mgmt_app import RootFactory
-from email_mgmt_app.entity.model.meta import metadata
-import os
-import sys
-
-from pyramid.paster import (
-    get_appsettings,
-    setup_logging
-)
-from pyramid.request import Request
-
-from pyramid.scripts.common import parse_vars
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from webtest import TestApp
 
 import email_mgmt_app
-
+from email_mgmt_app import RootFactory
+from email_mgmt_app.adapter import IAdapter, AlchemyAdapter
 from email_mgmt_app.entrypoint import EntryPoint
+from email_mgmt_app.info import ColumnInfo
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder
+from pyramid.config.views import ViewDeriverInfo
+from pyramid.paster import get_appsettings, setup_logging
+from pyramid.path import DottedNameResolver
+from pyramid.registry import Registry
+from pyramid.request import Request
+from pyramid.scripts.common import parse_vars
 
+class OutputFile:
 
-def usage(argv):
-    cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri> [var=value]\n'
-          '(example: "%s development.ini")' % (cmd, cmd))
-    sys.exit(1)
+    pass
 
 def function_adapter(func, request):
     return repr(func)
 
+
 def repr_adapter(o, request):
     return repr(o)
 
+
 def view_deriver_info_adapter(info: ViewDeriverInfo, request):
-    o={}
+    o = {}
     skip = ('renderer_')
     for x, y in info.options.items():
         if y and x not in skip:
@@ -57,27 +46,31 @@ def view_deriver_info_adapter(info: ViewDeriverInfo, request):
     if callable(o['view']):
         o['view'] = repr(o['view'])
 
-    return { 'options': o }
+    return {'options': o}
+
 
 def primary_key_constraint_adapter(pkeyc: PrimaryKeyConstraint, request):
-    return { 'name': pkeyc.name,
-             '__visit_name__': pkeyc.__visit_name__,
-             }
+    return {'name': pkeyc.name,
+            '__visit_name__': pkeyc.__visit_name__,
+            }
+
 
 def table_adapter(table: Table, request):
-    return { 'visit_name': table.__visit_name__,
-             'name': table.name,
-             'key': table.key,
-             'primary_key': table.primary_key,
-             'columns': list(table.columns) }
+    return {'visit_name': table.__visit_name__,
+            'name': table.name,
+            'key': table.key,
+            'primary_key': table.primary_key,
+            'columns': list(table.columns)}
+
 
 def foreignkey_adapter(fkey: ForeignKey, request):
-    return { 'visit_name': fkey.__visit_name__,
-             'column': fkey.column }
+    return {'visit_name': fkey.__visit_name__,
+            'column': fkey.column}
+
 
 def entity_adapter(entity, request):
-    return {'kind': 'type', 'data': { 'module': entity.__module__,
-                                                  'name': entity.__name__ } }
+    return {'kind': 'type', 'data': {'module': entity.__module__,
+                                     'name': entity.__name__}}
 
 
 def column_adapter(column: Column, request):
@@ -87,7 +80,7 @@ def column_adapter(column: Column, request):
                         str(column.type.compile())],
                'key': column.key,
                'foreign_keys': list(column.foreign_keys),
-               'table': column.table.key }
+               'table': column.table.key}
 
     return coldict
 
@@ -113,12 +106,12 @@ def mapper_adapter(mapper: Mapper, request):
             z = y.entity
 
         reldict = {'pairs': pairs,
-                   'parent': rel.parent.entity.__name__ ,
-                   'argument': z.__name__ ,
-                   'info': rel.info }
+                   'parent': rel.parent.entity.__name__,
+                   'argument': z.__name__,
+                   'info': rel.info}
         rels.append(reldict)
 
-#    template = env.get_template('model.jinja2')
+    #    template = env.get_template('model.jinja2')
     return {
         'entity': mapper.entity,
         'mapped_table': mapper.mapped_table.key,
@@ -135,9 +128,9 @@ def process_attribute(attribute: InstrumentedAttribute):
     prop = attribute.property
     if isinstance(prop, ColumnProperty):
         i = ColumnInfo(key=prop.key)
-        #logger.critical("i2 = %s", i)
+        # logger.critical("i2 = %s", i)
 
-    #logger.critical("pop = %s", prop.__class__)
+    # logger.critical("pop = %s", prop.__class__)
 
 
 def template_env():
@@ -156,66 +149,62 @@ def get_request(request_factory, myapp_reg):
     return request
 
 
-def main(argv=sys.argv):
-
-    # begin arg parsing
-    if len(argv) < 2:
-        usage(argv)
-    config_uri = argv[1]
-    options = parse_vars(argv[2:])
-    # end arg parsing: vars=config_uri,options
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config_uri")
+    (args, remain) = parser.parse_known_args()
+    config_uri = args.config_uri
+    options = parse_vars(remain)
 
     # setup_logging ...
     setup_logging(config_uri)
-
     _logger = logging.getLogger(__name__)
 
     # get_appsettings
     settings = get_appsettings(config_uri, options=options)
-
-    # Our SQLAlchemy adapter
-    adapter = AlchemyAdapter()
-
-    # first custom code
-    pcontext = ProcessContext(settings=settings,
-                              template_env=template_env(),
-                              adapter=adapter)
-
     # this sets up the json.JSONENcoder.default
     setup = setup_jsonencoder()
     setup()
 
     resolver = DottedNameResolver()
 
-    # initilialize application
+    # initialize application
     myapp = email_mgmt_app.main(None, **settings)
-    myapp_reg = myapp.registry
+    myapp_reg = myapp.registry  # type: Registry
     myapp_subreg = myapp_reg.email_mgmt_app
 
+    adapter = AlchemyAdapter()
+    # myapp_reg.registerAdapter
+    # adapter = myapp_reg.queryUtility(IAdapter)
+
+    # first custom code
+    pcontext = ProcessContext(settings=settings,
+                              template_env=template_env(),
+                              adapter=adapter)
+
     # generate a request
-    request = get_request(myapp.request_factory, myapp_reg) # type: Request
+    request = get_request(myapp.request_factory, myapp_reg)  # type: Request
+
+    # find a way to integrate with sql alchemy in a reasonable way
 
     # this looks weird
     app_dbsession = myapp_reg.email_mgmt_app.dbsession
 
     dbsession = app_dbsession[0](request)
 
-    db = inspect(dbsession.get_bind()) #type: Inspector
+    db = inspect(dbsession.get_bind())  # type: Inspector
 
-    #myapp_subreg.json_renderer = json_renderer
+    # myapp_subreg.json_renderer = json_renderer
 
-    tables = {}
-    for table in db.get_table_names():
-        table_o = Table(table, metadata)
-        t = adapter.process_table(table, table_o)
+    # should probably obtain the root factory
+    obj = {'views': myapp_subreg.views,
+           'root': RootFactory(request)}
 
-    obj = { 'views': myapp_subreg.views,
-            'root':  RootFactory(request) }
-    #none_ = json_renderer(None)(obj, {'request': request})
+    # none_ = json_renderer(None)(obj, {'request': request})
     none_ = ""
-#    pp = json.dumps(json.loads(none_), sort_keys=True,
-#                  indent=4, separators=(',', ': '))
-    #print(pp)
+    #    pp = json.dumps(json.loads(none_), sort_keys=True,
+    #                  indent=4, separators=(',', ': '))
+    # print(pp)
     # with open('views.json', 'w') as f:
     #     f.write(pp)
     #     f.close()
@@ -228,7 +217,7 @@ def main(argv=sys.argv):
         f.close()
 
     mappers = myapp_subreg.mappers
-    for mapper_key,mapper in mappers.items():
+    for mapper_key, mapper in mappers.items():
         m_info = adapter.process_mapper(mapper_key, mapper)
 
     json_ = adapter.info.to_json()
@@ -236,15 +225,15 @@ def main(argv=sys.argv):
         f.write(json_)
         f.close()
 
-    #none_ = json_renderer(None)({ 'mappers': mappers,
-#                                  'tables': tables,
-#                                  }, {'request': request})
-#    pp = json.dumps(json.loads(none_), sort_keys=True,
-#                  indent=4, separators=(',', ': '))
+    # none_ = json_renderer(None)({ 'mappers': mappers,
+    #                                  'tables': tables,
+    #                                  }, {'request': request})
+    #    pp = json.dumps(json.loads(none_), sort_keys=True,
+    #                  indent=4, separators=(',', ': '))
 
     # with open('model.json', 'w') as f:
-    #     f.write(pp)
-    #     f.close()
+    #      f.write(pp)
+    #      f.close()
 
     # original code follows
     #
@@ -258,12 +247,12 @@ def main(argv=sys.argv):
 
     test_app = TestApp(myapp)
 
-
     entry_point_js_template = pcontext.template_env.get_template('entry_point.js.jinja2')
     failures = []
     for entry_point_key in entry_points.keys():
+
         ep = entry_points[entry_point_key]  # type: EntryPoint
-        logger = logging.LoggerAdapter(_logger, extra = {
+        logger = logging.LoggerAdapter(_logger, extra={
             'entry_point': entry_point_key,
             'abbrname': _logger.name.split('.')[-1]
         })
@@ -277,13 +266,12 @@ def main(argv=sys.argv):
             ep.view = view
 
             if view.entry_point_generator:
-
                 new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
-                                                         extra={**logger.extra, 'abbrname': logger.extra['abbrname'] + '.entry_point_generator'})
+                                                   extra={**logger.extra, 'abbrname': logger.extra[
+                                                                                          'abbrname'] + '.entry_point_generator'})
                 new_logger.debug("!!! generator = %s", view.entry_point_generator)
                 request.view_name = ep.view_kwargs['name']
-                generator = view.entry_point_generator(ep, None, request, logger=new_logger)
-
+                generator = view.entry_point_generator(ep, request, logger=new_logger)
 
                 if generator:
                     js_imports = generator.js_imports()
@@ -301,13 +289,16 @@ def main(argv=sys.argv):
                         for stmt in extra_js_stmts:
                             logger.debug("js: %s", stmt)
 
-        with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
+        fname = 'src/entry_point/%s.js' % entry_point_key
+        logger.info("generating output file %s", fname)
+
+        with open(fname, 'w') as f:
             content = entry_point_js_template.render(
                 js_imports=js_imports,
                 js_stmts=js_stmts,
                 extra_js_stmts=extra_js_stmts,
             )
-            #logger.debug("content for %s = %s", entry_point_key, content)
+            # logger.debug("content for %s = %s", entry_point_key, content)
             f.write(content)
             f.close()
 
@@ -332,7 +323,6 @@ def main(argv=sys.argv):
             logger.exception(sys.exc_info()[1])
             traceback.print_exc()
             traceback.print_tb(sys.exc_info()[2])
-            #logger.critical("exception: %s", repr(ex))
+            # logger.critical("exception: %s", repr(ex))
 
     logger = None
-

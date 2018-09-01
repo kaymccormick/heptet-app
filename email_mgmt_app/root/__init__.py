@@ -2,9 +2,9 @@ import logging
 from collections import UserDict
 
 from pyramid.request import Request
-
-from email_mgmt_app.res import RootResource
 from pyramid.security import Allow, Authenticated
+
+logger = logging.getLogger(__name__)
 
 
 class RootFactory(UserDict):
@@ -19,16 +19,10 @@ class RootFactory(UserDict):
     resources = None
 
     def __init__(self, request: Request) -> None:
-        """
-
-        :param request:
-        """
+        logger.debug("Initializing: %s", repr(request))
         super().__init__()
-        self.data = RootFactory.resources
+        self.data = RootFactory.resources or {}
         self.entity_type = None
-
-    def __repr__(self):
-        return "RootFactory(%s)" % repr(dict(self))
 
     @staticmethod
     def __json__(request):
@@ -43,4 +37,3 @@ class RootFactory(UserDict):
         #logging.warning("%s", config.registry)
         assert config.registry.email_mgmt_app.resources is not None
         RootFactory.resources = config.registry.email_mgmt_app.resources
-

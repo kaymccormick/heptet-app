@@ -20,39 +20,32 @@ from pyramid.util import DottedNameResolver
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class Templates:
-    label:              str = "templates/entity/label.jinja2"
-    rel_select_option:  str = "templates/entity/rel_select_option.jinja2"
-    rel_select:         str = "templates/entity/rel_select.jinja2"
-    modal:              str = 'templates/entity/modal.jinja2'
-    field:              str = "templates/entity/field.jinja2"
+    label: str = "templates/entity/label.jinja2"
+    rel_select_option: str = "templates/entity/rel_select_option.jinja2"
+    rel_select: str = "templates/entity/rel_select.jinja2"
+    modal: str = 'templates/entity/modal.jinja2'
+    field: str = "templates/entity/field.jinja2"
     field_relationship: str = "templates/entity/field_relationship.jinja2"
-    form:               str = "templates/entity/form.jinja2"
-    form_enclosure:     str = "templates/entity/form_enclosure.jinja2"
-    form_wrapper:       str = "templates/entity/form_wrapper.jinja2"
-    button_create_new:  str = "templates/entity/button_create_new.jinja2"
-    button_create_new_click_js:  str = "templates/entity/button_create_new_js.jinja2"
-    collapse:           str = "templates/entity/collapse.jinja2"
+    form: str = "templates/entity/form.jinja2"
+    form_enclosure: str = "templates/entity/form_enclosure.jinja2"
+    form_wrapper: str = "templates/entity/form_wrapper.jinja2"
+    button_create_new: str = "templates/entity/button_create_new.jinja2"
+    button_create_new_click_js: str = "templates/entity/button_create_new_js.jinja2"
+    collapse: str = "templates/entity/collapse.jinja2"
 
 
 templates = Templates()
-
-
-def label_html(request, elem_id, label_content):
-    return ''
-    #return render_template(request, templates.label,
-#                           {'for_id': elem_id, 'label': label_content})
-
-
 typemap = {'': ['text']}
 renderers = {}
+
 
 def template_source(request, template_name):
     f = request.registry.queryUtility(IRendererFactory, '.jinja2')
     source = f.environment.loader.get_source({}, template_name)
     return source[0]
-
 
     #
     # mapper_key = mapper['mapper_key']
@@ -263,18 +256,22 @@ EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 class FormViewEntryPointGenerator(EntryPointGenerator):
     def extra_js_stmts(self):
         return []
+
     def js_imports(self):
         return []
+
     def js_stmts(self):
         return []
 
 
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-    def __init__(self, entry_point: EntryPoint, context, request, **kwargs) -> None:
-        super().__init__(entry_point, context, request, **kwargs)
-        outer_vars={}
+    def __init__(self, entry_point: EntryPoint, request, **kwargs) -> None:
+        super().__init__(entry_point, request, **kwargs)
+        outer_vars = {}
         self._form = self.form_representation(self._request,
-                    self.get_mapper_info(self.entry_point.operation.resource_manager.mapper_info['mapper_key']), outer_vars)
+                                              self.get_mapper_info(
+                                                  self.entry_point.operation.resource_manager.mapper_info[
+                                                      'mapper_key']), outer_vars)
 
     def form_representation(self, request,
                             mapper: dict,
@@ -289,6 +286,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         the_form.set_mapper_info(mapper_key, mapper)
 
         script = html.Element('script')
+        logger.critical("mapper is %s", repr(mapper))
         script.text = "mapper = %s;" % json.dumps(mapper)
         the_form.element.append(script)
 
@@ -296,8 +294,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
         suppress = {}
 
-        alchemy: AlchemyInfo
-        alchemy = request.registry.email_mgmt_app.alchemy
+        alchemy = request.registry.email_mgmt_app.alchemy # type: AlchemyInfo
 
         # store these or just skip?
         for (pkey_table, pkey_col) in mapper['primary_key']:
@@ -434,7 +431,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             # self.logger.info("input_html = %s", input_html)
             e = {'id': select_id,
                  'input_html': '',
-                 'label_html': label_html(request, select_id, stringcase.sentencecase(key)),
+                 'label_html': '',#label_html(request, select_id, stringcase.sentencecase(key)),
                  'help': x['doc']
                  }
         #        d['form_contents'] = d['form_contents'] + render_template(request, templates.field, e)
@@ -446,7 +443,8 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         form = self.render_entity_form(request, inspect, outer_vars, nest_level, do_modal, prefix)
         return render_template(request, templates.form_wrapper, {'form': form})
 
-    def render_entity_form(self, request, mapper: MapperInfo, outer_vars, nest_level: int = 0, do_modal=False, prefix=""):
+    def render_entity_form(self, request, mapper: MapperInfo, outer_vars, nest_level: int = 0, do_modal=False,
+                           prefix=""):
         form = self.form_representation(request, mapper, outer_vars, nest_level, do_modal, prefix)
         return form.as_html()
 
@@ -462,7 +460,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
 class DesignViewEntryPointGenerator(EntryPointGenerator):
     def js_imports(self):
-        return []#"'../design.js'"]
+        return []  # "'../design.js'"]
 
     def js_stmts(self):
         return ['window.view_name = \'%s\';' % self._request.view_name]
@@ -478,23 +476,25 @@ class EntityDesignViewEntryPointGenerator(DesignViewEntryPointGenerator):
 class EntityDesignView(BaseEntityRelatedView):
     entry_point_generator = EntityDesignViewEntryPointGenerator
 
+
 class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
     entry_point_generator = EntityFormViewEntryPointGenerator
+
     def __call__(self, *args, **kwargs):
         self.entry_point_generator()
         if self.request.method == "GET":
             outer_vars = {}
             wrapper = self.render_entity_form_wrapper(
                 self.request,
-                self.request.registry.email_mgmt_app.alchemy['mappers']\
+                self.request.registry.email_mgmt_app.alchemy['mappers'] \
                     [self.mapper_info['mapper_key']],
                 outer_vars)
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
                                                 'build/templates/entry_point/%s.jinja2' % self.entry_point_key,
-                                                'form_content': wrapper}))
+                                             'form_content': wrapper}))
 
-        #this is for post!
+        # this is for post!
         r = self.entity_type.__new__(self.entity_type)
         r.__init__()
 
@@ -517,7 +517,9 @@ EntityFormActionView_EntityType = TypeVar('EntityFormActionView_EntityType')
 class EntityFormActionView(BaseEntityRelatedView[EntityFormActionView_EntityType]):
     pass
 
+
 EntityAddView_EntityType = TypeVar('EntityAddView_EntityType')
+
 
 class EntityAddView(BaseEntityRelatedView[EntityAddView_EntityType]):
     pass

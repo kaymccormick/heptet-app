@@ -10,6 +10,8 @@ from email_mgmt_app.entity.model.meta import Base
 
 logger = logging.getLogger(__name__)
 mappers = {}
+
+
 def receive_mapper_configured(mapper: Mapper, *args, **kwargs):
     "listen for the 'mapper_configured' event"
     logger.debug("mapper configured %s: %s, %s", mapper, repr(args), repr(kwargs))
@@ -43,6 +45,7 @@ class Mixin(object):
 
 
 class PublicKey(Mixin, Base):
+    "Public key for encryption"
     __tablename__ = 'public_key'
     id = Column(Integer, primary_key=True)
     owner_id = Column(Integer, ForeignKey('person.id'))

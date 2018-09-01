@@ -1,14 +1,21 @@
 import abc
 from typing import AnyStr
 
+from zope import interface
+
 from email_mgmt_app.info import MapperInfosMixin
 
 
+class IEntryPoint(interface.Interface):
+    pass
+
+
+@interface.implementer(IEntryPoint)
 class EntryPoint:
     """
 
     """
-    def __init__(self, key: AnyStr, js=None, view_kwargs: dict=None, operation: 'ResourceOperation'=None) -> None:
+    def __init__(self, key: AnyStr, js=None, view_kwargs: dict=None) -> None:
         """
 
         :param key:
@@ -19,7 +26,6 @@ class EntryPoint:
         self._js = js
         self._view_kwargs = view_kwargs
         self._view = None
-        self._operation = operation
 
     def __str__(self):
         return repr(self.__dict__)
@@ -59,16 +65,12 @@ class EntryPoint:
     def view(self, new):
         self._view = new
 
-    @property
-    def operation(self) -> 'ResourceOperation':
-        return self._operation
-
 
 class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
     """
 
     """
-    def __init__(self, entry_point: EntryPoint, context, request, logger=None) -> None:
+    def __init__(self, entry_point: EntryPoint, request, logger=None) -> None:
         """
 
         :param entry_point:
@@ -83,7 +85,6 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
         info = entry_point.operation.resource_manager.mapper_info
         self._mapper_infos = {}
         self._mapper_infos[info['mapper_key']] = info
-        self._context = context
         self._request = request
 
         self.logger = logger

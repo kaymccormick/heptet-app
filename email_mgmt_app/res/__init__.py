@@ -6,6 +6,7 @@ from typing import AnyStr, Callable, Type
 
 import stringcase
 from sqlalchemy import String
+from zope.interface import Interface, implementer
 
 from email_mgmt_app.constants import ENTITY_VIEW_ARG_NAME
 import pyramid
@@ -24,6 +25,12 @@ from email_mgmt_app.util import render_template, get_entry_point_key
 from email_mgmt_app.viewdecorator import view_decorator
 
 logger = logging.getLogger(__name__)
+
+# right now this seems to only generate side effects
+
+
+class IResourceManager(Interface):
+    pass
 
 
 class ResourceOperationTemplate:
@@ -233,6 +240,7 @@ class ResourceOperation:
         return self._resource_manager
 
 
+@implementer(IResourceManager)
 class ResourceManager:
     """
     ResourceManager class. Provides access to res operations.
@@ -366,8 +374,9 @@ class ResourceManager:
             # info.
             entry_point = EntryPoint(entry_point_key,
                                      js=op.entry_point_js(request),
-                                     view_kwargs=view_kwargs,
-                                     operation=op)
+                                     view_kwargs=view_kwargs)
+                                     #operation=op)
+            #config.registry.registerAdapter()
             config.register_entry_point(entry_point)
 
             logger.debug("Adding view: %s", repr(d))
@@ -602,5 +611,6 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
 
 def includeme(config: Configurator):
     config.add_directive('add_resource_manager', add_resource_manager)
-    adapter = AlchemyInfoResourceAdapter(config, config.registry.email_mgmt_app.alchemy)
+    # this just calls into the object for side effects
+    #adapter = AlchemyInfoResourceAdapter(config, config.registry.email_mgmt_app.alchemy)
     logger.debug("Adding directive 'add_resource_manager'")

@@ -123,6 +123,7 @@ def includeme(config: Configurator):
                                   entry_point_key=entry_point_key)
 
         # need to issue more context!
+        # entry point itself needs a way to 'declare' its dependencies
         entry_point = EntryPoint(entry_point_key)
         config.register_entry_point(entry_point)
 
