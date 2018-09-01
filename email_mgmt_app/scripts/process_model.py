@@ -1,29 +1,23 @@
 import json
 import logging
 
-import jsonpickle
-
 import webapp_main
 from pyramid.renderers import JSON
-from pyramid.request import Request
 from pyramid_tm import explicit_manager
 from sqlalchemy import Column, ForeignKey, Table, PrimaryKeyConstraint, inspect
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.orm import Mapper, RelationshipProperty
 
-from email_mgmt_app.entity.model.meta import metadata
+from model.meta import metadata
 from jinja2 import Environment, PackageLoader, select_autoescape
 import os
 import sys
 
 from pyramid.paster import (
     get_appsettings,
-    setup_logging,
-    )
+)
 
 from pyramid.scripts.common import parse_vars
-
-import email_mgmt_app
 
 
 def usage(argv):

@@ -6,7 +6,7 @@ from pyramid.view import forbidden_view_config
 
 from sqlalchemy.orm import Query
 
-from email_mgmt_app.entity.model.email_mgmt import ServiceEntry, Host
+from model.email_mgmt import ServiceEntry, Host
 from email_mgmt_app.util import munge_dict
 from email_mgmt_app.security import check_password, USERS
 

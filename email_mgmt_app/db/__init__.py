@@ -1,16 +1,14 @@
 import logging
 
 import pyramid_tm
-import sqlalchemy
 import stringcase
 from pyramid.config import Configurator
 from pyramid.util import DottedNameResolver
 from sqlalchemy import Column, String
 from sqlalchemy.orm import Session, Mapper
 
-import email_mgmt_app
-from email_mgmt_app.entity import Base, EntityView, EntityFormView
-from email_mgmt_app.entity.model.email_mgmt import get_tm_session, get_session_factory, get_engine, AssociationTableMixin
+from email_mgmt_app.entity import EntityView, EntityFormView
+from email_mgmt_app.model.email_mgmt import get_tm_session, get_session_factory, get_engine
 from email_mgmt_app.res import ResourceManager, OperationArgument, ArgumentGetter
 
 

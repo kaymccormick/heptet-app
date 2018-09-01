@@ -13,7 +13,7 @@ from sqlalchemy.orm.base import MANYTOONE
 
 from email_mgmt_app.info import MapperInfo
 from email_mgmt_app.adapter import AlchemyInfo
-from email_mgmt_app.entity.model.meta import Base
+from email_mgmt_app.model.meta import Base
 from email_mgmt_app.entity.view import BaseEntityRelatedView
 from email_mgmt_app.util import render_template
 from pyramid.util import DottedNameResolver

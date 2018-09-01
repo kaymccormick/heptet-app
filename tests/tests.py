@@ -6,9 +6,8 @@ import webapp_main
 from pyramid.interfaces import IRootFactory
 from pyramid.request import Request
 
-import email_mgmt_app
 from email_mgmt_app import RootFactory, RootResource, ResourceManager
-from email_mgmt_app.entity.model.email_mgmt import Domain
+from model.email_mgmt import Domain
 from pyramid import testing
 
 
@@ -32,9 +31,9 @@ class BaseTest(unittest.TestCase):
         settings = self.config.get_settings()
         self.settings = settings
 
-        from email_mgmt_app.entity.model.email_mgmt import get_tm_session
-        from email_mgmt_app.entity.model.email_mgmt import get_session_factory
-        from email_mgmt_app.entity.model.email_mgmt import get_engine
+        from model.email_mgmt import get_tm_session
+        from model.email_mgmt import get_session_factory
+        from model.email_mgmt import get_engine
 
         self.engine = get_engine(settings)
         session_factory = get_session_factory(self.engine)
@@ -42,7 +41,7 @@ class BaseTest(unittest.TestCase):
         self.session = get_tm_session(session_factory, transaction.manager)
 
     def init_database(self):
-        from email_mgmt_app.entity.model.meta import Base
+        from model.meta import Base
         Base.metadata.create_all(self.engine)
 
         domain = Domain()
@@ -50,7 +49,7 @@ class BaseTest(unittest.TestCase):
         self.session.add(domain)
 
     def tearDown(self):
-        from email_mgmt_app.entity.model.meta import Base
+        from model.meta import Base
 
         testing.tearDown()
         transaction.abort()
@@ -78,8 +77,6 @@ class BaseAppTest(unittest.TestCase):
 
 
     def tearDown(self):
-        from email_mgmt_app.entity.model.meta import Base
-
         testing.tearDown()
         transaction.abort()
 

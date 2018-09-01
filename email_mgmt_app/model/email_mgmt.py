@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_c
 from sqlalchemy.event import listen
 from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref, Mapper
 
-from email_mgmt_app.entity.model.meta import Base
+from email_mgmt_app.model.meta import Base
 
 
 logger = logging.getLogger(__name__)

@@ -1,23 +1,21 @@
 import logging
 import re
 
-from lxml import etree
 import lxml.html
 from webtest import TestApp
 import transaction
 import lxml
 
-import email_mgmt_app
 import webapp_main
-from email_mgmt_app.entity.model.email_mgmt import get_tm_session
-from email_mgmt_app.entity.model.email_mgmt import get_session_factory
-from email_mgmt_app.entity.model.email_mgmt import get_engine
+from model.email_mgmt import get_tm_session
+from model.email_mgmt import get_session_factory
+from model.email_mgmt import get_engine
 
 javascript_contenttypes = ['application/javascript', 'text/plain']
 
 
 def init_database(engine, session):
-    from email_mgmt_app.entity.model.meta import Base
+    from model.meta import Base
     Base.metadata.create_all(engine)
 
 
