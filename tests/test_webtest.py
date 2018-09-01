@@ -8,6 +8,7 @@ import transaction
 import lxml
 
 import email_mgmt_app
+import webapp_main
 from email_mgmt_app.entity.model.email_mgmt import get_tm_session
 from email_mgmt_app.entity.model.email_mgmt import get_session_factory
 from email_mgmt_app.entity.model.email_mgmt import get_engine
@@ -30,7 +31,7 @@ packed_assets = ['./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_
 
 logging.basicConfig(level=logging.DEBUG)
 
-app = TestApp(email_mgmt_app.main(None, **settings))
+app = TestApp(webapp_main.main(None, **settings))
 
 engine = get_engine(settings)
 session_factory = get_session_factory(engine)

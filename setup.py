@@ -50,12 +50,12 @@ setup(
     install_requires=requires,
     entry_points={
         'paste.app_factory': [
-            'main = email_mgmt_app:main',
+            'main = email_mgmt_app.webapp_main:wsgi_app',
         ],
         'console_scripts': [
             'initialize_email_mgmt_app_db = email_mgmt_app.scripts.initializedb:main',
-'process_model = email_mgmt_app.scripts.process_model:main',
-'process_views = email_mgmt_app.scripts.process_views:main',
+            'process_model = email_mgmt_app.scripts.process_model:main',
+            'process_views = email_mgmt_app.scripts.process_views:main',
         ],
     },
 )

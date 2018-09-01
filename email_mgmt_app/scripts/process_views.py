@@ -11,8 +11,7 @@ from sqlalchemy.orm import Mapper, RelationshipProperty, ColumnProperty
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from webtest import TestApp
 
-import email_mgmt_app
-from email_mgmt_app import RootFactory
+import email_mgmt_app.webapp_main
 from email_mgmt_app.adapter import IAdapter, AlchemyAdapter
 from email_mgmt_app.entrypoint import EntryPoint
 from email_mgmt_app.info import ColumnInfo
@@ -23,6 +22,8 @@ from pyramid.path import DottedNameResolver
 from pyramid.registry import Registry
 from pyramid.request import Request
 from pyramid.scripts.common import parse_vars
+from email_mgmt_app.root import RootFactory
+
 
 class OutputFile:
 
@@ -169,7 +170,7 @@ def main():
     resolver = DottedNameResolver()
 
     # initialize application
-    myapp = email_mgmt_app.main(None, **settings)
+    myapp = email_mgmt_app.webapp_main.wsgi_app(None, **settings)
     myapp_reg = myapp.registry  # type: Registry
     myapp_subreg = myapp_reg.email_mgmt_app
 

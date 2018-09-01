@@ -1,6 +1,8 @@
 import logging
 import unittest
 import transaction
+
+import webapp_main
 from pyramid.interfaces import IRootFactory
 from pyramid.request import Request
 
@@ -86,7 +88,7 @@ class TestConfigSuccessCondition(BaseAppTest):
     def setUp(self):
         super(TestConfigSuccessCondition, self).setUp()
         logging.info("settings = %s", repr(self.settings))
-        self.app = email_mgmt_app.main(None, ** self.settings)
+        self.app = webapp_main.main(None, ** self.settings)
 
 
     def test_root_factory(self):

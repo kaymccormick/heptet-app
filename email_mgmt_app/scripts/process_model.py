@@ -2,6 +2,8 @@ import json
 import logging
 
 import jsonpickle
+
+import webapp_main
 from pyramid.renderers import JSON
 from pyramid.request import Request
 from pyramid_tm import explicit_manager
@@ -123,7 +125,7 @@ def main(argv=sys.argv):
 
     json_renderer.add_adapter(PrimaryKeyConstraint, primary_key_constraint_adapter)
 
-    app = email_mgmt_app.main(None, **settings)
+    app = webapp_main.main(None, **settings)
     mappers = app.registry.email_mgmt_app.mappers
 
     request = app.request_factory({})

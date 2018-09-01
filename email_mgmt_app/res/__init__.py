@@ -10,7 +10,6 @@ from zope.interface import Interface, implementer
 
 from email_mgmt_app.constants import ENTITY_VIEW_ARG_NAME
 import pyramid
-from email_mgmt_app import AlchemyInfo
 from email_mgmt_app.info import MapperInfo, RelationshipInfo
 from email_mgmt_app.entity import EntityFormView, EntityDesignView
 from pyramid.config import Configurator
@@ -540,66 +539,66 @@ class EntityResource():
 #         if isinstance(context, ResourceRegistration) and context.node_name == self._val:
 #             return True
 #         return False
-class AlchemyInfoResourceAdapter:
-    def __init__(self, config: Configurator, alchemy_info: AlchemyInfo) -> None:
-        self._alchemy_info = alchemy_info
-        #try:
-        self.process_alchemy_info(config)
-        #except KeyError as ex:
-        #    pass
-
-        pass
-
-    @property
-    def alchemy_info(self):
-        return self._alchemy_info
-
-    @alchemy_info.setter
-    def alchemy_info(self, new):
-        self._alchemy_info = new
-
-    def process_alchemy_info(self, config):
-        logger.debug("in process_alchemy_info")
-        mi: MapperInfo
-        for mapper_key, mi in self.alchemy_info['mappers'].items():
-            entity = config.registry.email_mgmt_app.mappers[mapper_key].entity
-
-            manager = self.manager(
-                config=config,
-                title=stringcase.sentencecase(mapper_key),
-                node_name=mapper_key,
-                mapper_info=mi,
-                entity_type=entity
-            )
-
-            pkey_args = []
-            for (pkey_table, pkey_col) in mi['primary_key']:
-                assert pkey_table == mi['mapped_table']
-                colinfo = mi['columns'][mi['column_map'][pkey_table][pkey_col]]
-                pkey_args.append(OperationArgument(\
-                    pkey_col, colinfo['type_'], label=stringcase.sentencecase(pkey_col),
-                    getter=ArgumentGetter()))
-
-            manager.operation('view', '..entity.EntityView', pkey_args)
-            manager.operation('form', EntityFormView,
-                              [OperationArgument.SubpathArgument('action', String, default='create')])
-            manager.operation('design', EntityDesignView, [])
-            config.add_resource_manager(manager)
-        pass
-
-    def manager(self, config=None, title=None, entity_type=None, node_name=None, mapper_info: MapperInfo=None):
-        """
-        Factory method for ResourceManager
-        :param config:
-        :param name:  ??
-        :param title:
-        :param entity_type:
-        :param inspect:
-        :param node_name:
-        :return:
-        """
-        mgr = ResourceManager(config=config, title=title, entity_type=entity_type, node_name=node_name, mapper_info=mapper_info)
-        return mgr
+# class AlchemyInfoResourceAdapter:
+#     def __init__(self, config: Configurator, alchemy_info: AlchemyInfo) -> None:
+#         self._alchemy_info = alchemy_info
+#         #try:
+#         self.process_alchemy_info(config)
+#         #except KeyError as ex:
+#         #    pass
+#
+#         pass
+#
+#     @property
+#     def alchemy_info(self):
+#         return self._alchemy_info
+#
+#     @alchemy_info.setter
+#     def alchemy_info(self, new):
+#         self._alchemy_info = new
+#
+#     def process_alchemy_info(self, config):
+#         logger.debug("in process_alchemy_info")
+#         mi: MapperInfo
+#         for mapper_key, mi in self.alchemy_info['mappers'].items():
+#             entity = config.registry.email_mgmt_app.mappers[mapper_key].entity
+#
+#             manager = self.manager(
+#                 config=config,
+#                 title=stringcase.sentencecase(mapper_key),
+#                 node_name=mapper_key,
+#                 mapper_info=mi,
+#                 entity_type=entity
+#             )
+#
+#             pkey_args = []
+#             for (pkey_table, pkey_col) in mi['primary_key']:
+#                 assert pkey_table == mi['mapped_table']
+#                 colinfo = mi['columns'][mi['column_map'][pkey_table][pkey_col]]
+#                 pkey_args.append(OperationArgument(\
+#                     pkey_col, colinfo['type_'], label=stringcase.sentencecase(pkey_col),
+#                     getter=ArgumentGetter()))
+#
+#             manager.operation('view', '..entity.EntityView', pkey_args)
+#             manager.operation('form', EntityFormView,
+#                               [OperationArgument.SubpathArgument('action', String, default='create')])
+#             manager.operation('design', EntityDesignView, [])
+#             config.add_resource_manager(manager)
+#         pass
+#
+#     def manager(self, config=None, title=None, entity_type=None, node_name=None, mapper_info: MapperInfo=None):
+#         """
+#         Factory method for ResourceManager
+#         :param config:
+#         :param name:  ??
+#         :param title:
+#         :param entity_type:
+#         :param inspect:
+#         :param node_name:
+#         :return:
+#         """
+#         mgr = ResourceManager(config=config, title=title, entity_type=entity_type, node_name=node_name, mapper_info=mapper_info)
+#         return mgr
 
 
 
