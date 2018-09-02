@@ -3,7 +3,6 @@ from typing import Dict
 
 from sqlalchemy import Column
 
-from email_mgmt_app.adapter import IAdapter
 from pyramid_jinja2 import Environment
 
 SettingsType = Dict[str, str]
@@ -11,7 +10,7 @@ TemplateEnvironmentType = Environment
 
 
 class ProcessContext:
-    def __init__(self, settings: SettingsType, template_env: TemplateEnvironmentType, adapter: IAdapter):
+    def __init__(self, settings: SettingsType, template_env: TemplateEnvironmentType):
         self._settings = settings
         self._template_env = template_env
 

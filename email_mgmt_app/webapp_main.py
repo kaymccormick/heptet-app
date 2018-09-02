@@ -70,14 +70,6 @@ def wsgi_app(global_config, **settings):
     config.commit()
     config.include('.res')
 
-
-    # we commit here prior to including .db since I dont know how to order config
-    config.commit()
-
-#    config.include('.templates.entity.field')
-    config.include('.db')
-    config.commit()
-
     # now static routes only
     config.include('.routes')
     config.include('.auth')

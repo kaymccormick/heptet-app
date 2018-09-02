@@ -2,7 +2,7 @@ import logging
 
 from pyramid.tweens import INGRESS
 
-from entity import BaseEntityRelatedView
+from email_mgmt_app.entity import BaseEntityRelatedView
 from email_mgmt_app.view import BaseView
 
 logger = logging.getLogger(__name__)
@@ -19,10 +19,9 @@ def munge_view(view, info):
         return response
     return wrapper_view
 
-
+# entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
 def entity_view(view, info):
     et = info.options.get('entity_type')
-
     operation = info.options.get('operation')
     mapper_info = info.options.get('mapper_info')
 
@@ -68,5 +67,5 @@ def test_view_deriver(view_callable, info):
 def includeme(config):
     entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
     config.add_view_deriver(entity_view,under=INGRESS)
-    config.add_view_deriver(munge_view, under='owrapped_view')
-    config.add_view_deriver(test_view_deriver,over='mapped_view')
+#    config.add_view_deriver(munge_view, under='owrapped_view')
+#    config.add_view_deriver(test_view_deriver,over='mapped_view')

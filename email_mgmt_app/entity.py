@@ -13,11 +13,11 @@ from pyramid.response import Response
 from sqlalchemy.orm.base import MANYTOONE
 
 from email_mgmt_app.info import MapperInfo
-from email_mgmt_app.adapter import AlchemyInfo
 from email_mgmt_app.model.meta import Base
 from email_mgmt_app.util import render_template
+from email_mgmt_app.view import BaseView
 from pyramid.util import DottedNameResolver
-from view import BaseView
+
 
 logger = logging.getLogger(__name__)
 
@@ -200,10 +200,7 @@ def template_source(request, template_name):
     # return render_template(request, templates.form, d)
 
 
-EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
-
-
-class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], BaseView):
+class BaseEntityRelatedView(BaseView):
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
         self._entity_type = request.context.resource_manager.entity_type
@@ -225,7 +222,7 @@ class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], Ba
     #     self._inspect = new
 
 
-class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
+class EntityView(BaseEntityRelatedView):
     def query(self):
         return self.request.dbsession.query(self.entity_type)
 
@@ -237,7 +234,7 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
         self.entity = by.first()
 
     @property
-    def entity(self) -> EntityView_EntityType:
+    def entity(self):
         return self._entity
 
     @entity.setter
@@ -262,18 +259,12 @@ class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
         return {**d, 'entity': self.entity}
 
 
-EntityCollectionView_EntityType = TypeVar('EntityCollectionView_EntityType')
-
-
-class EntityCollectionView(BaseEntityRelatedView[EntityCollectionView_EntityType]):
+class EntityCollectionView(BaseEntityRelatedView):
     def __call__(self, *args, **kwargs):
         assert self.request is not None
         assert self._entity_type is not None
         collection = self.request.dbsession.query(self._entity_type).all()
         return {'entities': collection}
-
-
-EntityFormView_EntityType = TypeVar('EntityFormView_EntityType')
 
 
 class FormViewEntryPointGenerator(EntryPointGenerator):
@@ -500,7 +491,7 @@ class EntityDesignView(BaseEntityRelatedView):
     entry_point_generator = EntityDesignViewEntryPointGenerator
 
 
-class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
+class EntityFormView(BaseEntityRelatedView):
     entry_point_generator = EntityFormViewEntryPointGenerator
 
     def __call__(self, *args, **kwargs):
@@ -534,18 +525,9 @@ class EntityFormView(BaseEntityRelatedView[EntityFormView_EntityType]):
         return Response("")
 
 
-EntityFormActionView_EntityType = TypeVar('EntityFormActionView_EntityType')
-
-
-class EntityFormActionView(BaseEntityRelatedView[EntityFormActionView_EntityType]):
+class EntityFormActionView(BaseEntityRelatedView):
     pass
 
 
-EntityAddView_EntityType = TypeVar('EntityAddView_EntityType')
-
-
-class EntityAddView(BaseEntityRelatedView[EntityAddView_EntityType]):
+class EntityAddView(BaseEntityRelatedView):
     pass
-
-
-BaseEntityRelatedView_RelatedEntityType = TypeVar('BaseEntityRelatedView_RelatedEntityType')

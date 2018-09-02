@@ -13,7 +13,6 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from webtest import TestApp
 
 import email_mgmt_app.webapp_main
-from email_mgmt_app.adapter import IAdapter, AlchemyAdapter
 from email_mgmt_app.entrypoint import EntryPoint
 from email_mgmt_app.info import ColumnInfo
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder
@@ -175,14 +174,14 @@ def main():
     myapp_reg = myapp.registry  # type: Registry
     myapp_subreg = myapp_reg.email_mgmt_app
 
-    adapter = AlchemyAdapter()
+    #adapter = AlchemyAdapter()
     # myapp_reg.registerAdapter
     # adapter = myapp_reg.queryUtility(IAdapter)
 
     # first custom code
     pcontext = ProcessContext(settings=settings,
                               template_env=template_env(),
-                              adapter=adapter)
+                              )
 
     # generate a request
     request = get_request(myapp.request_factory, myapp_reg)  # type: Request
@@ -218,34 +217,6 @@ def main():
                   f)
         f.close()
 
-    mappers = myapp_subreg.mappers
-    for mapper_key, mapper in mappers.items():
-        m_info = adapter.process_mapper(mapper_key, mapper)
-
-    json_ = adapter.info.to_json()
-    with open('adapter.json', 'w') as f:
-        f.write(json_)
-        f.close()
-
-    # none_ = json_renderer(None)({ 'mappers': mappers,
-    #                                  'tables': tables,
-    #                                  }, {'request': request})
-    #    pp = json.dumps(json.loads(none_), sort_keys=True,
-    #                  indent=4, separators=(',', ': '))
-
-    # with open('model.json', 'w') as f:
-    #      f.write(pp)
-    #      f.close()
-
-    # original code follows
-    #
-    # helper = RendererHelper(name="scripts/templates/entry_point.js.jinja2",
-    #                         registry=test_app.registry)
-    # for entry_point_key in email_reg.entry_points.keys():
-    #     with open('src/entry_point/%s.js' % entry_point_key, 'w') as f:
-    #
-    #         f.write(helper.render({'entry_point_js': email_reg.entry_points[entry_point_key].js}, {'request': request}))
-    #         f.close()
 
     test_app = TestApp(myapp)
 
