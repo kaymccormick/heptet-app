@@ -47,20 +47,12 @@ def wsgi_app(global_config, **settings):
     # does this need to be in a particular spot?
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
-    # this is required to collect the list
-    # of mappers
-    config.include('.events')
-    config.commit()
-
-    # test remove
-    #alchemy = load_alchemy_json(config)
-
     # should this be in another spot!?
     # this is confusing because resourcemanager
     config.registry.email_mgmt_app.resources = \
         RootResource({}, ResourceManager(config, title='', node_name=''))
 
-    config.include('.page')
+    config.include('.entrypoint')
     config.commit()
 
     config.include('.view')
@@ -92,7 +84,7 @@ def wsgi_app(global_config, **settings):
     # THIS MAY BE AGAINST PYRAMID PATTERNS
     # not to mention my patterns  - all this does is :
     # RootFactory.resources = config.registry.email_mgmt_app.resources
-    RootFactory.populate_resources(config)
+    # RootFactory.populate_resources(config)
 
     return config.make_wsgi_app()
 

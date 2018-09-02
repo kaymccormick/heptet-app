@@ -260,12 +260,6 @@ def includeme(config):
 
     """
 
-    def action():
-        for key,val in mappers.items():
-            logger.debug("in action, calling config add_mapper")
-            # ADD_MAPPER
-            config.add_mapper(val)
-
     settings = config.get_settings()
     settings['tm.manager_hook'] = 'pyramid_tm.explicit_manager'
 
@@ -289,4 +283,4 @@ def includeme(config):
         'dbsession',
         reify=True
     )
-    config.action(None, action)
+

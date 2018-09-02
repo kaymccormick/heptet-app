@@ -32,8 +32,7 @@ class RootFactory(UserDict):
     def register_model_type():
         pass
 
-    @staticmethod
-    def populate_resources(config):
-        #logging.warning("%s", config.registry)
-        assert config.registry.email_mgmt_app.resources is not None
-        RootFactory.resources = config.registry.email_mgmt_app.resources
+    # @staticmethod
+    # def populate_resources(config):
+    #     assert config.registry.email_mgmt_app.resources is not None
+    #     RootFactory.resources = config.registry.email_mgmt_app.resources
