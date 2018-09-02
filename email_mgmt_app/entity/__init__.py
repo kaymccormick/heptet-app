@@ -1,22 +1,23 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import TypeVar, Generic
 
 import stringcase
 
 from email_mgmt_app.form import *
 from email_mgmt_app.entrypoint import *
 from pyramid.interfaces import IRendererFactory
+from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.orm.base import MANYTOONE
 
 from email_mgmt_app.info import MapperInfo
 from email_mgmt_app.adapter import AlchemyInfo
 from email_mgmt_app.model.meta import Base
-from email_mgmt_app.entity.view import BaseEntityRelatedView
 from email_mgmt_app.util import render_template
 from pyramid.util import DottedNameResolver
+from view import BaseView
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +201,28 @@ def template_source(request, template_name):
 
 
 EntityView_EntityType = TypeVar('EntityView_EntityType', bound=Base)
+
+
+class BaseEntityRelatedView(Generic[BaseEntityRelatedView_RelatedEntityType], BaseView):
+    def __init__(self, context, request: Request = None) -> None:
+        super().__init__(context, request)
+        self._entity_type = request.context.resource_manager.entity_type
+
+    @property
+    def entity_type(self):
+        return self._entity_type
+
+    @entity_type.setter
+    def entity_type(self, new):
+        self._entity_type = new
+
+    # @property
+    # def inspect(self) -> Mapper:
+    #     return self._inspect
+    #
+    # @inspect.setter
+    # def inspect(self, new: Mapper):
+    #     self._inspect = new
 
 
 class EntityView(BaseEntityRelatedView[EntityView_EntityType]):
@@ -523,3 +546,6 @@ EntityAddView_EntityType = TypeVar('EntityAddView_EntityType')
 
 class EntityAddView(BaseEntityRelatedView[EntityAddView_EntityType]):
     pass
+
+
+BaseEntityRelatedView_RelatedEntityType = TypeVar('BaseEntityRelatedView_RelatedEntityType')
