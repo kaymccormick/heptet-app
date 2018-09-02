@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 
+from db_dump.args import argument_parser
 from pyramid_tm import explicit_manager
 from sqlalchemy import Column, ForeignKey, Table, PrimaryKeyConstraint, inspect
 from sqlalchemy.engine.reflection import Inspector
@@ -151,18 +152,18 @@ def get_request(request_factory, myapp_reg):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config_uri")
-    (args, remain) = parser.parse_known_args()
+    parser = argument_parser()
+    args = parser.parse_args()
+
     config_uri = args.config_uri
-    options = parse_vars(remain)
+    settings = args.settings[config_uri]
 
     # setup_logging ...
     setup_logging(config_uri)
     _logger = logging.getLogger(__name__)
 
     # get_appsettings
-    settings = get_appsettings(config_uri, options=options)
+    settings = get_appsettings(config_uri)
     # this sets up the json.JSONENcoder.default
     setup = setup_jsonencoder()
     setup()
