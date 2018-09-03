@@ -51,7 +51,7 @@ def render_template(request, template_name, d, nestlevel=0):
     return renderer.render(d)
 
 
-def get_exception_entry_point_key(request, exception):
+def get_exception_entry_point_key(exception):
     return 'exception_' + exception.__name__
 
 

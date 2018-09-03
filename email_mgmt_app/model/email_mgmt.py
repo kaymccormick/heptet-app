@@ -17,7 +17,7 @@ def receive_mapper_configured(mapper: Mapper, *args, **kwargs):
     logger.debug("mapper configured %s: %s, %s", mapper, repr(args), repr(kwargs))
     mappers[mapper.mapped_table.key] = mapper
 
-listen(Mapper, 'mapper_configured', receive_mapper_configured)
+#listen(Mapper, 'mapper_configured', receive_mapper_configured)
 
 # marker class for objects which are "association tables"
 class AssociationTableMixin(object):

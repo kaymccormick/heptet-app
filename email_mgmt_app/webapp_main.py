@@ -2,6 +2,11 @@ import json
 import os
 import logging
 
+from db_dump.info import ProcessStruct
+from marshmallow import ValidationError
+
+import stringcase
+from db_dump.schema import ProcessSchema, get_process_schema
 from pyramid_ldap3 import groupfinder
 
 from email_mgmt_app.predicate import EntityTypePredicate
@@ -14,6 +19,7 @@ from email_mgmt_app.registry import AppSubRegistry
 from email_mgmt_app.root import RootFactory
 from email_mgmt_app.res import RootResource, ResourceManager
 from pyramid.renderers import get_renderer
+import db_dump.process
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +37,17 @@ def wsgi_app(global_config, **settings):
 
     config = Configurator(settings=settings, root_factory=RootFactory)
                           #exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
-    config.registry.email_mgmt_app = AppSubRegistry()
+
+    process = load_process_struct()
+
+    for mapper in process.mappers:
+        logger.debug("mapper is %s", mapper)
+        logger.debug("local_table is %s", mapper.local_table)
+        node_name = mapper.local_table.key
+        manager = ResourceManager(config, mapper, node_name=node_name, mapper_info=mapper)
+        logger.debug("now i have %s", manager)
+
+    config.registry.email_mgmt_app = AppSubRegistry(process)
 
     config.include('pyramid_jinja2')
     config.commit()
@@ -46,6 +62,8 @@ def wsgi_app(global_config, **settings):
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
     # does this need to be in a particular spot?
     config.add_view_predicate('entity_type', EntityTypePredicate)
+
+
 
     # should this be in another spot!?
     # this is confusing because resourcemanager
@@ -87,6 +105,22 @@ def wsgi_app(global_config, **settings):
     # RootFactory.populate_resources(config)
 
     return config.make_wsgi_app()
+
+
+def load_process_struct():
+    email_db_json = ''
+    with open('email_db.json', 'r') as f:
+        email_db_json = ''.join(f.readlines())
+    process_schema = get_process_schema()
+    process = None  # type: ProcessStruct
+    # logger.debug("json for db is %s", email_db_json)
+    try:
+        process = process_schema.load(json.loads(email_db_json))
+    except ValidationError as ve:
+        for k, v in ve.messages.items():
+            logger.critical("input error in %s: %s", k, v)
+        raise ve
+    return process
 
 
 def on_new_request(event):
@@ -144,27 +178,27 @@ def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
 
 
-def load_alchemy_json(config):
-    """
-
-    :param config:
-    :return:
-    """
-    alchemy = None
-    try:
-        with open('alchemy.json', 'r') as f:
-            lines = f.readlines()
-            s="\n".join(lines)
-            alchemy = json.loads(s)
-            #alchemy = AlchemyInfo.from_json(s)
-            f.close()
-    except FileNotFoundError:
-        pass
-    except:
-        raise
-    assert alchemy
-
-    # dont want to propogate this way
-    if False:
-        config.registry.email_mgmt_app.alchemy = alchemy
-    return alchemy
+# def load_alchemy_json(config):
+#     """
+#
+#     :param config:
+#     :return:
+#     """
+#     alchemy = None
+#     try:
+#         with open('alchemy.json', 'r') as f:
+#             lines = f.readlines()
+#             s="\n".join(lines)
+#             alchemy = json.loads(s)
+#             #alchemy = AlchemyInfo.from_json(s)
+#             f.close()
+#     except FileNotFoundError:
+#         pass
+#     except:
+#         raise
+#     assert alchemy
+#
+#     # dont want to propogate this way
+#     if False:
+#         config.registry.email_mgmt_app.alchemy = alchemy
+#     return alchemy

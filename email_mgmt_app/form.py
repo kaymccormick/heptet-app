@@ -4,7 +4,7 @@ from typing import AnyStr, Dict
 from lxml import etree
 from lxml import html
 
-from email_mgmt_app.info import MapperInfosMixin
+from email_mgmt_app import MapperInfosMixin
 
 
 class IMappingTarget(metaclass=abc.ABCMeta):

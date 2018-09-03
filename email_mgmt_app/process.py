@@ -1,10 +1,12 @@
 import json
+import logging
 from typing import Dict
 
 from sqlalchemy import Column
 
 from pyramid_jinja2 import Environment
 
+logger = logging.getLogger(__name__)
 SettingsType = Dict[str, str]
 TemplateEnvironmentType = Environment
 
@@ -71,8 +73,9 @@ def setup_jsonencoder():
                 try:
                     v = old_default(self, obj)
                 except:
-
-                    assert False, type(obj)
+                    logger.critical("dont know how to jsonify %s", type(obj))
+                    #assert False, type(obj)
+                    return str(obj)
                 return v
 
         json.JSONEncoder.default = MyEncoder.default

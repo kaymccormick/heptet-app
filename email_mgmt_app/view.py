@@ -12,12 +12,14 @@ from email_mgmt_app.util import get_exception_entry_point_key
 
 logger = logging.getLogger(__name__)
 
+
 class ViewConfig:
     pass
 
 
 class BaseView:
     entry_point_generator = None
+
     def __init__(self, context, request: Request=None) -> None:
         self._context = context
         self._request = request
@@ -33,7 +35,6 @@ class BaseView:
         self.collect_args(self.request)
         self._response_dict['entry_point_key'] = self.entry_point_key
         self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % self.entry_point_key
-
         return self._response_dict
 
     @property
@@ -117,7 +118,7 @@ def includeme(config: Configurator):
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
         request.registry = config.registry
 
-        entry_point_key = get_exception_entry_point_key(request, Exception)
+        entry_point_key = get_exception_entry_point_key(Exception)
         config.add_exception_view(view=ExceptionView, context=Exception,
                                   renderer="templates/exception/exception.jinja2",
                                   entry_point_key=entry_point_key)
@@ -131,7 +132,7 @@ def includeme(config: Configurator):
         config.add_exception_view(view=OperationArgumentExceptionView, context=OperationArgumentException,
                                   renderer="templates/exceptions/OperationArgumentException.jinja2",
                                   entry_point_key=entry_point_key)
-        entry_point_key = get_exception_entry_point_key(request, OperationArgumentException)
+        entry_point_key = get_exception_entry_point_key(OperationArgumentException)
         entry_point = EntryPoint(entry_point_key)
         config.register_entry_point(entry_point)
     config.action(None, action)

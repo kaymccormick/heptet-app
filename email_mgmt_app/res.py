@@ -5,12 +5,12 @@ from collections import UserDict, OrderedDict
 from typing import AnyStr, Callable, Type
 
 import stringcase
+from db_dump.info import MapperInfo
 from sqlalchemy import String
 from zope.interface import Interface, implementer
 
 from email_mgmt_app.constants import ENTITY_VIEW_ARG_NAME
 import pyramid
-from email_mgmt_app.info import MapperInfo, RelationshipInfo
 from email_mgmt_app.entity import EntityFormView, EntityDesignView
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
@@ -166,6 +166,7 @@ class OperationArgument:
         return None
 
 
+# TODO: should this have entry_point_js ??
 class ResourceOperation:
     """
     Class encapsulating an operation on a resource

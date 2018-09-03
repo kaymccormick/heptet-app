@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import TypeVar, Generic
 
 import stringcase
+from db_dump.info import MapperInfo
 
 from email_mgmt_app.form import *
 from email_mgmt_app.entrypoint import *
@@ -12,7 +13,6 @@ from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.orm.base import MANYTOONE
 
-from email_mgmt_app.info import MapperInfo
 from email_mgmt_app.model.meta import Base
 from email_mgmt_app.util import render_template
 from email_mgmt_app.view import BaseView

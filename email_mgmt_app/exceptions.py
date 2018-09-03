@@ -4,7 +4,6 @@ from pyramid.interfaces import IExceptionResponse
 from zope.interface import implementer
 
 
-
 @implementer(IExceptionResponse)
 class BaseAppException(HTTPClientError):
     def __init__(self, message):
@@ -22,11 +21,13 @@ class OperationException(BaseAppException):
         super().__init__(message)
         self.operation = operation
 
+
 @implementer(IExceptionResponse)
 class OperationArgumentException(OperationException):
     def __init__(self, operation, arg, message):
         super().__init__(operation, message)
         self.arg = arg
+
 
 @implementer(IExceptionResponse)
 class MissingArgumentException(OperationArgumentException):

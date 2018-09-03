@@ -3,7 +3,7 @@ from typing import AnyStr
 
 from zope import interface
 
-from email_mgmt_app.info import MapperInfosMixin
+from email_mgmt_app import MapperInfosMixin
 
 
 class IEntryPoint(interface.Interface):

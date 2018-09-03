@@ -1,8 +1,5 @@
 import 'konva';
 
-var alchemy = require('../alchemy')
-
-
 var stage = new Konva.Stage({
   container: 'konva_stage',   // id of container <div>
   width: 500,

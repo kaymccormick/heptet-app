@@ -2,7 +2,8 @@ from jinja2 import Environment
 
 
 class AppSubRegistry:
-    def __init__(self) -> None:
+    def __init__(self, process_info: 'ProcessInfo') -> None:
+        self._process_info = process_info
         self._mappers = {}
         self._jinja2_env = None
         self._json_renderer = None

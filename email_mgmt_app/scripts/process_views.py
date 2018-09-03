@@ -1,8 +1,8 @@
 import argparse
 import json
 import logging
-import os
 import sys
+from datetime import datetime
 
 from db_dump.args import argument_parser
 from pyramid_tm import explicit_manager
@@ -14,20 +14,19 @@ from webtest import TestApp
 
 import email_mgmt_app.webapp_main
 from email_mgmt_app.entrypoint import EntryPoint
-from email_mgmt_app.info import ColumnInfo
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder
+from email_mgmt_app.root import RootFactory
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.path import DottedNameResolver
 from pyramid.registry import Registry
 from pyramid.request import Request
-from pyramid.scripts.common import parse_vars
-from email_mgmt_app.root import RootFactory
 
 
+# to be used to track outputs
 class OutputFile:
-
     pass
+
 
 def function_adapter(func, request):
     return repr(func)
@@ -144,14 +143,17 @@ def template_env():
 
 
 def get_request(request_factory, myapp_reg):
-    request = request_factory({})
+    request = request_factory({'wsgi.url_scheme': 'http', 'SERVER_NAME': 'localhost', 'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'})
     request.registry = myapp_reg
     request.tm = explicit_manager(request)
+    # request.method = "GET"
+    # request.url = "/"
     return request
 
 
 def main():
-    parser = argument_parser()
+    parser = argument_parser() # type: argparse.ArgumentParser
+    parser.add_argument('--test-app', '--test', help="Test the application", action="store_true")
     args = parser.parse_args()
 
     config_uri = args.config_uri
@@ -174,10 +176,6 @@ def main():
     myapp_reg = myapp.registry  # type: Registry
     myapp_subreg = myapp_reg.email_mgmt_app
 
-    #adapter = AlchemyAdapter()
-    # myapp_reg.registerAdapter
-    # adapter = myapp_reg.queryUtility(IAdapter)
-
     # first custom code
     pcontext = ProcessContext(settings=settings,
                               template_env=template_env(),
@@ -186,16 +184,12 @@ def main():
     # generate a request
     request = get_request(myapp.request_factory, myapp_reg)  # type: Request
 
-    # find a way to integrate with sql alchemy in a reasonable way
-
-    # this looks weird
     app_dbsession = myapp_reg.email_mgmt_app.dbsession
 
+    # I guess app_dbsession is a 1-tuple with the function
     dbsession = app_dbsession[0](request)
 
     db = inspect(dbsession.get_bind())  # type: Inspector
-
-    # myapp_subreg.json_renderer = json_renderer
 
     # should probably obtain the root factory
     obj = {'views': myapp_subreg.views,
@@ -211,12 +205,10 @@ def main():
     #     f.close()
 
     entry_points = myapp_subreg.entry_points
-
     with open('entry_points.json', 'w') as f:
-        json.dump({'list': list(entry_points.keys())},
+        json.dump({'generated_datetime': datetime.now(), 'list': list(entry_points.keys())},
                   f)
         f.close()
-
 
     test_app = TestApp(myapp)
 
@@ -275,9 +267,10 @@ def main():
             f.write(content)
             f.close()
 
-        continue
-
         if not ep.view_kwargs:
+            continue
+
+        if not args.test_app:
             continue
 
         uri = '/' + ep.view_kwargs['node_name'] + '/' + ep.view_kwargs['name']
