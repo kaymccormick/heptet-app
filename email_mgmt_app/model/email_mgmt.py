@@ -2,22 +2,12 @@ import logging
 
 import zope.sqlalchemy
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, engine_from_config, LargeBinary
-from sqlalchemy.event import listen
-from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref, Mapper
+from sqlalchemy.orm import relationship, configure_mappers, sessionmaker, backref
 
 from email_mgmt_app.model.meta import Base
 
-
 logger = logging.getLogger(__name__)
 mappers = {}
-
-
-def receive_mapper_configured(mapper: Mapper, *args, **kwargs):
-    "listen for the 'mapper_configured' event"
-    logger.debug("mapper configured %s: %s, %s", mapper, repr(args), repr(kwargs))
-    mappers[mapper.mapped_table.key] = mapper
-
-#listen(Mapper, 'mapper_configured', receive_mapper_configured)
 
 # marker class for objects which are "association tables"
 class AssociationTableMixin(object):

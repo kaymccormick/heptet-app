@@ -312,7 +312,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         super().__init__(entry_point, request, **kwargs)
         outer_vars = {}
 
-
+        request.registry.queryUtility(IMapperInfo, )
         self._form = self.form_representation(self._request,
                                               entry_point._mapper_wrapper.mapper_info,
                                               outer_vars)
@@ -332,8 +332,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         the_form.set_mapper_info(mapper.local_table.key, mapper)
 
         script = html.Element('script')
-        logger.critical("mapper is %s", repr(mapper))
-        script.text = "mapper = %s;" % json.dumps(mapper)
+#        script.text = "mapper = %s;" % json.dumps(mapper)
         the_form.element.append(script)
 
         if self.logger:
@@ -539,11 +538,11 @@ class EntityFormView(BaseEntityRelatedView):
         if self.request.method == "GET":
             outer_vars = {}
             wrapper = generator.render_entity_form_wrapper(
-                self.request, generator.mapper_wrapper.get_one_mapper_info(),
+                self.request, self.entry_point.mapper_wrapper.get_one_mapper_info(),
                 outer_vars)
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
-                                                'build/templates/entry_point/%s.jinja2' % self.entry_point_key,
+                                                'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
                                              'form_content': wrapper}))
 
         # this is for post!

@@ -20,6 +20,7 @@ def munge_view(view, info):
     return wrapper_view
 
 # entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
+# this function needs major help! TODO
 def entity_view(view, info):
     # pull entity type from options (out of date!!)
     et = info.options.get('entity_type')
@@ -44,7 +45,8 @@ def entity_view(view, info):
                 original_view.entity_type = et
                 original_view.mapper_info = mapper_info
 
-        # if renderer:
+        # if renderer:qa
+
         #     request.override_renderer = renderer
 
         response = view(context, request)
@@ -67,5 +69,5 @@ def test_view_deriver(view_callable, info):
 def includeme(config):
     entity_view.options = ('operation','mapper_info','node_name','entry_point')
     config.add_view_deriver(entity_view,under=INGRESS)
-    config.add_view_deriver(munge_view, under='owrapped_view')
-#    config.add_view_deriver(test_view_deriver,over='mapped_view')
+    #config.add_view_deriver(munge_view, under='owrapped_view')
+    config.add_view_deriver(test_view_deriver,over='mapped_view')

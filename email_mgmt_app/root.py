@@ -21,6 +21,7 @@ class RootFactory(UserDict):
 
     def __init__(self) -> None:
         super().__init__()
+        # fixme should we be populating from this??
         self.data = RootFactory.resources or {}
         self.entity_type = None
 

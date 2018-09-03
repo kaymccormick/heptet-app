@@ -59,9 +59,13 @@ def wsgi_app(global_config, **settings):
     config = Configurator(settings=settings, root_factory=RootFactory())
                           #exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
 
-    process = load_process_struct()
+    process = load_process_struct() # type: ProcessStruct
+    for mapper in process.mappers:
+        wrapper = MapperWrapper(mapper)
+        config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
+
     config.registry.email_mgmt_app = AppSubRegistry(process)
-    #config.registry.registerUtility()
+
     config.include('.model.email_mgmt')
     config.include('.entrypoint')
     config.include('.res')
@@ -72,29 +76,25 @@ def wsgi_app(global_config, **settings):
 
     config.include('.viewderiver')
     config.add_view_predicate('entity_type', EntityTypePredicate)
+
     config_process_struct(config, process)
 
-    def queryutil():
-        utility = config.registry.queryUtility(IRootFactory)
-        logger.debug("utility=  %s", utility)
 
-    config.action(None, queryutil)
+    # def queryutil():
+    #     utility = config.registry.queryUtility(IRootFactory)
+    #     logger.debug("utility=  %s", utility)
+    #
+    # config.action(None, queryutil)
 
     config.include('pyramid_jinja2')
     config.commit()
 
-    RootFactory.resources = config.registry.email_mgmt_app.resources
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
 
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
 
-    config.commit()
-
     config.include('.view')
-
-    config.commit()
-
 
     # now static routes only
     config.include('.routes')
@@ -129,10 +129,13 @@ def load_process_struct():
         email_db_json = ''.join(f.readlines())
     process_schema = get_process_schema()
     process = None  # type: ProcessStruct
+
     # logger.debug("json for db is %s", email_db_json)
     try:
         process = process_schema.load(json.loads(email_db_json))
+        logger.debug("process = %s", repr(process))
     except ValidationError as ve:
+        # todo better error handling
         for k, v in ve.messages.items():
             logger.critical("input error in %s: %s", k, v)
         raise ve

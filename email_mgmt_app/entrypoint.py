@@ -88,6 +88,11 @@ class EntryPoint:
     def view(self, new):
         self._view = new
 
+    @property
+    def mapper_wrapper(self):
+        return self._mapper_wrapper
+
+
 
 class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
     """

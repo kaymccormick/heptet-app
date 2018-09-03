@@ -2,7 +2,7 @@ from pyramid_tm import explicit_manager
 
 
 def get_request(request_factory, myapp_reg):
-    request = request_factory({'wsgi.url_scheme': 'http', 'SERVER_NAME': 'localhost', 'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'})
+    request = request_factory({'wsgi.url_scheme': 'http', 'REMOTE_ADDR': '127.0.0.1', 'SERVER_NAME': 'localhost', 'REQUEST_METHOD': 'GET', 'PATH_INFO': '/'})
     request.registry = myapp_reg
     request.tm = explicit_manager(request)
     # request.method = "GET"

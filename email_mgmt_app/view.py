@@ -25,6 +25,7 @@ class BaseView:
         self._request = request
         self._operation = None
         self._values = {}
+        self._entry_point = None
         self._response_dict = { 'request': request,
                                 'context': context } # give it a nice default?
         self._entry_point_key = None
@@ -34,7 +35,13 @@ class BaseView:
     def __call__(self, *args, **kwargs):
         self.collect_args(self.request)
         self._response_dict['entry_point_key'] = self.entry_point.key
-        self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % self.entry_point.key
+        assert self.entry_point, "Entry point for view should not be None"
+        key = self.entry_point.key
+        assert key, "Entry point key for view should be truthy"
+        # todo it might be super helpful to sanity check this value, because this generates errors
+        # later that trace to here
+        self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % key
+
         return self._response_dict
 
     @property
@@ -52,14 +59,6 @@ class BaseView:
     @operation.setter
     def operation(self, new) -> None:
         self._operation = new
-
-    @property
-    def entry_point_key(self):
-        return self._entry_point_key
-
-    @entry_point_key.setter
-    def entry_point_key(self, new):
-        self._entry_point_key = new
 
     def collect_args(self, request):
         if self.operation is None:
@@ -98,6 +97,11 @@ class BaseView:
 
             self._values[arg.name] = value
             values.append(value)
+
+    @property
+    def entry_point(self):
+        return self._entry_point
+
 
 
 class ExceptionView(BaseView):

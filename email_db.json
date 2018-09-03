@@ -1,0 +1,2797 @@
+{
+  "generation": {
+    "python_version": "3.7.0",
+    "system_alias": "('Windows', '10', '10.0.17134')",
+    "config_vars": {},
+    "created": "2018-09-02T21:38:19.951635+00:00"
+  },
+  "tables": [
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "organization_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role"
+          },
+          "key": "organization_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "role_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role"
+          },
+          "key": "role_id",
+          "visit_name": "column"
+        }
+      ],
+      "name": "organization_role",
+      "key": "organization_role",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "parent_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization"
+          },
+          "key": "parent_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "organization"
+          },
+          "key": "name",
+          "visit_name": "column"
+        }
+      ],
+      "name": "organization",
+      "key": "organization",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "recipient"
+          },
+          "key": "id",
+          "visit_name": "column"
+        }
+      ],
+      "name": "recipient",
+      "key": "recipient",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "port_num",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "port_num",
+          "visit_name": "column"
+        },
+        {
+          "name": "protocol_name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "protocol_name",
+          "visit_name": "column"
+        },
+        {
+          "name": "weight",
+          "type_": {
+            "python_type": "FLOAT",
+            "visit_name": "float"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "weight",
+          "visit_name": "column"
+        },
+        {
+          "name": "description",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "description",
+          "visit_name": "column"
+        }
+      ],
+      "name": "service_entry",
+      "key": "service_entry",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "email",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "email",
+          "visit_name": "column"
+        },
+        {
+          "name": "home_address_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "home_address_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "work_address_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "work_address_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "mailing_address_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "mailing_address_id",
+          "visit_name": "column"
+        }
+      ],
+      "name": "person",
+      "key": "person",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "role_"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "role_"
+          },
+          "key": "name",
+          "visit_name": "column"
+        }
+      ],
+      "name": "role_",
+      "key": "role_",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "address_line_1",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "address_line_1",
+          "visit_name": "column"
+        },
+        {
+          "name": "address_line_2",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "address_line_2",
+          "visit_name": "column"
+        },
+        {
+          "name": "address_line_3",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "address_line_3",
+          "visit_name": "column"
+        },
+        {
+          "name": "city",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "city",
+          "visit_name": "column"
+        },
+        {
+          "name": "state_or_region",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "state_or_region",
+          "visit_name": "column"
+        },
+        {
+          "name": "postcode",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "postcode",
+          "visit_name": "column"
+        },
+        {
+          "name": "country",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "country",
+          "visit_name": "column"
+        }
+      ],
+      "name": "address",
+      "key": "address",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "public_key"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "owner_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "public_key"
+          },
+          "key": "owner_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "public_key_text",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "public_key"
+          },
+          "key": "public_key_text",
+          "visit_name": "column"
+        }
+      ],
+      "name": "public_key",
+      "key": "public_key",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "owner_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file"
+          },
+          "key": "owner_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "data",
+          "type_": {
+            "python_type": "BLOB",
+            "visit_name": "large_binary"
+          },
+          "table": {
+            "key": "file"
+          },
+          "key": "data",
+          "visit_name": "column"
+        }
+      ],
+      "name": "file",
+      "key": "file",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "domain"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "domain"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "organization_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "domain"
+          },
+          "key": "organization_id",
+          "visit_name": "column"
+        }
+      ],
+      "name": "domain",
+      "key": "domain",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file_upload"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "owner_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file_upload"
+          },
+          "key": "owner_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "data",
+          "type_": {
+            "python_type": "BLOB",
+            "visit_name": "large_binary"
+          },
+          "table": {
+            "key": "file_upload"
+          },
+          "key": "data",
+          "visit_name": "column"
+        }
+      ],
+      "name": "file_upload",
+      "key": "file_upload",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "organization_role_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role_person"
+          },
+          "key": "organization_role_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "person_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role_person"
+          },
+          "key": "person_id",
+          "visit_name": "column"
+        }
+      ],
+      "name": "organization_role_person",
+      "key": "organization_role_person",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "host"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "host"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "domain_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "host"
+          },
+          "key": "domain_id",
+          "visit_name": "column"
+        }
+      ],
+      "name": "host",
+      "key": "host",
+      "visit_name": "table"
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "email_address"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "email_address"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "host_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "email_address"
+          },
+          "key": "host_id",
+          "visit_name": "column"
+        }
+      ],
+      "name": "email_address",
+      "key": "email_address",
+      "visit_name": "table"
+    },
+    {
+      "columns": [],
+      "name": "test1",
+      "key": "test1",
+      "visit_name": "table"
+    }
+  ],
+  "mappers": [
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "public_key"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "owner_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "public_key"
+          },
+          "key": "owner_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "public_key_text",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "public_key"
+          },
+          "key": "public_key_text",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.PublicKey",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "public_key"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "owner_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "public_key"
+            },
+            "key": "owner_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "public_key_text",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "public_key"
+            },
+            "key": "public_key_text",
+            "visit_name": "column"
+          }
+        ],
+        "name": "public_key",
+        "key": "public_key",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "public_key"
+                },
+                "key": "owner_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Person"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "public_key"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "owner_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file"
+          },
+          "key": "owner_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "data",
+          "type_": {
+            "python_type": "BLOB",
+            "visit_name": "large_binary"
+          },
+          "table": {
+            "key": "file"
+          },
+          "key": "data",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.File",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "file"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "owner_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "file"
+            },
+            "key": "owner_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "data",
+            "type_": {
+              "python_type": "BLOB",
+              "visit_name": "large_binary"
+            },
+            "table": {
+              "key": "file"
+            },
+            "key": "data",
+            "visit_name": "column"
+          }
+        ],
+        "name": "file",
+        "key": "file",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "file"
+                },
+                "key": "owner_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Person"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "file"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file_upload"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "owner_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "file_upload"
+          },
+          "key": "owner_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "data",
+          "type_": {
+            "python_type": "BLOB",
+            "visit_name": "large_binary"
+          },
+          "table": {
+            "key": "file_upload"
+          },
+          "key": "data",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.FileUpload",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "file_upload"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "owner_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "file_upload"
+            },
+            "key": "owner_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "data",
+            "type_": {
+              "python_type": "BLOB",
+              "visit_name": "large_binary"
+            },
+            "table": {
+              "key": "file_upload"
+            },
+            "key": "data",
+            "visit_name": "column"
+          }
+        ],
+        "name": "file_upload",
+        "key": "file_upload",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "file_upload"
+                },
+                "key": "owner_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Person"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "file_upload"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "organization_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role"
+          },
+          "key": "organization_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "role_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role"
+          },
+          "key": "role_id",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.OrganizationRole",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "organization_role"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "organization_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "organization_role"
+            },
+            "key": "organization_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "role_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "organization_role"
+            },
+            "key": "role_id",
+            "visit_name": "column"
+          }
+        ],
+        "name": "organization_role",
+        "key": "organization_role",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization_role"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization_role_person"
+                },
+                "key": "organization_role_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.OrgRolePerson"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization_role"
+                },
+                "key": "organization_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Organization"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization_role"
+                },
+                "key": "role_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "role_"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Role"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "organization_role"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "organization_role_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role_person"
+          },
+          "key": "organization_role_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "person_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization_role_person"
+          },
+          "key": "person_id",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.OrgRolePerson",
+      "local_table": {
+        "columns": [
+          {
+            "name": "organization_role_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "organization_role_person"
+            },
+            "key": "organization_role_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "person_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "organization_role_person"
+            },
+            "key": "person_id",
+            "visit_name": "column"
+          }
+        ],
+        "name": "organization_role_person",
+        "key": "organization_role_person",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization_role_person"
+                },
+                "key": "person_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Person"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization_role_person"
+                },
+                "key": "organization_role_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization_role"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.OrganizationRole"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "organization_role_id",
+          "table": "organization_role_person"
+        },
+        {
+          "column": "person_id",
+          "table": "organization_role_person"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "parent_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "organization"
+          },
+          "key": "parent_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "organization"
+          },
+          "key": "name",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.Organization",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "organization"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "parent_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "organization"
+            },
+            "key": "parent_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "organization"
+            },
+            "key": "name",
+            "visit_name": "column"
+          }
+        ],
+        "name": "organization",
+        "key": "organization",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "parent_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.Organization"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization_role"
+                },
+                "key": "organization_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.OrganizationRole"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "parent_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Organization"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "domain"
+                },
+                "key": "organization_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.Domain"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "organization"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "role_"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "role_"
+          },
+          "key": "name",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.Role",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "role_"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "role_"
+            },
+            "key": "name",
+            "visit_name": "column"
+          }
+        ],
+        "name": "role_",
+        "key": "role_",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "role_"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization_role"
+                },
+                "key": "role_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.OrganizationRole"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "role_"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "address_line_1",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "address_line_1",
+          "visit_name": "column"
+        },
+        {
+          "name": "address_line_2",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "address_line_2",
+          "visit_name": "column"
+        },
+        {
+          "name": "address_line_3",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "address_line_3",
+          "visit_name": "column"
+        },
+        {
+          "name": "city",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "city",
+          "visit_name": "column"
+        },
+        {
+          "name": "state_or_region",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "state_or_region",
+          "visit_name": "column"
+        },
+        {
+          "name": "postcode",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "postcode",
+          "visit_name": "column"
+        },
+        {
+          "name": "country",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "address"
+          },
+          "key": "country",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.Address",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "name",
+            "visit_name": "column"
+          },
+          {
+            "name": "address_line_1",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "address_line_1",
+            "visit_name": "column"
+          },
+          {
+            "name": "address_line_2",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "address_line_2",
+            "visit_name": "column"
+          },
+          {
+            "name": "address_line_3",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "address_line_3",
+            "visit_name": "column"
+          },
+          {
+            "name": "city",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "city",
+            "visit_name": "column"
+          },
+          {
+            "name": "state_or_region",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "state_or_region",
+            "visit_name": "column"
+          },
+          {
+            "name": "postcode",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "postcode",
+            "visit_name": "column"
+          },
+          {
+            "name": "country",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "address"
+            },
+            "key": "country",
+            "visit_name": "column"
+          }
+        ],
+        "name": "address",
+        "key": "address",
+        "visit_name": "table"
+      },
+      "relationships": [],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "address"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "email",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "email",
+          "visit_name": "column"
+        },
+        {
+          "name": "home_address_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "home_address_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "work_address_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "work_address_id",
+          "visit_name": "column"
+        },
+        {
+          "name": "mailing_address_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "person"
+          },
+          "key": "mailing_address_id",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.Person",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "person"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "person"
+            },
+            "key": "name",
+            "visit_name": "column"
+          },
+          {
+            "name": "email",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "person"
+            },
+            "key": "email",
+            "visit_name": "column"
+          },
+          {
+            "name": "home_address_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "person"
+            },
+            "key": "home_address_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "work_address_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "person"
+            },
+            "key": "work_address_id",
+            "visit_name": "column"
+          },
+          {
+            "name": "mailing_address_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "person"
+            },
+            "key": "mailing_address_id",
+            "visit_name": "column"
+          }
+        ],
+        "name": "person",
+        "key": "person",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "home_address_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "address"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Address"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "work_address_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "address"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Address"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "mailing_address_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "address"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Address"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization_role_person"
+                },
+                "key": "person_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.OrgRolePerson"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "public_key"
+                },
+                "key": "owner_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.PublicKey"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "file"
+                },
+                "key": "owner_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.File"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "person"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "file_upload"
+                },
+                "key": "owner_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.FileUpload"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "person"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "recipient"
+          },
+          "key": "id",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.Recipient",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "recipient"
+            },
+            "key": "id",
+            "visit_name": "column"
+          }
+        ],
+        "name": "recipient",
+        "key": "recipient",
+        "visit_name": "table"
+      },
+      "relationships": [],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "recipient"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "domain"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "domain"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "organization_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "domain"
+          },
+          "key": "organization_id",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.Domain",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "domain"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "domain"
+            },
+            "key": "name",
+            "visit_name": "column"
+          },
+          {
+            "name": "organization_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "domain"
+            },
+            "key": "organization_id",
+            "visit_name": "column"
+          }
+        ],
+        "name": "domain",
+        "key": "domain",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "domain"
+                },
+                "key": "organization_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "organization"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Organization"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "domain"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "host"
+                },
+                "key": "domain_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.Host"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "domain"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "port_num",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "port_num",
+          "visit_name": "column"
+        },
+        {
+          "name": "protocol_name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "protocol_name",
+          "visit_name": "column"
+        },
+        {
+          "name": "weight",
+          "type_": {
+            "python_type": "FLOAT",
+            "visit_name": "float"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "weight",
+          "visit_name": "column"
+        },
+        {
+          "name": "description",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "service_entry"
+          },
+          "key": "description",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.ServiceEntry",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "service_entry"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "service_entry"
+            },
+            "key": "name",
+            "visit_name": "column"
+          },
+          {
+            "name": "port_num",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "service_entry"
+            },
+            "key": "port_num",
+            "visit_name": "column"
+          },
+          {
+            "name": "protocol_name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "service_entry"
+            },
+            "key": "protocol_name",
+            "visit_name": "column"
+          },
+          {
+            "name": "weight",
+            "type_": {
+              "python_type": "FLOAT",
+              "visit_name": "float"
+            },
+            "table": {
+              "key": "service_entry"
+            },
+            "key": "weight",
+            "visit_name": "column"
+          },
+          {
+            "name": "description",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "service_entry"
+            },
+            "key": "description",
+            "visit_name": "column"
+          }
+        ],
+        "name": "service_entry",
+        "key": "service_entry",
+        "visit_name": "table"
+      },
+      "relationships": [],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "service_entry"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "host"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "host"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "domain_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "host"
+          },
+          "key": "domain_id",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.Host",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "host"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "host"
+            },
+            "key": "name",
+            "visit_name": "column"
+          },
+          {
+            "name": "domain_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "host"
+            },
+            "key": "domain_id",
+            "visit_name": "column"
+          }
+        ],
+        "name": "host",
+        "key": "host",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "host"
+                },
+                "key": "domain_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "domain"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Domain"
+        },
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "host"
+                },
+                "key": "id"
+              },
+              "remote": {
+                "table": {
+                  "key": "email_address"
+                },
+                "key": "host_id"
+              }
+            }
+          ],
+          "direction": "symbol('ONETOMANY')",
+          "argument": "email_mgmt_app.model.email_mgmt.EmailAddress"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "host"
+        }
+      ]
+    },
+    {
+      "columns": [
+        {
+          "name": "id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "email_address"
+          },
+          "key": "id",
+          "visit_name": "column"
+        },
+        {
+          "name": "name",
+          "type_": {
+            "python_type": "VARCHAR",
+            "visit_name": "string"
+          },
+          "table": {
+            "key": "email_address"
+          },
+          "key": "name",
+          "visit_name": "column"
+        },
+        {
+          "name": "host_id",
+          "type_": {
+            "python_type": "INTEGER",
+            "visit_name": "integer"
+          },
+          "table": {
+            "key": "email_address"
+          },
+          "key": "host_id",
+          "visit_name": "column"
+        }
+      ],
+      "entity": "email_mgmt_app.model.email_mgmt.EmailAddress",
+      "local_table": {
+        "columns": [
+          {
+            "name": "id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "email_address"
+            },
+            "key": "id",
+            "visit_name": "column"
+          },
+          {
+            "name": "name",
+            "type_": {
+              "python_type": "VARCHAR",
+              "visit_name": "string"
+            },
+            "table": {
+              "key": "email_address"
+            },
+            "key": "name",
+            "visit_name": "column"
+          },
+          {
+            "name": "host_id",
+            "type_": {
+              "python_type": "INTEGER",
+              "visit_name": "integer"
+            },
+            "table": {
+              "key": "email_address"
+            },
+            "key": "host_id",
+            "visit_name": "column"
+          }
+        ],
+        "name": "email_address",
+        "key": "email_address",
+        "visit_name": "table"
+      },
+      "relationships": [
+        {
+          "is_property": true,
+          "is_mapper": false,
+          "secondary": null,
+          "is_attribute": false,
+          "local_remote_pairs": [
+            {
+              "local": {
+                "table": {
+                  "key": "email_address"
+                },
+                "key": "host_id"
+              },
+              "remote": {
+                "table": {
+                  "key": "host"
+                },
+                "key": "id"
+              }
+            }
+          ],
+          "direction": "symbol('MANYTOONE')",
+          "argument": "email_mgmt_app.model.email_mgmt.Host"
+        }
+      ],
+      "primary_key": [
+        {
+          "column": "id",
+          "table": "email_address"
+        }
+      ]
+    }
+  ]
+}

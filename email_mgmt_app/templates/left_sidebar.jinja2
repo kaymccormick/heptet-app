@@ -7,10 +7,10 @@
                 {% for x in request.root.data %}
                     {% if not request.root[x].entity_type.info %}
                         <li class="list-group-item tk-trajan-sans-pro">{{ request.root[x].title }}</li>
-                        {% for y in request.root[x].resource_manager._ops %}
-                            <li class="list-group-item" style="padding-left: 3.25rem"><a
-                                    href="{{ request.root[x].url() }}{{ y._name }}">{{ y._name }}</a></li>
-                        {% endfor %}
+{#                        {% for y in request.root[x].resource_manager._ops %}#}
+{#                            <li class="list-group-item" style="padding-left: 3.25rem"><a#}
+{#                                    href="{{ request.root[x].url() }}{{ y._name }}">{{ y._name }}</a></li>#}
+{#                        {% endfor %}#}
                     {% endif %}
                 {% endfor %}
             {% endif %}
