@@ -3,6 +3,7 @@ from collections import UserDict
 
 from pyramid.request import Request
 from pyramid.security import Allow, Authenticated
+from email_mgmt_app.res import IRootResource
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +19,20 @@ class RootFactory(UserDict):
 
     resources = None
 
-    def __init__(self, request: Request) -> None:
-        logger.debug("Initializing: %s", repr(request))
+    def __init__(self) -> None:
         super().__init__()
         self.data = RootFactory.resources or {}
         self.entity_type = None
+
+    def __call__(self, request: Request):
+        logger.debug("Initializing: %s", repr(request))
+        root = request.registry.queryUtility(IRootResource)
+        data = root.get_data()
+        logger.debug("data is %s", data)
+        root2 = root.get_root_resource()
+        logger.debug("root = %s; root2 = %s", root, root2)
+        return root2
+
 
     @staticmethod
     def __json__(request):

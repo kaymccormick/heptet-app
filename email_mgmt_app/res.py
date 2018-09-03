@@ -245,11 +245,12 @@ class ResourceManager:
 
     @property
     def factory_method(self):
-        def factory(mgr: ResourceManager,
+        def factory(
                     name: AnyStr = None,
                     parent: 'ContainerResource' = None,
-                    title: AnyStr = None):
-            return Resource(mgr, name, parent, title)
+                    title: AnyStr = None,
+                    entity_type=None):
+            return Resource(name, parent, title, entity_type=entity_type)
 
         return factory
 
@@ -288,12 +289,14 @@ class ResourceManager:
 
         node_name = self._node_name
 
+        # do we need this now?
         root_resource = config.registry.queryUtility(IRootResource)
+        assert root_resource is not None and isinstance(root_resource, RootResource)
         logger.debug("ok util = %s", root_resource)
 
         my_parent = root_resource
         assert my_parent is not None
-        root = my_parent
+
 
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
         request.registry = config.registry
@@ -307,23 +310,22 @@ class ResourceManager:
         # Our parent is the "email_mgmt_app.resources" in our
         # app registry. That's the root resource!!
 
-        root[node_name] = self.factory_method \
-            (self, name=node_name, title=self._title,
-             parent=my_parent)
+        mapperWrapper = request.registry.queryUtility(IMapperInfo, self._mapper_key)
+        logger.debug("mapper Wrapper = %s", mapperWrapper)
+        entity_type = mapperWrapper.mapper_info.entity
 
-        request.context = root[node_name]
-        request.root = config.registry.email_mgmt_app.resources
+        root_resource[node_name] = self.factory_method \
+            (name=node_name, title=self._title,
+             parent=my_parent, entity_type=entity_type)
+
+        request.context = root_resource[node_name]
+        request.root = root_resource
         request.subpath = ()
         request.traversed = (node_name,)
 
         #extra = {'inspect': self._inspect}
         extra = {}
         # this is broken I think!
-
-        mapperWrapper = request.registry.queryUtility(IMapperInfo, self._mapper_key)
-        logger.debug("mapper Wrapper = %s", mapperWrapper)
-        entity_type = mapperWrapper.mapper_info.entity
-
 
         if entity_type is not None:
             # this is a predicate!
@@ -342,16 +344,13 @@ class ResourceManager:
 
             request.view_name = op.name
             # register an entry point for the view
-            entry_point_key = get_entry_point_key(request, root[node_name], op.name)
-            d['entry_point_key'] = entry_point_key
-            #d['decorator'] = view_decorator
+            entry_point_key = get_entry_point_key(request, root_resource[node_name], op.name)
+            # We are instantiating an EntryPoint here. We need to give it more
+            # info.
             view_kwargs = {'view': op.view,
                            'name': op.name,
                            'node_name': node_name,
                            **d }
-
-            # We are instantiating an EntryPoint here. We need to give it more
-            # info.
             entry_point = EntryPoint(entry_point_key,
                                      # we shouldn't be calling into the "operation" for
                                      # the entry point
@@ -362,7 +361,9 @@ class ResourceManager:
             #config.registry.registerAdapter()
             config.register_entry_point(entry_point)
 
-            logger.debug("Adding view: %s", repr(d))
+            view_kwargs['entry_point'] = entry_point
+            #d['decorator'] = view_decorator
+            logger.debug("Adding view: %s", view_kwargs)
             # register_entry_point(epstr)
             v = config.add_view(**view_kwargs)
 
@@ -397,10 +398,10 @@ class Resource:
     Base resource type. Implements functionality common to all resource types.
     """
     def __init__(self,
-                 mgr: ResourceManager,
                  name: AnyStr=None,
                  parent: 'ContainerResource'=None,
-                 title: AnyStr=None) -> None:
+                 title: AnyStr=None,
+                 entity_type: AnyStr=None) -> None:
         """
 
         :param mgr: ResourceManager instance
@@ -410,9 +411,12 @@ class Resource:
         """
         assert parent is not None or isinstance(self, RootResource), "invalid parent %s" % parent
         self._title = title
+        assert isinstance(name, str), "name must be str type"
+
         self.__name__ = name
+
         self.__parent__ = parent
-        self._resource_manager = mgr
+        self._entity_type = entity_type
 
     def attach(self, parent, name):
         self.__parent__ = parent
@@ -444,10 +448,11 @@ class Resource:
 
     @property
     def entity_type(self):
-        return self.resource_manager.entity_type
+        return self._entity_type
 
     @property
     def resource_manager(self):
+        assert False
         return self._resource_manager
 
 
@@ -455,9 +460,9 @@ class ContainerResource(Resource, UserDict):
     """
     Resource containing sub-resources.
     """
-    def __init__(self, dict_init, mgr, *args, **kwargs) -> None:
+    def __init__(self, dict_init, *args, **kwargs) -> None:
         # this is the only spot where we call Resource.__init__
-        super().__init__(mgr, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.data = OrderedDict(dict_init)
 
     @property
@@ -467,11 +472,17 @@ class ContainerResource(Resource, UserDict):
     def __json__(self, request):
         return { 'entity_type': self.entity_type, 'children': self.data }
 
-    def __getitem__(self, key):
-        logger.debug("querying ContainerResource for %s", key)
+    def __getitem__(self, key=None):
+        if key is None:
+            logger.critical("poop")
+        logger.debug("querying ContainerResource for %s.%s", self, key)
         v = super().__getitem__(key)
         logger.debug("result is %s", v)
         return v
+
+    def __setitem__(self, key, value):
+        logger.debug("setting ContainerResource for %s to %s", key, value)
+        super().__setitem__(key, value)
 
 
 
@@ -481,7 +492,10 @@ class LeafResource(Resource):
 
 
 class IRootResource(Interface):
-    pass
+    def get_data():
+        pass
+    def get_root_resource():
+        pass
 
 @implementer(IRootResource)
 class RootResource(ContainerResource):
@@ -500,11 +514,17 @@ class RootResource(ContainerResource):
         self.__parent__ = None
         super().__init__(dict_init, *args, **kwargs)
 
+    def get_root_resource(self):
+        return self
+
     def __str__(self):
         return "RootResource"
 
     def __repr__(self):
         return "RootResource"
+
+    def get_data(self):
+        return self.data
 
 
 class EntityResource():

@@ -1,6 +1,7 @@
 import inspect
 import logging
 import sys
+import urllib
 
 from pyramid.renderers import get_renderer
 from pyramid.request import Request
@@ -56,7 +57,8 @@ def get_exception_entry_point_key(exception):
 
 
 def get_entry_point_key(request, resource, op_name):
-    epstr = request.resource_path(resource).replace('/', '_')
+    epstr = urllib.parse.unquote(request.resource_path(resource))
+    epstr = epstr.replace('/', '_')
     if epstr[0] == '_':
         epstr = epstr[1:]
     if epstr[len(epstr) - 1] != '_':

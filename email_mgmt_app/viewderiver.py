@@ -36,7 +36,7 @@ def entity_view(view, info):
         if isinstance(original_view, type):
             if issubclass(original_view, BaseView):
                 original_view.operation = operation
-                original_view.entry_point_key = info.options['entry_point_key']
+                original_view.entry_point = info.options['entry_point']
 
             if issubclass(original_view, BaseEntityRelatedView):
                 # is this still in effect? (why wouldn't it be in effect?)
@@ -65,7 +65,7 @@ def test_view_deriver(view_callable, info):
 
 
 def includeme(config):
-    entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
+    entity_view.options = ('operation','mapper_info','node_name','entry_point')
     config.add_view_deriver(entity_view,under=INGRESS)
-#    config.add_view_deriver(munge_view, under='owrapped_view')
+    config.add_view_deriver(munge_view, under='owrapped_view')
 #    config.add_view_deriver(test_view_deriver,over='mapped_view')

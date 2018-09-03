@@ -3,11 +3,32 @@ from typing import AnyStr
 
 from zope import interface
 
+from zope.component import adapter
+from zope.interface import implementer, Interface
+
 from email_mgmt_app import MapperInfosMixin
 from email_mgmt_app.impl import MapperWrapper
 
+class IEntryPoints(Interface):
+    def get_entry_points():
+        pass
+    def add_entry_point(entry_point):
+        pass
 
-class IEntryPoint(interface.Interface):
+
+
+@implementer(IEntryPoints)
+class EntryPoints:
+    def __init__(self) -> None:
+        self._entry_points = []
+
+    def get_entry_points(self):
+        return self._entry_points
+
+    def add_entry_point(self, entry_point):
+        self._entry_points.append(entry_point)
+
+class IEntryPoint(Interface):
     pass
 
 
@@ -107,12 +128,14 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
     def extra_js_stmts(self):
         pass
 
+entry_points = EntryPoints()
 
-def register_entry_point(config, entry_point: AnyStr):
-    appconfig = config.registry.email_mgmt_app
-    appconfig.entry_points[entry_point.key] = entry_point
+def register_entry_point(config, entry_point: IEntryPoint):
+    entry_points.add_entry_point(entry_point)
+    config.registry.registerUtility(entry_point, IEntryPoint, entry_point.key)
 
 
 def includeme(config: 'Configurator'):
+    config.registry.registerUtility(EntryPoints())
     config.add_directive('register_entry_point', register_entry_point)
 

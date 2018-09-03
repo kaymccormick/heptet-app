@@ -336,7 +336,8 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         script.text = "mapper = %s;" % json.dumps(mapper)
         the_form.element.append(script)
 
-        self.logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
+        if self.logger:
+            self.logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
 
         suppress = {}
 
@@ -446,7 +447,8 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             label = FormLabel(form_control=select, label_contents=label_contents)
 
             rel_select = select.as_html()
-            self.logger.debug("select = %s", rel_select, extra={'element': select})
+            if self.logger:
+                self.logger.debug("select = %s", rel_select, extra={'element': select})
 
             # d['form_contents'] = d['form_contents'] + render_template(request, templates.field_relationship,
             #                                                           {'input_html': rel_select,
@@ -455,13 +457,15 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             #                                                          'collapse': collapse,
             #                                                          'help': rel['doc']})
 
-            self.logger.debug("suppressing column %s", local.key)
+            if self.logger:
+                self.logger.debug("suppressing column %s", local.key)
             suppress[local.key] = True
 
         for x in mapper.columns:
             key = x.key
             if key in suppress and suppress[key]:
-                self.logger.debug("skipping suppressed column %s", key)
+                if self.logger:
+                    self.logger.debug("skipping suppressed column %s", key)
                 continue
 
             # vname = x.type.__visit_name__
@@ -530,13 +534,12 @@ class EntityFormView(BaseEntityRelatedView):
     entry_point_generator = EntityFormViewEntryPointGenerator
 
     def __call__(self, *args, **kwargs):
-        self.entry_point_generator()
+        # FIXME- commented out
+        generator = self.entry_point_generator(self.entry_point, self.request)
         if self.request.method == "GET":
             outer_vars = {}
-            wrapper = self.render_entity_form_wrapper(
-                self.request,
-                self.request.registry.email_mgmt_app.alchemy['mappers'] \
-                    [self.mapper_info['mapper_key']],
+            wrapper = generator.render_entity_form_wrapper(
+                self.request, generator.mapper_wrapper.get_one_mapper_info(),
                 outer_vars)
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
@@ -551,7 +554,8 @@ class EntityFormView(BaseEntityRelatedView):
         for col in cols:
             if col.key in self.request.params:
                 v = self.request.params[col.key]
-                self.logger.info("%s = %s", col.key, v)
+                if self.logger:
+                    self.logger.info("%s = %s", col.key, v)
                 r.__setattr__(col.key, v)
 
         self.request.dbsession.add(r)

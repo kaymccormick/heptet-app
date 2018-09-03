@@ -1,7 +1,7 @@
 <nav class="col-md-2 d-none d-md-block bg-light sidebar">
     <div class="sidebar-sticky">
         <ul class="list-group">
-            {% if not request %}
+            {% if not request or not request.root %}
                 <span>Request is false!</span>
             {% else %}
                 {% for x in request.root.data %}

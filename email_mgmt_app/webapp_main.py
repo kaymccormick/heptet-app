@@ -37,7 +37,6 @@ def config_process_struct(config, process):
         # we add only a single operation because we're dumb and lazy
         manager.operation('form', EntityFormView,
            [OperationArgument.SubpathArgument('action', String, default='create')])
-
         config.add_resource_manager(manager)
 
 
@@ -56,19 +55,21 @@ def wsgi_app(global_config, **settings):
         f.write("%d" % os.getpid())
         f.close()
 
-    config = Configurator(settings=settings, root_factory=RootFactory)
+    # we changed the root factory to an instance of our factory, which maybe would help??
+    config = Configurator(settings=settings, root_factory=RootFactory())
                           #exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
 
     process = load_process_struct()
     config.registry.email_mgmt_app = AppSubRegistry(process)
     #config.registry.registerUtility()
     config.include('.model.email_mgmt')
+    config.include('.entrypoint')
     config.include('.res')
 
-    resource = RootResource({}, ResourceManager(config, title='', node_name=''))
+    resource = RootResource({}, '')
     config.registry.registerUtility(resource, IRootResource)
 
-    config.include('.entrypoint')
+
     config.include('.viewderiver')
     config.add_view_predicate('entity_type', EntityTypePredicate)
     config_process_struct(config, process)
@@ -79,8 +80,6 @@ def wsgi_app(global_config, **settings):
 
     config.action(None, queryutil)
 
-    config.registry.registerUtility(RootResource, IRootResource)
-
     config.include('pyramid_jinja2')
     config.commit()
 
@@ -88,18 +87,11 @@ def wsgi_app(global_config, **settings):
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
 
-    # order matters here
-
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
-    # does this need to be in a particular spot?
-
-
-
 
     config.commit()
 
     config.include('.view')
-    config.commit()
 
     config.commit()
 
@@ -156,7 +148,9 @@ def on_application_created(event):
 
 
 def on_before_render(event):
+    logger.debug("on_before_render: event=%s", event)
     val = event.rendering_val
+    val['request'] = event['request']
     logger.debug("VAL=%s", val)
 
 
@@ -168,8 +162,10 @@ def set_renderer(event):
     """
     request = event.request # type: Request
     context = request.context # type: Resource
+    logger.debug("context is %s", context)
 
-
+    if isinstance(context, Exception):
+        return
 
     if context.entity_type:
         # sets incorrect template
