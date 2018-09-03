@@ -8,8 +8,10 @@ from marshmallow import ValidationError
 import stringcase
 from db_dump.schema import ProcessSchema, get_process_schema
 from pyramid_ldap3 import groupfinder
+from sqlalchemy import String
 
 from email_mgmt_app.predicate import EntityTypePredicate
+from email_mgmt_app.entity import EntityFormView
 from jinja2 import TemplateNotFound
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -17,11 +19,26 @@ from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from email_mgmt_app.registry import AppSubRegistry
 from email_mgmt_app.root import RootFactory
-from email_mgmt_app.res import RootResource, ResourceManager
+from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument
+from pyramid.interfaces import IRootFactory
 from pyramid.renderers import get_renderer
 import db_dump.process
 
 logger = logging.getLogger(__name__)
+
+
+def config_process_struct(config, process):
+    for mapper in process.mappers:
+        node_name = mapper.local_table.key
+        manager = ResourceManager(config, mapper, node_name=node_name, mapper_info=mapper)
+
+        # we add only a single operation because we're dumb and lazy
+        manager.operation('form', EntityFormView,
+           [OperationArgument.SubpathArgument('action', String, default='create')])
+
+        config.add_resource_manager(manager)
+
+
 
 def wsgi_app(global_config, **settings):
     """
@@ -39,15 +56,21 @@ def wsgi_app(global_config, **settings):
                           #exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
 
     process = load_process_struct()
-
-    for mapper in process.mappers:
-        logger.debug("mapper is %s", mapper)
-        logger.debug("local_table is %s", mapper.local_table)
-        node_name = mapper.local_table.key
-        manager = ResourceManager(config, mapper, node_name=node_name, mapper_info=mapper)
-        logger.debug("now i have %s", manager)
-
     config.registry.email_mgmt_app = AppSubRegistry(process)
+    #config.registry.registerUtility()
+    config.include('.model.email_mgmt')
+    config.include('.res')
+    config.registry.email_mgmt_app.resources = \
+        RootResource({}, ResourceManager(config, title='', node_name=''))
+
+    config_process_struct(config, process)
+
+
+    def queryutil():
+        utility = config.registry.queryUtility(IRootFactory)
+        logger.debug("utility=  %s", utility)
+
+    config.action(None, queryutil)
 
     config.include('pyramid_jinja2')
     config.commit()
@@ -65,20 +88,14 @@ def wsgi_app(global_config, **settings):
 
 
 
-    # should this be in another spot!?
-    # this is confusing because resourcemanager
-    config.registry.email_mgmt_app.resources = \
-        RootResource({}, ResourceManager(config, title='', node_name=''))
-
     config.include('.entrypoint')
     config.commit()
 
     config.include('.view')
     config.commit()
 
-    config.include('.model.email_mgmt')
     config.commit()
-    config.include('.res')
+
 
     # now static routes only
     config.include('.routes')

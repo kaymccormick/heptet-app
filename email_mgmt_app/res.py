@@ -175,6 +175,7 @@ class ResourceOperation:
         #inspect: Mapper = self._resource_manager.inspect
         ready_stmts = ''
         rel: RelationshipInfo
+        assert False, "FIXME!"
         for rel in self._resource_manager.mapper_info['relationships']:
             arg = rel['argument']
             logger.debug("rel.argument = %s", repr(arg))
@@ -294,6 +295,7 @@ class ResourceManager:
         :return:
         """
         # should there be an implicit argument???
+        logger.debug("in operation factory with %s, %s, %s, %s", name, view, args, renderer)
         args[0:0] = self.implicit_args()
         op = ResourceOperation(name, view, args=args, manager=self, renderer=renderer)
         self._ops.append(op)
@@ -320,6 +322,7 @@ class ResourceManager:
         node_name = self._node_name
 
         my_parent = config.registry.email_mgmt_app.resources
+        assert my_parent is not None
         root = my_parent
 
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
@@ -373,6 +376,8 @@ class ResourceManager:
             # We are instantiating an EntryPoint here. We need to give it more
             # info.
             entry_point = EntryPoint(entry_point_key,
+                                     # we shouldn't be calling into the "operation" for
+                                     # the entry point
                                      js=op.entry_point_js(request),
                                      view_kwargs=view_kwargs)
                                      #operation=op)
@@ -425,7 +430,7 @@ class Resource:
         :param parent: Parent resources.
         :param title: Defaults to name if not given.
         """
-        assert parent is not None or isinstance(self, RootResource)
+        assert parent is not None or isinstance(self, RootResource), "invalid parent %s" % parent
         self._title = title
         self.__name__ = name
         self.__parent__ = parent
@@ -540,6 +545,9 @@ class EntityResource():
 #         if isinstance(context, ResourceRegistration) and context.node_name == self._val:
 #             return True
 #         return False
+
+
+
 # class AlchemyInfoResourceAdapter:
 #     def __init__(self, config: Configurator, alchemy_info: AlchemyInfo) -> None:
 #         self._alchemy_info = alchemy_info
@@ -558,6 +566,7 @@ class EntityResource():
 #     def alchemy_info(self, new):
 #         self._alchemy_info = new
 #
+
 #     def process_alchemy_info(self, config):
 #         logger.debug("in process_alchemy_info")
 #         mi: MapperInfo
