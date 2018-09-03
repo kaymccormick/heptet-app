@@ -4,6 +4,7 @@ from typing import AnyStr
 from zope import interface
 
 from email_mgmt_app import MapperInfosMixin
+from email_mgmt_app.impl import MapperWrapper
 
 
 class IEntryPoint(interface.Interface):
@@ -15,7 +16,7 @@ class EntryPoint:
     """
 
     """
-    def __init__(self, key: AnyStr, js=None, view_kwargs: dict=None) -> None:
+    def __init__(self, key: AnyStr, js=None, view_kwargs: dict=None, mapper_wrapper: MapperWrapper=None) -> None:
         """
 
         :param key:
@@ -26,6 +27,7 @@ class EntryPoint:
         self._js = js
         self._view_kwargs = view_kwargs
         self._view = None
+        self._mapper_wrapper = mapper_wrapper
 
     def __str__(self):
         return repr(self.__dict__)
@@ -82,9 +84,9 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
 
         self._entry_point = entry_point
         # TODO we will need to handle more than a single mapper info
-        info = entry_point.operation.resource_manager.mapper_info
-        self._mapper_infos = {}
-        self._mapper_infos[info['mapper_key']] = info
+        # info = entry_point.operation.resource_manager.mapper_info
+        # self._mapper_infos = {}
+        # self._mapper_infos[info['mapper_key']] = info
         self._request = request
 
         self.logger = logger

@@ -21,6 +21,7 @@ def munge_view(view, info):
 
 # entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
 def entity_view(view, info):
+    # pull entity type from options (out of date!!)
     et = info.options.get('entity_type')
     operation = info.options.get('operation')
     mapper_info = info.options.get('mapper_info')
@@ -39,8 +40,7 @@ def entity_view(view, info):
 
             if issubclass(original_view, BaseEntityRelatedView):
                 # is this still in effect? (why wouldn't it be in effect?)
-
-                #logger.warning("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
+                logger.warning("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
                 original_view.entity_type = et
                 original_view.mapper_info = mapper_info
 

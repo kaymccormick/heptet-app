@@ -8,6 +8,7 @@ from db_dump.info import MapperInfo
 
 from email_mgmt_app.form import *
 from email_mgmt_app.entrypoint import *
+from email_mgmt_app.interfaces import IMapperInfo
 from pyramid.interfaces import IRendererFactory
 from pyramid.request import Request
 from pyramid.response import Response
@@ -203,7 +204,7 @@ def template_source(request, template_name):
 class BaseEntityRelatedView(BaseView):
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
-        self._entity_type = request.context.resource_manager.entity_type
+        #self._entity_type = request.context.resource_manager.entity_type
 
     @property
     def entity_type(self):
@@ -277,27 +278,58 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
     def js_stmts(self):
         return []
 
+        # #inspect: Mapper = self._resource_manager.inspect
+        # ready_stmts = ''
+        # rel: RelationshipInfo
+        # assert False, "FIXME!"
+        # for rel in self._resource_manager.mapper_info['relationships']:
+        #     arg = rel['argument']
+        #     logger.debug("rel.argument = %s", repr(arg))
+        #
+        #
+        #
+        #     combined_key = prefix + rel['key']
+        #     select_id = 'select_%s' % combined_key
+        #     button_id = 'button_%s' % combined_key
+        #     collapse_id = 'collapse_%s' % combined_key
+        #     ready_stmts = ready_stmts + render_template(request,
+        #                                                 'templates/entity/button_create_new_js.jinja2',
+        #                                                 {'select_id': select_id,
+        #                                                  'button_id': button_id,
+        #                                                  'collapse_id': collapse_id})
+        # ready_js = render_template(request,
+        #                            'scripts/templates/ready.js.jinja2',
+        #                            {'ready_js_stmts': ready_stmts})
+        # entry_point_stmts = render_template(request, 'scripts/templates/entry_point_stmts.js.jinja2',
+        #                        {'statements': ''})
+        # return render_template(request, 'scripts/templates/entry_point_stmts.js.jinja2',
+        #                        { 'ready_js': ready_js,
+        #                          'entry_point_stmts': entry_point_stmts })
+
 
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
     def __init__(self, entry_point: EntryPoint, request, **kwargs) -> None:
         super().__init__(entry_point, request, **kwargs)
         outer_vars = {}
+
+
         self._form = self.form_representation(self._request,
-                                              self.get_mapper_info(
-                                                  self.entry_point.operation.resource_manager.mapper_info[
-                                                      'mapper_key']), outer_vars)
+                                              entry_point._mapper_wrapper.mapper_info,
+                                              outer_vars)
 
     def form_representation(self, request,
-                            mapper: dict,
+                            mapper,
                             outer_vars,
                             nest_level: int = 0,
                             do_modal=False,
                             prefix=""):
         the_form = Form()
 
+        mapper_key = mapper.local_table.key
+
         # smell TODO - we can have multiple mappers
-        mapper_key = mapper['mapper_key']
-        the_form.set_mapper_info(mapper_key, mapper)
+#        mapper_key = mapper['mapper_key']
+        the_form.set_mapper_info(mapper.local_table.key, mapper)
 
         script = html.Element('script')
         logger.critical("mapper is %s", repr(mapper))
@@ -311,10 +343,10 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         alchemy = request.registry.email_mgmt_app.alchemy # type: AlchemyInfo
 
         # store these or just skip?
-        for (pkey_table, pkey_col) in mapper['primary_key']:
-            assert pkey_table == mapper['mapped_table']
+        for akey in mapper.primary_key:
 
-            suppress[pkey_col] = True
+            assert akey['table'] == mapper.local_table.key
+            suppress[akey['key']] = True
 
         ## PROCESS RELATIONSHIP
         # for each relationship
@@ -322,30 +354,31 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         # form
         # additionally, supply a form variable
         # and mapping for the relevant column.
-        for rel in mapper['relationships']:
-            if rel['direction'] == MANYTOONE:
+        for rel in mapper.relationships:
+            if rel.direction == MANYTOONE:
                 continue
 
-            argument = rel['argument']
-            pairs = rel['local_remote_pairs']
-            local = pairs[0]['local']
-            remote = pairs[0]['remote']
+            argument = rel.argument
+            pairs = rel.local_remote_pairs
+#            logger.debug("pairs = %s", pairs)
+            local = pairs[0].local
+            remote = pairs[0].remote
 
-            key_ = rel['key']
+            key_ = rel.key
             label_contents = stringcase.sentencecase(key_)
 
             # decide here what control to use ....
             #
             select_id = 'select_%s%s' % (prefix, key_)
-            select_name = prefix + local['column']
+            select_name = prefix + "xx"#local['column']
 
             # generate a list of available
             # entities - eventually we will
             # wish to constrain the query some.
-            resolver = DottedNameResolver()
-            join = '.'.join(argument)
+            #resolver = DottedNameResolver()
+            #join = '.'.join(argument)
 
-            class_ = resolver.resolve(join)
+            class_ = argument
             if issubclass(class_, Base) and 'dbsession' in request.__dict__:
                 entities = request.dbsession.query(class_).all()
             else:
@@ -359,14 +392,16 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             button_id = 'button_%s%s' % (prefix, key_)
             collapse_id = 'collapse_%s%s' % (prefix, key_)
 
-            mappers_ = alchemy['mappers']
+#            mappers_ = alchemy['mappers']
             # control excessive nesting
             if nest_level < 1:
-                key = rel['key']
+                key = rel.key
+
+                mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
                 entity_form = self.form_representation \
                     (request,
-                     mappers_[remote['table']],
+                     mapper2.get_mapper_info(remote.table),
                      outer_vars,
                      nest_level + 1,
                      do_modal=do_modal,
@@ -420,11 +455,11 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             #                                                          'collapse': collapse,
             #                                                          'help': rel['doc']})
 
-            self.logger.debug("suppressing column %s", local['column'])
-            suppress[local['column']] = True
+            self.logger.debug("suppressing column %s", local.key)
+            suppress[local.key] = True
 
-        for x in mapper['columns']:
-            key = x['key']
+        for x in mapper.columns:
+            key = x.key
             if key in suppress and suppress[key]:
                 self.logger.debug("skipping suppressed column %s", key)
                 continue
@@ -446,7 +481,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             e = {'id': select_id,
                  'input_html': '',
                  'label_html': '',#label_html(request, select_id, stringcase.sentencecase(key)),
-                 'help': x['doc']
+                 'help': x.doc,
                  }
         #        d['form_contents'] = d['form_contents'] + render_template(request, templates.field, e)
 

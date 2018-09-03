@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import sys
+import traceback
 from datetime import datetime
 
 from db_dump.args import argument_parser

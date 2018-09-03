@@ -12,6 +12,7 @@ from zope.interface import Interface, implementer
 from email_mgmt_app.constants import ENTITY_VIEW_ARG_NAME
 import pyramid
 from email_mgmt_app.entity import EntityFormView, EntityDesignView
+from email_mgmt_app.interfaces import IMapperInfo
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
@@ -172,33 +173,7 @@ class ResourceOperation:
     Class encapsulating an operation on a resource
     """
     def entry_point_js(self, request: Request, prefix: AnyStr=""):
-        #inspect: Mapper = self._resource_manager.inspect
-        ready_stmts = ''
-        rel: RelationshipInfo
-        assert False, "FIXME!"
-        for rel in self._resource_manager.mapper_info['relationships']:
-            arg = rel['argument']
-            logger.debug("rel.argument = %s", repr(arg))
-
-
-
-            combined_key = prefix + rel['key']
-            select_id = 'select_%s' % combined_key
-            button_id = 'button_%s' % combined_key
-            collapse_id = 'collapse_%s' % combined_key
-            ready_stmts = ready_stmts + render_template(request,
-                                                        'templates/entity/button_create_new_js.jinja2',
-                                                        {'select_id': select_id,
-                                                         'button_id': button_id,
-                                                         'collapse_id': collapse_id})
-        ready_js = render_template(request,
-                                   'scripts/templates/ready.js.jinja2',
-                                   {'ready_js_stmts': ready_stmts})
-        entry_point_stmts = render_template(request, 'scripts/templates/entry_point_stmts.js.jinja2',
-                               {'statements': ''})
-        return render_template(request, 'scripts/templates/entry_point_stmts.js.jinja2',
-                               { 'ready_js': ready_js,
-                                 'entry_point_stmts': entry_point_stmts })
+        pass
 
 
     def __init__(self, name, view, args, manager: 'ResourceManager', renderer=None) -> None:
@@ -251,7 +226,7 @@ class ResourceManager:
                  ResourceOperationTemplate('form'),
                  ]
 
-    def __init__(self, config=None, title=None, entity_type=None, node_name=None, mapper_info: MapperInfo=None):
+    def __init__(self, config=None, mapper_key=None, title=None, entity_type=None, node_name=None):
         """
         Instantiate a new instance of ResourceManager
         :type registration: ResourceRegistration
@@ -259,22 +234,14 @@ class ResourceManager:
         :param registration: Registration instance
         """
 
+        self._mapper_key = mapper_key
         self._entity_type = entity_type
         self._config = config
         self._ops = []
         self._opsdict = {}
         self._node_name = node_name
         self._title = title
-        self._mapper_info = mapper_info
         return
-
-    @property
-    def mapper_info(self) -> MapperInfo:
-        return self._mapper_info
-
-    @mapper_info.setter
-    def mapper_info(self, new: MapperInfo) -> None:
-        self._mapper_info = new
 
     @property
     def factory_method(self):
@@ -321,7 +288,10 @@ class ResourceManager:
 
         node_name = self._node_name
 
-        my_parent = config.registry.email_mgmt_app.resources
+        root_resource = config.registry.queryUtility(IRootResource)
+        logger.debug("ok util = %s", root_resource)
+
+        my_parent = root_resource
         assert my_parent is not None
         root = my_parent
 
@@ -348,13 +318,20 @@ class ResourceManager:
 
         #extra = {'inspect': self._inspect}
         extra = {}
-        if self.entity_type is not None:
+        # this is broken I think!
+
+        mapperWrapper = request.registry.queryUtility(IMapperInfo, self._mapper_key)
+        logger.debug("mapper Wrapper = %s", mapperWrapper)
+        entity_type = mapperWrapper.mapper_info.entity
+
+
+        if entity_type is not None:
             # this is a predicate!
             # sanity check this!!
-            extra['entity_type'] = self.entity_type
+            extra['entity_type'] = entity_type
             # this is not a predicate, but is predicateD on having
             # an entity type
-            extra['mapper_info'] = self.mapper_info
+            #extra['mapper_info'] = self.mapper_info
 
         # config.add_view(view=lambda rs,rr: rs,renderer='json')
         for op in self._ops:
@@ -379,6 +356,7 @@ class ResourceManager:
                                      # we shouldn't be calling into the "operation" for
                                      # the entry point
                                      js=op.entry_point_js(request),
+                                     mapper_wrapper=mapperWrapper,
                                      view_kwargs=view_kwargs)
                                      #operation=op)
             #config.registry.registerAdapter()
@@ -502,6 +480,10 @@ class LeafResource(Resource):
         raise KeyError
 
 
+class IRootResource(Interface):
+    pass
+
+@implementer(IRootResource)
 class RootResource(ContainerResource):
     """
     The root resource for the pyramid application. This is not the same as the RootFactory.
@@ -517,6 +499,12 @@ class RootResource(ContainerResource):
         self.__name__ = ''
         self.__parent__ = None
         super().__init__(dict_init, *args, **kwargs)
+
+    def __str__(self):
+        return "RootResource"
+
+    def __repr__(self):
+        return "RootResource"
 
 
 class EntityResource():
