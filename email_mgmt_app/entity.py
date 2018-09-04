@@ -331,13 +331,15 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         select_name = "select_" + prefix + local.key
         select_name = context.form.get_html_form_name(select_name, True)
 
-        class_ = argument
-        if issubclass(class_, Base) and 'dbsession' in request.__dict__:
-            entities = request.dbsession.query(class_).all()
-        else:
-            entities = []
 
-        select_contents = ''
+        class_ = argument
+        entities = []
+        if issubclass(class_, Base):
+            try:
+                entities = request.dbsession.query(class_).all()
+            except AttributeError as ex:
+                pass
+
 
         modal_id = context.form.get_html_id('modal_%s%s' % (prefix, key_), True)
         buttons = []
@@ -365,7 +367,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             logger.debug("entity_form = %s", entity_form)
 
             button = FormButton('button',
-                                {'id': button_id,
+                                {'id': button_id.get_id(),
                                  'class': 'btn btn-primary'})
             button.element.text = 'Create New'
             buttons.append(button)
@@ -376,7 +378,9 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
                                        entity.__dict__[remote['column']])  # FIXME remote['column'] cant be right
             options.append(option)
 
-        select = FormSelect(name=select_name, id=select_id, options=options)
+        select = FormSelect(name=select_name.get_id(), id=select_id.get_id(), options=options)
+        select_name.set_element(select)
+        select_id.set_element(select)
         label = FormLabel(form_control=select, label_contents=label_contents)
 
         rel_select = select.as_html()
@@ -447,9 +451,9 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
             div_col_sm_8 = DivElement('div', {'class': 'col-sm-8'})
 
-            input_control = FormTextInputElement({'id': input_id,
+            input_control = FormTextInputElement({'id': input_id.get_id(),
                                                   'value': '',
-                                                  'name': input_name,
+                                                  'name': input_name.get_id(),
                                                   'class': 'form-control'})
             div_col_sm_8.element.append(input_control.element)
 

@@ -153,6 +153,7 @@ def on_new_request(event):
     registry.registerUtility(HtmlIdStore(), IHtmlIdStore)
     registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
+    registry.registerUtility(NamespaceStore('global'), INamespaceStore, 'global')
 
 
 def on_application_created(event):

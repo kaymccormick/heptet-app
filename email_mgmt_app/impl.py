@@ -27,51 +27,94 @@ class MapperWrapper:
 class NamespaceEntry:
     def __init__(self, namespace_id) -> None:
         self._namespace_id = namespace_id
+        self._element = None
 
     def __str__(self):
         return str(self._namespace_id)
 
+    def set_element(self, element):
+        self._element = element
+
+
+#@implementer(INamespaceStore)
+# class NamespaceStore(NamespaceEntry):
+#     def __init__(self, name) -> None:
+#         super().__init__(name)
+#         self._namespace = {}
+#         self._name = name
+#
+#     def make_namespace(self, key, namespace):
+#         logger.debug("in get_namespace(%s, %s)", key, namespace)
+#         if key in self._namespace:
+#             raise NamespaceCollision(key, namespace, self._namespace[key])
+#
+#         self._namespace[key] = { 'key': key, 'namespace': namespace, 'items': {} }
+#         return NamespaceStore(key)
+#
+#     def get_id(self, preferred, bits):
+#         assert bits
+#         assert self._cur_namespace and self._cur_namespace in self._namespace
+#
+#         items = self._namespace[self._cur_namespace]['items']
+#         o = preferred
+#         i = 1
+#         while preferred in items:
+#             i = i + 1
+#             preferred = "%s%d" % (o, i)
+#             logger.debug("OMG trying %s", preferred)
+#
+#         items[preferred] = bits
+#         return self.make_global_id(self._cur_namespace, preferred)
+#
+#     def get_namespace(self, key):
+#         return self._namespace[key]
+#
+#     def has_namespace(self, key):
+#         return key in self._namespace
+#
+#     def make_global_id(self, namespace, id):
+#         global_id = "0.%s.%s" % (namespace, id)
+#
+#         global_.make_namespace(namespace, namespace)
+#
+#
+#         return NamespaceEntry(id)
+#
 
 @implementer(INamespaceStore)
-class NamespaceStore:
-    def __init__(self, name) -> None:
+class NamespaceStore(NamespaceEntry):
+    def __init__(self, name, parent=None) -> None:
+        super().__init__(name)
         self._namespace = {}
         self._name = name
+        self._parent = parent
 
-    def get_namespace(self, key, namespace):
-        logger.debug("in get_namespace(%s, %s)", key, namespace)
+    def make_namespace(self, key):
+        logger.debug("in get_namespace(%s)", key)
         if key in self._namespace:
-            raise NamespaceCollision(key, namespace, self._namespace[key])
+            raise NamespaceCollision(key, self._namespace[key])
 
-        self._namespace[key] = { 'key': key, 'namespace': namespace, 'items': {} }
-        return NamespaceEntry(key)
+        v = NamespaceStore(key, parent=self)
+        self._namespace[key] = v
+        return v
 
-    def set_namespace(self, key):
-        if isinstance(key, NamespaceEntry):
-            key = key._namespace_id
+    def get_id(self, *args, **kwargs):
+        return self.make_global_id()
 
-        assert key in self._namespace
-        self._cur_namespace = key
+    def get_namespace(self, key, create: bool=True):
+        if key not in self._namespace and create:
+            return self.make_namespace(key)
 
-    def get_id(self, preferred, bits):
-        assert bits
-        assert self._cur_namespace and self._cur_namespace in self._namespace
-        items = self._namespace[self._cur_namespace]['items']
-        o = preferred
-        i = 1
-        while preferred in items:
-            i = i + 1
-            preferred = "%s%d" % (o, i)
-            logger.debug("OMG trying %s", preferred)
+        return self._namespace[key]
 
-        items[preferred] = bits
-        return self.make_global_id(self._cur_namespace, preferred)
+    def has_namespace(self, key):
+        return key in self._namespace
 
-    def make_global_id(self, namespace, id):
-        global_id = "0.%s.%s" % (namespace, id)
-        return global_id
-
-
+    def make_global_id(self):
+        x = ""
+        if self._parent is not None:
+            x = self._parent.make_global_id() + '.'
+        return "%s%s" % (x, self._name)
 
 
 @implementer(IHtmlIdStore)

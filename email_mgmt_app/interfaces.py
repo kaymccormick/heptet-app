@@ -3,7 +3,9 @@ from zope.interface import Interface
 class INamespaceStore(Interface):
     def get_id(preferred, bits):
         pass
-    def get_namespace(key, namespace):
+    def make_namespace(key, namespace):
+        pass
+    def get_namespace(key):
         pass
 
 

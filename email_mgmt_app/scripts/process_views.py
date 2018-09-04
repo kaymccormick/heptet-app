@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 import traceback
+from dataclasses import dataclass, field
 
 from db_dump.args import argument_parser
 from sqlalchemy import inspect
@@ -17,6 +18,7 @@ from pyramid.path import DottedNameResolver
 from pyramid.registry import Registry
 from pyramid.request import Request
 from email_mgmt_app.scripts.util import get_request, template_env
+from email_mgmt_app.webapp_main import on_new_request
 
 
 def main():
@@ -78,6 +80,12 @@ def main():
         json.dump({ 'list': eps2 }, f)
         f.close()
 
+    @dataclass
+    class MyEvent:
+        request: Request=field(default_factory=lambda: request)
+
+    event = MyEvent()
+    on_new_request(event)
     test_app = TestApp(myapp)
 
     entry_point_js_template = pcontext.template_env.get_template('entry_point.js.jinja2')
