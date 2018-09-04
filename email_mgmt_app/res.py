@@ -340,6 +340,7 @@ class ResourceManager:
                                      mapper_wrapper=mapperWrapper,
                                      view_kwargs=view_kwargs)
             generator = (op.view.entry_point_generator_factory())(entry_point, request)
+            logger.info("setting generator to %s", generator)
             entry_point.generator = generator
             config.register_entry_point(entry_point)
 

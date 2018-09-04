@@ -1,11 +1,32 @@
 import logging
 
+from zope.component import adapter
 from zope.interface import implementer
 
-from email_mgmt_app.interfaces import IMapperInfo, IHtmlIdStore, INamespaceStore
+from email_mgmt_app.interfaces import *
 from email_mgmt_app.exceptions import IdTaken, NamespaceCollision
 
 logger = logging.getLogger(__name__)
+
+
+@implementer(ITemplateVariable)
+class TemplateVariableImpl:
+    def __init__(self, **kwargs) -> None:
+        self._init = kwargs
+
+    def get_name(self):
+        return self._init['name']
+
+
+@adapter(ITemplateVariable)
+@implementer(ICollector)
+class CollectorImpl:
+    def __init__(self, *args) -> None:
+        self._args = args
+
+    def collect(self, *items):
+        logger.debug("collecting %s", items)
+
 
 @implementer(IMapperInfo)
 class MapperWrapper:

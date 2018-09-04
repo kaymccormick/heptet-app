@@ -1,5 +1,13 @@
 from zope.interface import Interface
 
+class ITemplateVariable(Interface):
+    def get_name():
+        pass
+
+class ICollector(Interface):
+    def collect(*args, **kwargs):
+        pass
+
 class IFormRepresentationBuilder(Interface):
     def form_representation(context):
         pass

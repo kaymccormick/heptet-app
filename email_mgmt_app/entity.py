@@ -256,6 +256,11 @@ class BaseEntityRelatedView(BaseView):
 
 
 class EntityView(BaseEntityRelatedView):
+
+    def __init__(self, context, request: Request = None) -> None:
+        super().__init__(context, request)
+        self._entity = None
+
     def query(self):
         return self.request.dbsession.query(self.entity_type)
 
@@ -554,6 +559,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
                                outer_vars,
                                )
         builder = context.request.registry.getAdapter(context, IFormRepresentationBuilder)
+        logger.debug("calling builder.form_representation")
         self._form = builder.form_representation()
 
 

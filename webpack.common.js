@@ -6,6 +6,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 
+
 entry_points = require('./entry_points')
 plugins_ = [
 //        new CleanWebpackPlugin(['email_mgmt_app/build/dist']),

@@ -68,12 +68,15 @@ def main():
         'abbrname': _logger.name.split('.')[-1]
     })
 
+
+    # this is a mess
     eps = EntryPointSchema(many=True)
     eps2 = []
     entry_points = []
     for key,ep in registry.getUtilitiesFor(IEntryPoint):
         entry_points.append(ep)
         eps2.append(ep.key)
+
 
     dump = eps.dump(entry_points)
     with open('entry_points.json', 'w') as f:
@@ -88,11 +91,10 @@ def main():
     on_new_request(event)
     test_app = TestApp(myapp)
 
-    entry_point_js_template = pcontext.template_env.get_template('entry_point.js.jinja2')
+    entry_point_js_template =\
+        pcontext.template_env.get_template('entry_point.js.jinja2')
     failures = []
-    for entry_point in entry_points:
-
-        ep = entry_point
+    for ep in entry_points:
         generator = ep.generator
         assert generator
         generator.generate()
@@ -117,7 +119,6 @@ def main():
                                                                                           'abbrname'] + '.entry_point_generator'})
                 new_logger.debug("!!! generator = %s", view.entry_point_generator)
                 request.view_name = ep.view_kwargs['name']
-                generator = view.entry_point_generator_factory()(ep, request, logger=new_logger)
 
                 if generator:
                     js_imports = generator.js_imports()

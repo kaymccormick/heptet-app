@@ -1,5 +1,6 @@
 import abc
 import logging
+import sys
 from typing import AnyStr
 
 from zope import interface
@@ -12,6 +13,8 @@ from zope.interface import implementer, Interface
 from email_mgmt_app import MapperInfosMixin
 from email_mgmt_app.impl import MapperWrapper
 from pyramid_jinja2 import IJinja2Environment
+
+logger = logging.getLogger(__name__)
 
 
 class IEntryPoints(Interface):
@@ -113,6 +116,9 @@ class EntryPoint:
 
     @generator.setter
     def generator(self, new):
+        # logger.debug("setting generator to %s", new)
+        # import traceback
+        # traceback.print_stack(file=sys.stderr)
         self._generator = new
 
 
