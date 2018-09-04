@@ -9,6 +9,20 @@ from email_mgmt_app.exceptions import IdTaken, NamespaceCollision
 logger = logging.getLogger(__name__)
 
 
+
+@implementer(ICollectorContext)
+class CollectorContext:
+    def __init__(self, backing_var, item_type) -> None:
+        self._backing_var = backing_var
+        self._item_type = item_type
+
+    def get_backing_var(self):
+        return self._backing_var
+
+    def get_item_type(self):
+        return self._item_type
+
+
 @implementer(ITemplateVariable)
 class TemplateVariableImpl:
     def __init__(self, **kwargs) -> None:

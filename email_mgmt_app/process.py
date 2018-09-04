@@ -3,7 +3,13 @@ import logging
 from typing import Dict
 
 from sqlalchemy import Column
+from zope.component import adapter
+from zope.interface import implementer
 
+from email_mgmt_app.entrypoint import IEntryPoints
+from email_mgmt_app.interfaces import IProcess, IEntryPoint
+from pyramid.config import Configurator
+from pyramid.path import DottedNameResolver
 from pyramid_jinja2 import Environment
 
 logger = logging.getLogger(__name__)
@@ -81,3 +87,74 @@ def setup_jsonencoder():
         json.JSONEncoder.default = MyEncoder.default
 
     return do_setup
+
+
+@adapter(IEntryPoint)
+@implementer(IProcess)
+class GenerateEntryPointProcess:
+    def __init__(self, ep) -> None:
+        self._ep = ep
+
+    def process(self):
+        resolver = DottedNameResolver()
+        ep = self._ep
+        generator = ep.generator
+        assert generator
+        generator.generate()
+
+        entry_point_key = ep.key
+
+        js_imports = []
+        js_stmts = []
+        extra_js_stmts = []
+
+        if ep.view_kwargs and 'view' in ep.view_kwargs:
+            viewarg = ep.view_kwargs['view']
+            logger.debug("viewarg = %s", viewarg)
+            view = resolver.maybe_resolve(viewarg)
+            ep.view = view
+
+            if view.entry_point_generator_factory():
+                # new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
+                #                                    extra={**logger.extra, 'abbrname': logger.extra[
+                #                                                                           'abbrname'] + '.entry_point_generator'})
+                logger.debug("!!! generator = %s", view.entry_point_generator)
+
+                if generator:
+                    js_imports = generator.js_imports()
+                    if js_imports:
+                        for stmt in js_imports:
+                            logger.debug("import: %s", stmt)
+
+                    js_stmts = generator.js_stmts()
+                    if js_stmts:
+                        for stmt in js_stmts:
+                            logger.debug("js: %s", stmt)
+
+                    extra_js_stmts = generator.extra_js_stmts()
+                    if extra_js_stmts:
+                        for stmt in extra_js_stmts:
+                            logger.debug("js: %s", stmt)
+
+        fname = ep.get_output_filename()
+        logger.info("generating output file %s", fname)
+
+        data = { 'filename': fname, 'vars': dict(js_imports=js_imports,
+                js_stmts=js_stmts,
+                extra_js_stmts=extra_js_stmts) }
+
+        with open(fname, 'w') as f:
+            content = ep.get_template().render(
+                **data
+            )
+            # logger.debug("content for %s = %s", entry_point_key, content)
+            f.write(content)
+            f.close()
+
+
+def includeme(config: Configurator):
+    def do_action():
+        logger.debug("registering subscriber %s", GenerateEntryPointProcess)
+        config.registry.registerSubscriptionAdapter(GenerateEntryPointProcess)
+    config.action(None, do_action)
+

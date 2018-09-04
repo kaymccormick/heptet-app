@@ -1,5 +1,32 @@
 from zope.interface import Interface
 
+class IProcess(Interface):
+    def process():
+        pass
+
+class ICollectorContext(Interface):
+    pass
+
+class IObject(Interface):
+    pass
+
+class IVariableType(Interface):
+    pass
+
+class IEntryPoint(IObject):
+    def generate():
+        pass
+    def get_template_name():
+        pass
+    def set_template_name(template_name):
+        pass
+    def get_key():
+        pass
+    def get_output_filename():
+        pass
+    def set_output_filename(filename):
+        pass
+
 
 class ITemplateSource(Interface):
     def get_name():

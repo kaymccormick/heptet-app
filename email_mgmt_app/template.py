@@ -4,7 +4,7 @@ from typing import AnyStr
 
 from zope.component import adapter
 
-from jinja2 import FileSystemLoader
+from jinja2 import FileSystemLoader, TemplateNotFound, BaseLoader
 from zope.interface import implementer
 
 from email_mgmt_app.interfaces import *
@@ -14,11 +14,22 @@ from pyramid_jinja2 import IJinja2Environment
 
 logger = logging.getLogger(__name__)
 
-@adapter(ITemplateVariable)
+
+class ComponentLoader(BaseLoader):
+    def __init__(self, registry) -> None:
+        self._registry = registry
+
+    def get_source(self, environment, template):
+        return super().get_source(environment, template)
+
+
+@adapter(ITemplateVariable, IVariableType)
 @implementer(ICollector)
-class TemplateVariableCollector:
-    def __init__(self, variable) -> None:
-        self._variable = variable
+class VariableCollector:
+    def __init__(self, template_variable, variable_type) -> None:
+        self._variable = template_variable
+        self._type = variable_type
+        self._str = str
 
     def add_value(self, value):
         self._variable.get_value().append(value)
@@ -41,7 +52,14 @@ class FileTemplateSource:
         return self._name
 
     def render(self, **kwargs):
-        return self._env.get_template(self._name).render(**kwargs)
+        try:
+            return self._env.get_template(self._name).render(**kwargs)
+        except TemplateNotFound as ex:
+            logger.debug("template not found: %s", ex)
+            return None
+
+
+
 
 
 @adapter(ITemplateSource)
@@ -87,14 +105,15 @@ class TemplateManager:
 
 
 def _templates(config, env):
-    templates = FileSystemLoader.list_templates(env.loader)
-    for filename in templates:
-        source = FileTemplateSource(env, filename)
-        logger.debug("registering filename %s", filename)
-        config.registry.registerUtility(source, ITemplateSource, filename)
+    # templates = FileSystemLoader.list_templates(env.loader)
+    # for filename in templates:
+    #     source = FileTemplateSource(env, filename)
+    #     logger.debug("registering filename %s", filename)
+    #     config.registry.registerUtility(source, ITemplateSource, filename)
     # for filename in glob.iglob('/foobar/*.asm'):
     #     FileTemplateSource()
     #     print('/foobar/%s' % filename)
+    pass
 
 
 def includeme(config: Configurator):
@@ -102,9 +121,9 @@ def includeme(config: Configurator):
 
     def do_action():
 #        renderer = config.get_renderer('template-env')
-        env = config.registry.getUtility(IJinja2Environment, 'template-env')
+        env = config.registry.getUtility(IJinja2Environment, 'app_env')
         config.registry.registerAdapter(Template, [ITemplateSource], ITemplate)
-        config.registry.registerAdapter(TemplateVariableCollector, [ITemplateVariable], ICollector)
+        config.registry.registerAdapter(VariableCollector, [ITemplateVariable], ICollector)
         _templates(config, env)
 
     config.action(None, do_action)

@@ -330,6 +330,7 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
 @implementer(IFormContext)
 @dataclass
 class FormContext:
+    env: IJinja2Environment
     request: Request = None
     mapper_info: MapperInfo = None
     outer_vars: dict = field(default_factory=lambda: {})
@@ -408,7 +409,7 @@ class RelationshipSelect:
             prefix_key_ = "%s%s." % (prefix, key)
             logger.debug("prefix_key_ = %s", prefix_key_)
             sub_namespace = context.form.namespace.make_namespace(key)
-            context2 = FormContext(context.request,
+            context2 = FormContext(context.env, context.request,
                                    mapper2.get_one_mapper_info(),
                                    context.outer_vars, context.nest_level + 1,
                                    context.do_modal,
@@ -449,10 +450,14 @@ class RelationshipSelect:
                  'label_html': label.as_html(),
                  'collapse': collapse,
                  'help': rel.doc}
-        src = request.registry.getUtility(ITemplateSource, 'entity/field_relationship.jinja2')
-        tmp = request.registry.getAdapter(src, ITemplate)
-        x = tmp.render(**_vars)
-        logger.debug("result is %s", x)
+
+        env = request.registry.getUtility(IJinja2Environment, 'app_env')
+        x = env.get_template('entity/field_relationship.jinja2').render(**_vars)
+
+        # src = request.registry.getUtility(ITemplateSource, 'entity/field_relationship.jinja2')
+        # tmp = request.registry.getAdapter(src, ITemplate)
+        # x = tmp.render(**_vars)
+        # logger.debug("result is %s", x)
         assert x
         return x
 
@@ -549,9 +554,17 @@ class FormRepresentationBuilder:
                  'label_html': label.as_html(),
                  'help': x.doc,
                  }
-            form_contents = form_contents + Template(
-                '<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>').render(
-                **e)
+
+            tmpl_name = 'entity/field.jinja2'
+            x = context.env.get_template(tmpl_name).render(**e)
+            #
+            # src = request.registry.getUtility(ITemplateSource, tmpl_name)
+            # tmp = request.registry.getAdapter(src, ITemplate)
+            # x = tmp.render(**e)
+            assert x
+
+            logger.debug("got %s", x)
+            form_contents = form_contents + x
 
         form_contents = form_contents + '</div>'
         the_form.element.append(html.fromstring(form_contents))
@@ -573,15 +586,13 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         adapt = request.registry.getAdapter
         multi = request.registry.getMultiAdapter
 
-        form_src = util(ITemplateSource, 'entity/form.jinja2')
-        form_template = adapt(form_src, ITemplate)
-        logger.debug("form template is %s", form_template)
-        for var in ('js_imports', 'js_stmts', 'extra_js_stmts'):
-            v = TemplateVariable(var, [])
-            c = adapt(v, ICollector)
-            request.registry.registerUtility(c, ICollector, var)
+        env = util(IJinja2Environment, 'app_env')
+        # for var in ('js_imports', 'js_stmts', 'extra_js_stmts'):
+        #     v = TemplateVariable(var, [])
+        #     c = adapt(v, ICollector)
+        #     request.registry.registerUtility(c, ICollector, var)
 
-        context = FormContext(request,
+        context = FormContext(env, request,
                               self.entry_point._mapper_wrapper.mapper_info,
                               # FIXME code smell digging into class internals
                               outer_vars,
@@ -601,13 +612,22 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         return self._form.as_html()
 
     def js_stmts(self):
-        return self._request.registry.getUtility(ICollector, 'js_stmts').get_value()
+        utility = self._request.registry.queryUtility(ICollector, 'js_stmts')
+        if utility:
+            return utility.get_value()
+        return []
 
     def extra_js_stmts(self):
-        return self._request.registry.getUtility(ICollector, 'extra_js_stmts').get_value()
+        utility = self._request.registry.queryUtility(ICollector, 'extra_js_stmts')
+        if utility:
+            return utility.get_value()
+        return []
 
     def js_imports(self):
-        return self._request.registry.getUtility(ICollector, 'js_imports').get_value()
+        utility = self._request.registry.queryUtility(ICollector, 'js_imports')
+        if utility:
+            return utility.get_value()
+        return []
 
 
 class DesignViewEntryPointGenerator(EntryPointGenerator):
@@ -642,16 +662,20 @@ class EntityFormView(BaseEntityRelatedView):
         mapper_info = self.entry_point.mapper_wrapper.get_one_mapper_info()
         if self.request.method == "GET":
             outer_vars = {}
-            context = FormContext(request=self.request,
+            env = self._request.registry.getUtility(IJinja2Environment, 'app_env')
+            context = FormContext(env, request=self.request,
                                   mapper_info=mapper_info,
                                   outer_vars=outer_vars)
 
             wrapper = generator.render_entity_form_wrapper(context)
             # FIXME still weird templating!
-            return Response(render_template(self.request, templates.form_enclosure,
-                                            {**outer_vars, 'entry_point_template':
-                                                'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
-                                             'form_content': wrapper}))
+            # src = self._request.registry.getUtility(ITemplateSource, 'entity/form_enclosure.jinja2')
+            # tmp = self._request.registry.getAdapter(src, ITemplate)
+            _vars = {**outer_vars, 'entry_point_template':
+                'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
+                     'form_content': wrapper}
+            # x = tmp.render(**_vars)
+            return Response(env.get_template('entity/form_enclosure.jinja2').render(**_vars))
 
         # this is for post!
         r = self.entity_type.__new__(self.entity_type)

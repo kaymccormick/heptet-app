@@ -15,7 +15,7 @@ from email_mgmt_app.interfaces import IMapperInfo, IHtmlIdStore
 from email_mgmt_app.impl import MapperWrapper, HtmlIdStore, NamespaceStore
 from email_mgmt_app.interfaces import INamespaceStore
 from email_mgmt_app.exceptions import InvalidMode
-from jinja2 import TemplateNotFound, Environment, PackageLoader, select_autoescape
+from jinja2 import TemplateNotFound, Environment, PackageLoader, select_autoescape, FileSystemLoader
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
@@ -25,7 +25,8 @@ from email_mgmt_app.root import RootFactory
 from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
 from pyramid.interfaces import IRootFactory
 from pyramid.renderers import get_renderer
-from pyramid_jinja2 import IJinja2Environment
+from pyramid_jinja2 import IJinja2Environment, SmartAssetSpecLoader
+from email_mgmt_app.template import ComponentLoader
 
 logger = logging.getLogger(__name__)
 
@@ -89,12 +90,12 @@ def wsgi_app(global_config, **settings):
     # this adds all our views, and other stuff
     config_process_struct(config, process)
 
-    # jinja2_loader_package = settings['email_mgmt_app.jinja2_loader_package']
-    # jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path']
-    # env = Environment(loader=PackageLoader(jinja2_loader_package, jinja2_loader_template_path),
-    #                   autoescape=select_autoescape(default=False))
-    #
-    # config.registry.registerUtility(env, IJinja2Environment, 'app_env')
+    jinja2_loader_package = settings['email_mgmt_app.jinja2_loader_package']
+    jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
+    env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
+                      autoescape=select_autoescape(default=False))
+
+    config.registry.registerUtility(env, IJinja2Environment, 'app_env')
 
     config.include('pyramid_jinja2')
     config.commit()
@@ -114,6 +115,7 @@ def wsgi_app(global_config, **settings):
     config.include('.views')
     config.include('.entity')
     config.include('.template')
+    config.include('.process')
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],

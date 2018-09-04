@@ -8,11 +8,14 @@ from db_dump.args import argument_parser
 from sqlalchemy import inspect
 from sqlalchemy.engine.reflection import Inspector
 from webtest import TestApp
+from zope import component
+from zope.interface import classImplements
 
 import email_mgmt_app.webapp_main
-from email_mgmt_app.entrypoint import IEntryPoint, IEntryPointGenerator
+from email_mgmt_app.entrypoint import IEntryPoint, IEntryPointGenerator, ICollector, IObject, IEntryPoints, EntryPoints
 from email_mgmt_app.mschema import EntryPointSchema
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder
+from email_mgmt_app.impl import CollectorContext, IProcess
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.path import DottedNameResolver
 from pyramid.registry import Registry
@@ -62,18 +65,23 @@ def main():
 
     db = inspect(dbsession.get_bind())  # type: Inspector
 
-    # this is messing up us, kinda
+    # this is messi.ng up us, kinda
     logger = logging.LoggerAdapter(_logger, extra={
         'entry_point': '',
         'abbrname': _logger.name.split('.')[-1]
     })
 
+    ep_cmp = EntryPoints()
+    col_context =  CollectorContext(ep_cmp, IEntryPoint)
+    collector = registry.getAdapter(col_context, ICollector)
+    logger.debug("collector is %s", collector)
 
     # this is a mess
     eps = EntryPointSchema(many=True)
     eps2 = []
     entry_points = []
     for key,ep in registry.getUtilitiesFor(IEntryPoint):
+        collector.add_value(ep)
         entry_points.append(ep)
         eps2.append(ep.key)
 
@@ -93,62 +101,76 @@ def main():
 
     entry_point_js_template =\
         pcontext.template_env.get_template('entry_point.js.jinja2')
+
+    # for key,proc in registry.getSubscriptionAdapters((IEntryPoints), IProcess):
+    #     logger.debug("got proc %s", proc)
+
+
+    entry_point_js_template =\
+        pcontext.template_env.get_template('entry_point.js.jinja2')
     failures = []
     for ep in entry_points:
-        generator = ep.generator
-        assert generator
-        generator.generate()
-        #ep.generate()
-        entry_point_key = ep.key
-        logger = logging.LoggerAdapter(_logger, extra={
-            'entry_point': ep.key,
-            'abbrname': _logger.name.split('.')[-1]
-        })
+        ep.set_template(entry_point_js_template)
+        ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
+        subscribers = registry.subscribers([ep], IProcess)
+        for s in subscribers:
+            result = s.process()
+            logger.debug("result = %s", result)
 
-        js_imports = []
-        js_stmts = []
-        extra_js_stmts = []
-
-        if ep.view_kwargs and 'view' in ep.view_kwargs:
-            view = resolver.maybe_resolve(ep.view_kwargs['view'])
-            ep.view = view
-
-            if view.entry_point_generator_factory():
-                new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
-                                                   extra={**logger.extra, 'abbrname': logger.extra[
-                                                                                          'abbrname'] + '.entry_point_generator'})
-                new_logger.debug("!!! generator = %s", view.entry_point_generator)
-                request.view_name = ep.view_kwargs['name']
-
-                if generator:
-                    js_imports = generator.js_imports()
-                    if js_imports:
-                        for stmt in js_imports:
-                            logger.debug("import: %s", stmt)
-
-                    js_stmts = generator.js_stmts()
-                    if js_stmts:
-                        for stmt in js_stmts:
-                            logger.debug("js: %s", stmt)
-
-                    extra_js_stmts = generator.extra_js_stmts()
-                    if extra_js_stmts:
-                        for stmt in extra_js_stmts:
-                            logger.debug("js: %s", stmt)
-
-        fname = 'src/entry_point/%s.js' % entry_point_key
-        logger.info("generating output file %s", fname)
-
-        with open(fname, 'w') as f:
-            content = entry_point_js_template.render(
-                js_imports=js_imports,
-                js_stmts=js_stmts,
-                extra_js_stmts=extra_js_stmts,
-            )
-            # logger.debug("content for %s = %s", entry_point_key, content)
-            f.write(content)
-            f.close()
-
+        # generator = ep.generator
+        # assert generator
+        # generator.generate()
+        # #ep.generate()
+        # entry_point_key = ep.key
+        # logger = logging.LoggerAdapter(_logger, extra={
+        #     'entry_point': ep.key,
+        #     'abbrname': _logger.name.split('.')[-1]
+        # })
+        #
+        # js_imports = []
+        # js_stmts = []
+        # extra_js_stmts = []
+        #
+        # if ep.view_kwargs and 'view' in ep.view_kwargs:
+        #     view = resolver.maybe_resolve(ep.view_kwargs['view'])
+        #     ep.view = view
+        #
+        #     if view.entry_point_generator_factory():
+        #         new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
+        #                                            extra={**logger.extra, 'abbrname': logger.extra[
+        #                                                                                   'abbrname'] + '.entry_point_generator'})
+        #         new_logger.debug("!!! generator = %s", view.entry_point_generator)
+        #         request.view_name = ep.view_kwargs['name']
+        #
+        #         if generator:
+        #             js_imports = generator.js_imports()
+        #             if js_imports:
+        #                 for stmt in js_imports:
+        #                     logger.debug("import: %s", stmt)
+        #
+        #             js_stmts = generator.js_stmts()
+        #             if js_stmts:
+        #                 for stmt in js_stmts:
+        #                     logger.debug("js: %s", stmt)
+        #
+        #             extra_js_stmts = generator.extra_js_stmts()
+        #             if extra_js_stmts:
+        #                 for stmt in extra_js_stmts:
+        #                     logger.debug("js: %s", stmt)
+        #
+        # fname = 'src/entry_point/%s.js' % entry_point_key
+        # logger.info("generating output file %s", fname)
+        #
+        # with open(fname, 'w') as f:
+        #     content = entry_point_js_template.render(
+        #         js_imports=js_imports,
+        #         js_stmts=js_stmts,
+        #         extra_js_stmts=extra_js_stmts,
+        #     )
+        #     # logger.debug("content for %s = %s", entry_point_key, content)
+        #     f.write(content)
+        #     f.close()
+        #
         if not ep.view_kwargs:
             continue
 
