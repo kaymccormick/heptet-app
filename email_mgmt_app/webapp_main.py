@@ -12,7 +12,7 @@ from sqlalchemy import String
 from email_mgmt_app.predicate import EntityTypePredicate
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.interfaces import IMapperInfo, IHtmlIdStore
-from email_mgmt_app.impl import MapperWrapper, HtmlIdStore, IdStore
+from email_mgmt_app.impl import MapperWrapper, HtmlIdStore, NamespaceStore
 from email_mgmt_app.interfaces import INamespaceStore
 from jinja2 import TemplateNotFound, Environment, PackageLoader, select_autoescape
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -123,8 +123,8 @@ def wsgi_app(global_config, **settings):
 
     store = HtmlIdStore()
     config.registry.registerUtility(store, IHtmlIdStore)
-    config.registry.registerUtility(IdStore('form_name'), INamespaceStore, 'form_name')
-    config.registry.registerUtility(IdStore('namespace'), INamespaceStore, 'namespace')
+    config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
+    config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
     return config.make_wsgi_app()
 
 
@@ -148,10 +148,11 @@ def load_process_struct():
 
 
 def on_new_request(event):
+    logger.debug("Resetting namespaces")
     registry = event.request.registry
     registry.registerUtility(HtmlIdStore(), IHtmlIdStore)
-    registry.registerUtility(IdStore('form_name'), INamespaceStore, 'form_name')
-    registry.registerUtility(IdStore('namespace'), INamespaceStore, 'namespace')
+    registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
+    registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
 
 
 def on_application_created(event):

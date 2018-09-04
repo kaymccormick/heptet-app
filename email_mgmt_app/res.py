@@ -339,7 +339,7 @@ class ResourceManager:
                                      js=op.entry_point_js(request), # we shouldn't be calling into the "operation" for the entry point
                                      mapper_wrapper=mapperWrapper,
                                      view_kwargs=view_kwargs)
-            generator = (op.view.entry_point_generator())(entry_point, request)
+            generator = (op.view.entry_point_generator_factory())(entry_point, request)
             entry_point.generator = generator
             config.register_entry_point(entry_point)
 

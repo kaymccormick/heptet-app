@@ -67,7 +67,7 @@ class FormButton(FormControl):
 
 
 # this does not necessarily mean 'input' tags only
-class FormInputElement(FormElement):
+class FormInputElement(FormControl):
     pass
 
 
@@ -178,10 +178,15 @@ class Form(FormElement, MapperInfosMixin):
         self._name_store = request.registry.getUtility(INamespaceStore, 'form_name')
         self._namespace = request.registry.getUtility(INamespaceStore, 'namespace')
         self._namespace_id = self._namespace.get_namespace(namespace_id, namespace)
-
+        self._namespace.set_namespace(self._namespace_id)
+        logger.debug("my namespace id is %s", self._namespace_id)
 
     def get_html_id(self, html_id, *args, **kwargs):
-        return self._html_id_store.get_id(html_id, True)
+        return self._namespace.get_id(html_id, True)
+
+    def get_html_form_name(self, name, *args, **kwargs):
+        return self._namespace.get_id(name, True)
+
 
     @property
     def html_id_store(self) -> IHtmlIdStore:

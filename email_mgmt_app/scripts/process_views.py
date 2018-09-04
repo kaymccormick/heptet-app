@@ -86,6 +86,7 @@ def main():
 
         ep = entry_point
         generator = ep.generator
+        assert generator
         generator.generate()
         #ep.generate()
         entry_point_key = ep.key
@@ -102,13 +103,13 @@ def main():
             view = resolver.maybe_resolve(ep.view_kwargs['view'])
             ep.view = view
 
-            if view.entry_point_generator:
+            if view.entry_point_generator_factory():
                 new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
                                                    extra={**logger.extra, 'abbrname': logger.extra[
                                                                                           'abbrname'] + '.entry_point_generator'})
                 new_logger.debug("!!! generator = %s", view.entry_point_generator)
                 request.view_name = ep.view_kwargs['name']
-                generator = view.entry_point_generator()(ep, request, logger=new_logger)
+                generator = view.entry_point_generator_factory()(ep, request, logger=new_logger)
 
                 if generator:
                     js_imports = generator.js_imports()

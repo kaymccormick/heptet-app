@@ -1,10 +1,10 @@
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, field
 from typing import TypeVar, Generic
 
 import stringcase
-from db_dump.info import MapperInfo
+from db_dump.info import MapperInfo, RelationshipInfo
 from jinja2 import Template
 
 from email_mgmt_app.form import *
@@ -275,153 +275,182 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
 
 
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
+    @dataclass
+    class Context:
+        request: Request = None
+        mapper_info: MapperInfo = None
+        outer_vars: dict = field(default_factory=lambda: {})
+        nest_level: int = 0
+        do_modal: bool = False
+        prefix: str = ""
+        form: Form = None
+        extra: dict = field(default_factory=lambda: {'suppress_cols': {}})
+
     def __init__(self, entry_point: EntryPoint, request, **kwargs) -> None:
         super().__init__(entry_point, request, **kwargs)
 
     def generate(self):
         outer_vars = {}
         # we might want to query for a mapper? except our entry point has it
-        #request.registry.queryUtility(IMapperInfo, )
-        self._form = self.form_representation(self._request,
-                                              self.entry_point._mapper_wrapper.mapper_info, # FIXME code smell digging into class internals
-                                              outer_vars,
-                                              )
+        # request.registry.queryUtility(IMapperInfo, )
+
+        self._form = self.form_representation(self.Context(self._request,
+                                                           self.entry_point._mapper_wrapper.mapper_info,
+                                                           # FIXME code smell digging into class internals
+                                                           outer_vars,
+                                                           ))
+
+    def map_relationship(self, context: Context, rel: RelationshipInfo):
+        prefix = context.prefix
+        request = context.request
+        nest_level = context.nest_level
+
+        assert rel.direction
+        if rel.direction.upper() == 'MANYTOONE':
+            return ""
+
+        logger.debug("Processing relationship %s", rel)
+
+        argument = rel.argument
+        pairs = rel.local_remote_pairs
+        local = pairs[0].local
+        remote = pairs[0].remote
+
+        key_ = rel.key
+        assert key_ is not None
+
+        label_contents = stringcase.sentencecase(key_)
+        #
+        # decide here what control to use . right now we default to select.
+        #
+        assert prefix is not None
+
+        select_id = context.form.get_html_id('select_%s%s' % (prefix, key_))
+        # ['select', prefix, key_])
+
+        select_name = "select_" + prefix + local.key
+        select_name = context.form.get_html_form_name(select_name, True)
+
+        class_ = argument
+        if issubclass(class_, Base) and 'dbsession' in request.__dict__:
+            entities = request.dbsession.query(class_).all()
+        else:
+            entities = []
+
+        select_contents = ''
+
+        modal_id = context.form.get_html_id('modal_%s%s' % (prefix, key_), True)
+        buttons = []
+        collapse = ''
+        button_id = context.form.get_html_id('button_%s%s' % (prefix, key_), True)
+        collapse_id = context.form.get_html_id('collapse_%s%s' % (prefix, key_), True)
+
+        #            mappers_ = alchemy['mappers']
+        # control excessive nesting
+        if nest_level < 1:
+            key = rel.key
+
+            # this is bogus??
+            mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
+
+            prefix_key_ = "%s%s." % (prefix, key)
+            logger.debug("prefix_key_ = %s", prefix_key_)
+            context2 = self.Context(context.request, mapper2.get_one_mapper_info(),
+                                    context.outer_vars, context.nest_level + 1,
+                                    context.do_modal, prefix_key_,
+                                    extra=context.extra)
+
+            entity_form = self.form_representation(context2)
+
+            logger.debug("entity_form = %s", entity_form)
+
+            button = FormButton('button',
+                                {'id': button_id,
+                                 'class': 'btn btn-primary'})
+            button.element.text = 'Create New'
+            buttons.append(button)
+
+        options = []
+        for entity in entities:
+            option = FormOptionElement(entity.display_name,
+                                       entity.__dict__[remote['column']])  # FIXME remote['column'] cant be right
+            options.append(option)
+
+        select = FormSelect(name=select_name, id=select_id, options=options)
+        label = FormLabel(form_control=select, label_contents=label_contents)
+
+        rel_select = select.as_html()
+        self.logger.debug("select = %s", rel_select, extra={'element': select})
+
+        self.logger.debug("suppressing column %s", local.key)
+        context.extra['suppress_cols'][local.key] = True
+
+        return Template('<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>{{ collapse }}')\
+        .render(**{'input_html': rel_select,
+         'label_html': label.as_html(),
+         'collapse': collapse,
+         'help': rel.doc})
 
 
-    def form_representation(self, request,
-                            mapper,
-                            outer_vars,
-                            environment=None,
-                            nest_level: int = 0,
-                            do_modal=False,
-                            prefix=""):
+    def form_representation(self, context: Context):
+        mapper = context.mapper_info
+        prefix = context.prefix
+        request = context.request
 
         outer_form = False
-        if nest_level == 0:
+        if context.nest_level == 0:
             outer_form = True
+
         mapper_key = mapper.local_table.key
-        the_form = Form(request, mapper_key, mapper_key,
+
+        namespace_id = "%s%s" % (prefix, mapper_key)
+        logger.debug("in form_representation with namespace id of %s", namespace_id)
+        the_form = Form(request, namespace_id, namespace_id,
                         html_id_store=request.registry.queryUtility(IHtmlIdStore),
                         outer_form=outer_form)
+        context.form = the_form
         assert prefix is not None
 
         form_contents = '<div>'
-#        the_form.set_mapper_info(mapper.local_table.key, mapper)
+        #        the_form.set_mapper_info(mapper.local_table.key, mapper)
 
-# we want a script tag containing stuff we like
-#         script = html.Element('script')
-# #        script.text = "mapper = %s;" % json.dumps(mapper)
-#         the_form.element.append(script)
+        # we want a script tag containing stuff we like
+        #         script = html.Element('script')
+        # #        script.text = "mapper = %s;" % json.dumps(mapper)
+        #         the_form.element.append(script)
         self.logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
 
-        suppress = {}
+        # suppress primary keys
+        suppress = context.extra['suppress_cols'] = {}
         for akey in mapper.primary_key:
             assert akey.table == mapper.local_table.key
             suppress[akey.column] = True
 
-        # # PROCESS RELATIONSHIP
-        # for each relationship
-        # where its appropriate, embed or supply a subordinate form
-        # additionally, supply a form variable and mapping for the relevant column.
-        for rel in mapper.relationships:
-            assert rel.direction
-            if rel.direction.upper() == 'MANYTOONE':
-                continue
-
-            logger.debug("Processing relationship %s", rel)
-
-            argument = rel.argument
-            pairs = rel.local_remote_pairs
-            local = pairs[0].local
-            remote = pairs[0].remote
-
-            key_ = rel.key
-            assert key_ is not None
-
-            label_contents = stringcase.sentencecase(key_)
-            #
-            # decide here what control to use . right now we default to select.
-            #
-            assert prefix is not None
-
-            select_id = the_form.get_html_id('select_%s%s' % (prefix, key_))
-                #['select', prefix, key_])
-
-            select_name = prefix + local.key
-
-            class_ = argument
-            if issubclass(class_, Base) and 'dbsession' in request.__dict__:
-                entities = request.dbsession.query(class_).all()
-            else:
-                entities = []
-
-            select_contents = ''
-
-            modal_id = 'modal_%s%s' % (prefix, key_)
-            buttons = []
-            collapse = ''
-            button_id = 'button_%s%s' % (prefix, key_)
-            collapse_id = 'collapse_%s%s' % (prefix, key_)
-
-#            mappers_ = alchemy['mappers']
-            # control excessive nesting
-            if nest_level < 1:
-                key = rel.key
-
-                mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
-
-                prefix_key_ = "%s%s." % (prefix, key)
-                logger.debug("prefix_key_ = %s", prefix_key_)
-                entity_form = self.form_representation \
-                    (request,
-                     mapper2.get_mapper_info(remote.table),
-                     environment,
-                     outer_vars,
-                     nest_level + 1,
-                     do_modal=do_modal,
-                     prefix=prefix_key_,
-                     )
-
-                logger.debug("entity_form = %s", entity_form)
-
-                button = FormButton('button',
-                                    {'id': button_id,
-                                     'class': 'btn btn-primary'})
-                button.element.text = 'Create New'
-                buttons.append(button)
-
-            options = []
-            for entity in entities:
-                option = FormOptionElement(entity.display_name,
-                                           entity.__dict__[remote['column']]) # FIXME remote['column'] cant be right
-                options.append(option)
-
-            select = FormSelect(name=select_name, id=select_id, options=options)
-            label = FormLabel(form_control=select, label_contents=label_contents)
-
-            rel_select = select.as_html()
-            self.logger.debug("select = %s", rel_select, extra={'element': select})
-
-            self.logger.debug("suppressing column %s", local.key)
-            suppress[local.key] = True
-
+        # process each column
         for x in mapper.columns:
             key = x.key
             if key in suppress and suppress[key]:
                 self.logger.debug("skipping suppressed column %s", key)
                 continue
 
+            self.logger.debug("Mapping column %s", key)
+
             # FIXME we default to text because we're lazy
             kind = 'text'
             input_id = 'input_%s' % key
-            f = {'input_name': prefix + key,
+            input_id = context.form.get_html_id(input_id, True)
+            input_name = prefix + key
+            input_name = context.form.get_html_form_name(input_name, True)
+            f = {'input_name': input_name,
                  'input_id': input_id,
                  'input_value': ''}
 
-            div_col_sm_8 = DivElement('div',{'class': 'col-sm-8'})
+            div_col_sm_8 = DivElement('div', {'class': 'col-sm-8'})
 
-            input_control = FormTextInputElement({'id': input_id, 'value': '', 'name': prefix + key,
-                                  'class': 'form-control'})
+            input_control = FormTextInputElement({'id': input_id,
+                                                  'value': '',
+                                                  'name': input_name,
+                                                  'class': 'form-control'})
             div_col_sm_8.element.append(input_control.element)
 
             label_contents = stringcase.sentencecase(key)
@@ -432,31 +461,28 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
                  'label_html': label.as_html(),
                  'help': x.doc,
                  }
-            form_contents = form_contents + Template('<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>').render(**e)
+            form_contents = form_contents + Template(
+                '<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>').render(
+                **e)
+
+        # PROCESS RELATIONSHIP
+        # for each relationship
+        # where its appropriate, embed or supply a subordinate form
+        # additionally, supply a form variable and mapping for the relevant column.
+        for rel in mapper.relationships:
+            form_contents = form_contents + self.map_relationship(context, rel)
 
         form_contents = form_contents + '</div>'
         the_form.element.append(html.fromstring(form_contents))
 
         return the_form
 
-    def render_entity_form_wrapper(self, request, inspect, outer_vars, environment=None, nest_level: int = 0, do_modal=False, prefix=""):
-        form = self.render_entity_form(request, inspect, outer_vars, environment, nest_level, do_modal, prefix)
-        return render_template(request, templates.form_wrapper, {'form': form})
+    def render_entity_form_wrapper(self, context: Context):
+        form = self.render_entity_form(context)
+        return render_template(context.request, templates.form_wrapper, {'form': form})
 
-    def render_entity_form(self, request, mapper: MapperInfo, outer_vars, environment=None, nest_level: int = 0, do_modal=False,
-                           prefix=""):
-        """
-
-        :param request:
-        :param mapper:
-        :param outer_vars:
-        :param environment:
-        :param nest_level:
-        :param do_modal:
-        :param prefix:
-        :return:
-        """
-        form = self.form_representation(request, mapper, outer_vars, environment, nest_level, do_modal, prefix)
+    def render_entity_form(self, context: Context):
+        form = self.form_representation(context)
         return form.as_html()
 
     def js_stmts(self):
@@ -485,24 +511,27 @@ class EntityDesignViewEntryPointGenerator(DesignViewEntryPointGenerator):
 
 
 class EntityDesignView(BaseEntityRelatedView):
-    entry_point_generator = EntityDesignViewEntryPointGenerator
+    pass
 
 
 class EntityFormView(BaseEntityRelatedView):
     @staticmethod
-    def entry_point_generator():
+    def entry_point_generator_factory():
         return EntityFormViewEntryPointGenerator
 
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
 
     def __call__(self, *args, **kwargs):
-        generator = self.entry_point_generator()(self.entry_point, self.request)
+        generator = self.entry_point_generator_factory()(self.entry_point, self.request)
+        mapper_info = self.entry_point.mapper_wrapper.get_one_mapper_info()
         if self.request.method == "GET":
             outer_vars = {}
-            wrapper = generator.render_entity_form_wrapper(
-                self.request, self.entry_point.mapper_wrapper.get_one_mapper_info(),
-                outer_vars)
+            context = generator.Context(request=self.request,
+                                        mapper_info=mapper_info,
+                                        outer_vars=outer_vars)
+
+            wrapper = generator.render_entity_form_wrapper(context)
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
                                                 'build/templates/entry_point/%s.jinja2' % self.entry_point.key,

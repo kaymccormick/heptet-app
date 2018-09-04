@@ -3,7 +3,7 @@ import logging
 from zope.interface import implementer
 
 from email_mgmt_app.interfaces import IMapperInfo, IHtmlIdStore, INamespaceStore
-from email_mgmt_app.exceptions import IdTaken
+from email_mgmt_app.exceptions import IdTaken, NamespaceCollision
 
 logger = logging.getLogger(__name__)
 
@@ -24,19 +24,32 @@ class MapperWrapper:
         return self.mapper_info.local_table.key
 
 
+class NamespaceEntry:
+    def __init__(self, namespace_id) -> None:
+        self._namespace_id = namespace_id
+
+    def __str__(self):
+        return str(self._namespace_id)
+
+
 @implementer(INamespaceStore)
-class IdStore:
+class NamespaceStore:
     def __init__(self, name) -> None:
         self._namespace = {}
         self._name = name
 
     def get_namespace(self, key, namespace):
         logger.debug("in get_namespace(%s, %s)", key, namespace)
-        assert key not in self._namespace
+        if key in self._namespace:
+            raise NamespaceCollision(key, namespace, self._namespace[key])
+
         self._namespace[key] = { 'key': key, 'namespace': namespace, 'items': {} }
-        return key
+        return NamespaceEntry(key)
 
     def set_namespace(self, key):
+        if isinstance(key, NamespaceEntry):
+            key = key._namespace_id
+
         assert key in self._namespace
         self._cur_namespace = key
 
@@ -44,12 +57,18 @@ class IdStore:
         assert bits
         assert self._cur_namespace and self._cur_namespace in self._namespace
         items = self._namespace[self._cur_namespace]['items']
-        assert preferred not in items
+        o = preferred
+        i = 1
+        while preferred in items:
+            i = i + 1
+            preferred = "%s%d" % (o, i)
+            logger.debug("OMG trying %s", preferred)
+
         items[preferred] = bits
         return self.make_global_id(self._cur_namespace, preferred)
 
     def make_global_id(self, namespace, id):
-        global_id = "%s.%s" % (namespace, id)
+        global_id = "0.%s.%s" % (namespace, id)
         return global_id
 
 

@@ -119,7 +119,7 @@ class EntryPoint:
 # we get a request, which means we get a registry
 @adapter(IEntryPoint)
 @implementer(IEntryPointGenerator)
-class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
+class EntryPointGenerator(MapperInfosMixin):
     def __init__(self, entry_point: EntryPoint, request=None, logger=None) -> None:
         """
 
@@ -147,29 +147,25 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
         #      self._template_env = environment
         self._html_id_store = request.registry.queryUtility(IHtmlIdStore)
 
-    @abc.abstractmethod
-    def generate(self):
-        pass
-
     @property
     def entry_point(self) -> EntryPoint:
         return self._entry_point
 
-    @abc.abstractmethod
-    def js_stmts(self):
-        pass
-
-    @abc.abstractmethod
-    def js_imports(self):
-        pass
-
-    @abc.abstractmethod
-    def extra_js_stmts(self):
-        pass
-
     @property
     def html_id_store(self) -> IHtmlIdStore:
         return self._html_id_store
+
+    def generate(self):
+        pass
+
+    def js_stmts(self):
+        return []
+
+    def js_imports(self):
+        return []
+
+    def extra_js_stmts(self):
+        return []
 
 
 def register_entry_point(config, entry_point: IEntryPoint):
