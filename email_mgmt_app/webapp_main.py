@@ -148,7 +148,10 @@ def load_process_struct():
 
 
 def on_new_request(event):
-    pass
+    registry = event.request.registry
+    registry.registerUtility(HtmlIdStore(), IHtmlIdStore)
+    registry.registerUtility(IdStore('form_name'), INamespaceStore, 'form_name')
+    registry.registerUtility(IdStore('namespace'), INamespaceStore, 'namespace')
 
 
 def on_application_created(event):
