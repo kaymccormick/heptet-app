@@ -112,7 +112,6 @@ def template_source(request, template_name):
     #
     # assert mapper
     #
-    # # TODO - re-implement using dictionary loaded via json
     #
     # # for pkey_col in inspect.primary_key:
     # #     suppress[pkey_col.key] = True
@@ -363,9 +362,11 @@ class RelationshipSelect:
         self._context = context
 
     def get_select(self):
+
         context = self._context
         rel = self._rel_info
         request = context.request
+        env = request.registry.getUtility(IJinja2Environment, 'app_env')
         prefix = ''
         nest_level = context.nest_level
 
@@ -420,12 +421,16 @@ class RelationshipSelect:
             entity_form = builder.form_representation()
 
             logger.debug("entity_form = %s", entity_form)
+            collapse = env.get_template('entity/collapse.jinja2').render(
+                collapse_id=collapse_id,
+                collapse_contents=entity_form
+            )
 
             button = FormButton('button',
                                 {'id': button_id.get_id(),
                                  'class': 'btn btn-primary'})
             button.element.text = 'Create New'
-            buttons.append(button)
+            buttons.append(button.as_html())
 
         options = []
         for entity in entities:
@@ -440,8 +445,11 @@ class RelationshipSelect:
         label = FormLabel(form_control=select, label_contents=label_contents,
                           attr={"class": "col-sm-4 col-form-label"})
 
-        rel_select = select.as_html()
-        logger.debug("select = %s", rel_select, extra={'element': select})
+        select_html = select.as_html()
+        rel_select = env.get_template('entity/rel_select.jinja2').render(
+            select_html=select_html,
+            buttons = "\n".join(buttons)
+        )
 
         logger.debug("suppressing column %s", local.column)
         context.extra['suppress_cols'][local.column] = True
@@ -451,7 +459,6 @@ class RelationshipSelect:
                  'collapse': collapse,
                  'help': rel.doc}
 
-        env = request.registry.getUtility(IJinja2Environment, 'app_env')
         x = env.get_template('entity/field_relationship.jinja2').render(**_vars)
 
         # src = request.registry.getUtility(ITemplateSource, 'entity/field_relationship.jinja2')
