@@ -35,6 +35,9 @@ class NamespaceEntry:
     def set_element(self, element):
         self._element = element
 
+    def get_element(self):
+        return self._element
+
 
 #@implementer(INamespaceStore)
 # class NamespaceStore(NamespaceEntry):
@@ -91,8 +94,10 @@ class NamespaceStore(NamespaceEntry):
 
     def make_namespace(self, key):
         logger.debug("in get_namespace(%s)", key)
+        element = None
         if key in self._namespace:
-            raise NamespaceCollision(key, self._namespace[key])
+            element = self._namespace[key].get_element()
+            raise NamespaceCollision(key, element, self._namespace[key])
 
         v = NamespaceStore(key, parent=self)
         self._namespace[key] = v
@@ -115,6 +120,8 @@ class NamespaceStore(NamespaceEntry):
         if self._parent is not None:
             x = self._parent.make_global_id() + '.'
         return "%s%s" % (x, self._name)
+
+    #def __repr__(self):
 
 
 @implementer(IHtmlIdStore)

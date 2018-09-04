@@ -93,8 +93,8 @@ class FormSelect(FormInputElement):
 
 
 class FormLabel(FormElement):
-    def __init__(self, form_control: FormControl, label_contents, contains_form: bool=False) -> None:
-        super().__init__('label')
+    def __init__(self, form_control: FormControl, label_contents, contains_form: bool=False, attr=None) -> None:
+        super().__init__('label', attr)
         self._form_control = form_control
         self._contains_form = contains_form
         self.element.append(html.fromstring(label_contents))
@@ -106,6 +106,8 @@ class FormLabel(FormElement):
         #this cant be done more than once!!
         if self.contains_form:
             self.element.append(self.form_control.element)
+        else:
+            self.element.set('for', self.form_control.element.get('id'))
 
         self._prepared = True
 
@@ -167,20 +169,22 @@ class Form(FormElement, MapperInfosMixin):
     """
     
     """
-    def __init__(self, request, namespace_id, namespace, html_id_store: IHtmlIdStore, outer_form=False) -> None:
+    def __init__(self, request, namespace_id, namespace: INamespaceStore=None, outer_form=False) -> None:
         super().__init__('form')
+        #assert '.' not in namespace_id, "namespace_id %s should not contain ." % namespace_id
         self._outer_form = outer_form
         self._request = request
         self._variables = {}
         self._labels = []
         self._mapper_infos = {}
-        self._html_id_store = html_id_store
-        self._name_store = request.registry.getUtility(INamespaceStore, 'form_name')
 
         self._global = request.registry.getUtility(INamespaceStore, 'global')
         self._form_namespace = self._global.get_namespace('form', True)
+        if namespace is None:
+            self._namespace = self._form_namespace.make_namespace(namespace_id)
+        else:
+            self._namespace = namespace
 
-        self._namespace = self._form_namespace.make_namespace(namespace_id)
         #self._namespace.set_namespace(self._namespace_id)
         logger.debug("my namespace is %s", self._namespace)
 

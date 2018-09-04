@@ -14,6 +14,7 @@ from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.interfaces import IMapperInfo, IHtmlIdStore
 from email_mgmt_app.impl import MapperWrapper, HtmlIdStore, NamespaceStore
 from email_mgmt_app.interfaces import INamespaceStore
+from email_mgmt_app.exceptions import InvalidMode
 from jinja2 import TemplateNotFound, Environment, PackageLoader, select_autoescape
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -42,7 +43,7 @@ def config_process_struct(config, process):
         config.add_resource_manager(manager)
 
 
-
+VALID_MODES=('development', 'production')
 
 
 def wsgi_app(global_config, **settings):
@@ -52,6 +53,11 @@ def wsgi_app(global_config, **settings):
     :param settings:
     :return: A WSGI application.
     """
+    mode = settings['mode']
+    if mode not in VALID_MODES:
+        os.environ['APP_MODE'] = mode
+        raise InvalidMode(mode, VALID_MODES)
+
     if 'pidfile' in settings.keys():
         f = open(settings['pidfile'], 'w')
         f.write("%d" % os.getpid())
@@ -106,6 +112,7 @@ def wsgi_app(global_config, **settings):
     config.include('.routes')
     config.include('.auth')
     config.include('.views')
+    config.include('.entity')
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],

@@ -4,12 +4,14 @@ from dataclasses import dataclass, fields, field
 from typing import TypeVar, Generic
 
 import stringcase
-from db_dump.info import MapperInfo, RelationshipInfo
+from db_dump.info import MapperInfo, RelationshipInfo, IRelationshipInfo
+
 from jinja2 import Template
 
 from email_mgmt_app.form import *
 from email_mgmt_app.entrypoint import *
-from email_mgmt_app.interfaces import IMapperInfo
+from email_mgmt_app.interfaces import *
+from pyramid.config import Configurator
 from pyramid.interfaces import IRendererFactory
 from pyramid.request import Request
 from pyramid.response import Response
@@ -22,6 +24,44 @@ from pyramid.util import DottedNameResolver
 from pyramid_jinja2 import IJinja2Environment
 
 logger = logging.getLogger(__name__)
+
+class IFormContext(Interface):
+    pass
+
+
+class IFormRelationshipMapper(Interface):
+    def map_relationship(rel):
+        pass
+
+
+@adapter(IRelationshipInfo, IFormContext)
+@implementer(IFormRelationshipMapper)
+class FormRelationshipMapper:
+    def __init__(self, rel, context) -> None:
+        self._rel = rel
+        self._context = context
+
+    def map_relationship(self):
+        context = self._context
+        rel = self._rel
+        prefix = context.prefix
+        request = context.request
+        nest_level = context.nest_level
+
+        logger.debug("Encountering relationship %s", rel)
+        assert rel.direction
+        if rel.direction.upper() != 'MANYTOONE':
+            return ""
+
+        logger.debug("Processing relationship %s", rel)
+
+        #
+        # decide here what control to use . right now we default to select.
+        #
+        select = request.registry.getAdapter(rel, IRelationshipSelect)
+        select.set_context(context)
+        select_html = select.get_select()
+        return select_html
 
 
 @dataclass
@@ -274,42 +314,46 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
         return []
 
 
-class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-    @dataclass
-    class Context:
-        request: Request = None
-        mapper_info: MapperInfo = None
-        outer_vars: dict = field(default_factory=lambda: {})
-        nest_level: int = 0
-        do_modal: bool = False
-        prefix: str = ""
-        form: Form = None
-        extra: dict = field(default_factory=lambda: {'suppress_cols': {}})
+@implementer(IFormContext)
+@dataclass
+class FormContext:
+    request: Request = None
+    mapper_info: MapperInfo = None
+    outer_vars: dict = field(default_factory=lambda: {})
+    nest_level: int = 0
+    do_modal: bool = False
+    prefix: str = ""
+    form: Form = None
+    extra: dict = field(default_factory=lambda: {'suppress_cols': {}})
+    namespace: INamespaceStore = None
 
-    def __init__(self, entry_point: EntryPoint, request, **kwargs) -> None:
-        super().__init__(entry_point, request, **kwargs)
+# class IRelationshipFormRenderer:
+#     pass
+#
+# @adapter(IRelationshipInfo)
+# @implementer(IRelationshipFormRenderer)
+# class RelationshipFormRenderer:
+#     def render_relationship_form(self):
+#         pass
 
-    def generate(self):
-        outer_vars = {}
-        # we might want to query for a mapper? except our entry point has it
-        # request.registry.queryUtility(IMapperInfo, )
 
-        self._form = self.form_representation(self.Context(self._request,
-                                                           self.entry_point._mapper_wrapper.mapper_info,
-                                                           # FIXME code smell digging into class internals
-                                                           outer_vars,
-                                                           ))
+@implementer(IRelationshipSelect)
+class RelationshipSelect:
+    def __init__(self, info) -> None:
+        super().__init__()
+        logger.info("my ifno is %s", info)
+        self._rel_info = info
+        self._context = None
 
-    def map_relationship(self, context: Context, rel: RelationshipInfo):
-        prefix = context.prefix
+    def set_context(self, context):
+        self._context = context
+
+    def get_select(self):
+        context = self._context
+        rel = self._rel_info
         request = context.request
+        prefix = ''
         nest_level = context.nest_level
-
-        assert rel.direction
-        if rel.direction.upper() == 'MANYTOONE':
-            return ""
-
-        logger.debug("Processing relationship %s", rel)
 
         argument = rel.argument
         pairs = rel.local_remote_pairs
@@ -320,17 +364,13 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         assert key_ is not None
 
         label_contents = stringcase.sentencecase(key_)
-        #
-        # decide here what control to use . right now we default to select.
-        #
-        assert prefix is not None
 
-        select_id = context.form.get_html_id('select_%s%s' % (prefix, key_))
+
+        select_id = context.form.get_html_id('id_select_%s' % key_)
         # ['select', prefix, key_])
 
-        select_name = "select_" + prefix + local.key
+        select_name = "select_" + key_
         select_name = context.form.get_html_form_name(select_name, True)
-
 
         class_ = argument
         entities = []
@@ -339,7 +379,6 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
                 entities = request.dbsession.query(class_).all()
             except AttributeError as ex:
                 pass
-
 
         modal_id = context.form.get_html_id('modal_%s%s' % (prefix, key_), True)
         buttons = []
@@ -357,12 +396,16 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
             prefix_key_ = "%s%s." % (prefix, key)
             logger.debug("prefix_key_ = %s", prefix_key_)
-            context2 = self.Context(context.request, mapper2.get_one_mapper_info(),
+            sub_namespace = context.form.namespace.make_namespace(key)
+            context2 = FormContext(context.request,
+                                    mapper2.get_one_mapper_info(),
                                     context.outer_vars, context.nest_level + 1,
-                                    context.do_modal, prefix_key_,
+                                    context.do_modal,
+                                    namespace=sub_namespace,
                                     extra=context.extra)
 
-            entity_form = self.form_representation(context2)
+            builder = context.request.registry.getAdapter(context2, IFormRepresentationBuilder)
+            entity_form = builder.form_representation()
 
             logger.debug("entity_form = %s", entity_form)
 
@@ -375,29 +418,40 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         options = []
         for entity in entities:
             option = FormOptionElement(entity.display_name,
-                                       entity.__dict__[remote['column']])  # FIXME remote['column'] cant be right
+                                       entity.__dict__[remote.column])  # FIXME remote['column'] cant be right
             options.append(option)
 
-        select = FormSelect(name=select_name.get_id(), id=select_id.get_id(), options=options)
+        select = FormSelect(name=select_name.get_id(), id=select_id.get_id(), options=options, attr={"class": "form-control"})
         select_name.set_element(select)
         select_id.set_element(select)
-        label = FormLabel(form_control=select, label_contents=label_contents)
+        label = FormLabel(form_control=select, label_contents=label_contents, attr={"class": "col-sm-4 col-form-label"})
+
 
         rel_select = select.as_html()
-        self.logger.debug("select = %s", rel_select, extra={'element': select})
+        logger.debug("select = %s", rel_select, extra={'element': select})
 
-        self.logger.debug("suppressing column %s", local.key)
-        context.extra['suppress_cols'][local.key] = True
+        logger.debug("suppressing column %s", local.column)
+        context.extra['suppress_cols'][local.column] = True
 
-        return Template('<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>{{ collapse }}')\
-        .render(**{'input_html': rel_select,
-         'label_html': label.as_html(),
-         'collapse': collapse,
-         'help': rel.doc})
+        return Template(
+            '<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>{{ collapse }}') \
+            .render(**{'input_html': rel_select,
+                       'label_html': label.as_html(),
+                       'collapse': collapse,
+                       'help': rel.doc})
 
 
-    def form_representation(self, context: Context):
+@adapter(IFormContext)
+@implementer(IFormRepresentationBuilder)
+class FormRepresentationBuilder:
+    def __init__(self, context: IFormContext) -> None:
+        self._context = context
+
+    def form_representation(self):
+        # having context passed in noew seems redundant
+        context = self._context
         mapper = context.mapper_info
+        assert context.prefix == ""
         prefix = context.prefix
         request = context.request
 
@@ -406,11 +460,9 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             outer_form = True
 
         mapper_key = mapper.local_table.key
-
-        namespace_id = "%s%s" % (prefix, mapper_key)
+        namespace_id = mapper_key
         logger.debug("in form_representation with namespace id of %s", namespace_id)
-        the_form = Form(request, namespace_id, namespace_id,
-                        html_id_store=request.registry.queryUtility(IHtmlIdStore),
+        the_form = Form(request, namespace_id, context.namespace,  # can be None
                         outer_form=outer_form)
         context.form = the_form
         assert prefix is not None
@@ -422,7 +474,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         #         script = html.Element('script')
         # #        script.text = "mapper = %s;" % json.dumps(mapper)
         #         the_form.element.append(script)
-        self.logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
+        logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
 
         # suppress primary keys
         suppress = context.extra['suppress_cols'] = {}
@@ -434,10 +486,10 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         for x in mapper.columns:
             key = x.key
             if key in suppress and suppress[key]:
-                self.logger.debug("skipping suppressed column %s", key)
+                logger.debug("skipping suppressed column %s", key)
                 continue
 
-            self.logger.debug("Mapping column %s", key)
+            logger.debug("Mapping column %s", key)
 
             # FIXME we default to text because we're lazy
             kind = 'text'
@@ -458,7 +510,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             div_col_sm_8.element.append(input_control.element)
 
             label_contents = stringcase.sentencecase(key)
-            label = FormLabel(form_control=input_control, label_contents=label_contents)
+            label = FormLabel(form_control=input_control, label_contents=label_contents, attr={"class": "col-sm-4 col-form-label"})
 
             e = {'id': input_id,
                  'input_html': div_col_sm_8.as_html(),
@@ -474,20 +526,45 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         # where its appropriate, embed or supply a subordinate form
         # additionally, supply a form variable and mapping for the relevant column.
         for rel in mapper.relationships:
-            form_contents = form_contents + self.map_relationship(context, rel)
+            logger.debug("extra = %s", context.extra)
+            rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRelationshipMapper)
+            form_contents = form_contents + rel_mapper.map_relationship()
+            logger.debug("now extra = %s", context.extra)
 
         form_contents = form_contents + '</div>'
         the_form.element.append(html.fromstring(form_contents))
 
         return the_form
 
-    def render_entity_form_wrapper(self, context: Context):
+
+
+
+class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
+    def __init__(self, entry_point: EntryPoint, request, **kwargs) -> None:
+        super().__init__(entry_point, request, **kwargs)
+
+    def generate(self):
+        outer_vars = {}
+        # we might want to query for a mapper? except our entry point has it
+        # request.registry.queryUtility(IMapperInfo,
+
+        context = FormContext(self._request,
+                               self.entry_point._mapper_wrapper.mapper_info,
+                               # FIXME code smell digging into class internals
+                               outer_vars,
+                               )
+        builder = context.request.registry.getAdapter(context, IFormRepresentationBuilder)
+        self._form = builder.form_representation()
+
+
+    def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)
         return render_template(context.request, templates.form_wrapper, {'form': form})
 
-    def render_entity_form(self, context: Context):
-        form = self.form_representation(context)
-        return form.as_html()
+    def render_entity_form(self, context: FormContext):
+        builder = context.request.registry.getAdapter(context, IFormRepresentationBuilder)
+        self._form = builder.form_representation()
+        return self._form.as_html()
 
     def js_stmts(self):
         return []
@@ -531,7 +608,7 @@ class EntityFormView(BaseEntityRelatedView):
         mapper_info = self.entry_point.mapper_wrapper.get_one_mapper_info()
         if self.request.method == "GET":
             outer_vars = {}
-            context = generator.Context(request=self.request,
+            context = FormContext(request=self.request,
                                         mapper_info=mapper_info,
                                         outer_vars=outer_vars)
 
@@ -549,8 +626,8 @@ class EntityFormView(BaseEntityRelatedView):
         for col in cols:
             if col.key in self.request.params:
                 v = self.request.params[col.key]
-                if self.logger:
-                    self.logger.info("%s = %s", col.key, v)
+                if logger:
+                    logger.info("%s = %s", col.key, v)
                 r.__setattr__(col.key, v)
 
         self.request.dbsession.add(r)
@@ -565,3 +642,12 @@ class EntityFormActionView(BaseEntityRelatedView):
 
 class EntityAddView(BaseEntityRelatedView):
     pass
+
+
+def includeme(config: Configurator):
+#    config.registry.registerUtility(RelationshipSelect, IRelationshipSelect)
+    reg = config.registry.registerAdapter
+    reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
+    reg(FormRepresentationBuilder, [IFormContext], IFormRepresentationBuilder)
+    reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
+    #reg(RelationshipFormRenderer, [IRelationshipInfo], IRelationshipFormRenderer)

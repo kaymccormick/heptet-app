@@ -1,5 +1,15 @@
 from zope.interface import Interface
 
+class IFormRepresentationBuilder(Interface):
+    def form_representation(context):
+        pass
+
+class IRelationshipSelect(Interface):
+    def get_select():
+        pass
+    def set_context():
+        pass
+
 class INamespaceStore(Interface):
     def get_id(preferred, bits):
         pass

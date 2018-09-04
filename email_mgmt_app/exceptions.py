@@ -9,6 +9,11 @@ class IdTaken(Exception):
         self.message = "HTML id %s taken" % html_id
 
 
+class InvalidMode(Exception):
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)
+
+
 class NamespaceCollision(Exception):
     def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
