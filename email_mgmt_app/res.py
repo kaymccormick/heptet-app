@@ -2,31 +2,21 @@ import abc
 import logging
 from abc import abstractmethod
 from collections import UserDict, OrderedDict
-from typing import AnyStr, Callable, Type
+from typing import AnyStr, Type
 
-import stringcase
-from db_dump.info import MapperInfo
-from sqlalchemy import String
 from zope.interface import Interface, implementer
 
-from email_mgmt_app.constants import ENTITY_VIEW_ARG_NAME
 import pyramid
-from email_mgmt_app.entity import EntityFormView, EntityDesignView
+from email_mgmt_app.constants import ENTITY_VIEW_ARG_NAME
+from email_mgmt_app.entrypoint import EntryPoint
 from email_mgmt_app.interfaces import IMapperInfo
+from email_mgmt_app.util import get_entry_point_key
+from email_mgmt_app.model.meta import Base
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
-from sqlalchemy.orm import Mapper
-from sqlalchemy.orm.base import MANYTOONE
-
-from email_mgmt_app.entrypoint import EntryPoint
-from email_mgmt_app.util import render_template, get_entry_point_key
-from email_mgmt_app.viewdecorator import view_decorator
 
 logger = logging.getLogger(__name__)
-
-
-# right now this seems to only generate side effects
 
 
 class IResourceManager(Interface):
@@ -259,7 +249,6 @@ class ResourceManager:
         :param renderer:
         :return:
         """
-        # should there be an implicit argument???
         logger.debug("in operation factory with %s, %s, %s, %s", name, view, args, renderer)
         args[0:0] = self.implicit_args()
         op = ResourceOperation(name=name, view=view, args=args, renderer=renderer)
@@ -286,7 +275,6 @@ class ResourceManager:
 
         node_name = self._node_name
 
-        # do we need this now?
         root_resource = config.registry.queryUtility(IRootResource)
         assert root_resource is not None and isinstance(root_resource, RootResource)
         logger.debug("ok util = %s", root_resource)
@@ -319,14 +307,13 @@ class ResourceManager:
         request.subpath = ()
         request.traversed = (node_name,)
 
-        # extra = {'inspect': self._inspect}
         extra = {}
-        # this is broken I think!
 
         if entity_type is not None:
             # this is a predicate!
             # sanity check this!!
             extra['entity_type'] = entity_type
+            assert issubclass(entity_type, Base)
             # this is not a predicate, but is predicateD on having
             # an entity type
             # extra['mapper_info'] = self.mapper_info
@@ -340,6 +327,7 @@ class ResourceManager:
 
             request.view_name = op.name
 
+
             entry_point_key = get_entry_point_key(request, root_resource[node_name], op.name)
             view_kwargs = {'view': op.view,
                            'name': op.name,
@@ -348,13 +336,11 @@ class ResourceManager:
             entry_point = EntryPoint(entry_point_key,
                                      request,
                                      request.registry,
-                                     # we shouldn't be calling into the "operation" for
-                                     # the entry point
-                                     js=op.entry_point_js(request),
+                                     js=op.entry_point_js(request), # we shouldn't be calling into the "operation" for the entry point
                                      mapper_wrapper=mapperWrapper,
                                      view_kwargs=view_kwargs)
-            # operation=op)
-            # config.registry.registerAdapter()
+            generator = (op.view.entry_point_generator())(entry_point, request)
+            entry_point.generator = generator
             config.register_entry_point(entry_point)
 
             view_kwargs['entry_point'] = entry_point

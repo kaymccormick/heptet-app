@@ -9,7 +9,7 @@ from sqlalchemy.engine.reflection import Inspector
 from webtest import TestApp
 
 import email_mgmt_app.webapp_main
-from email_mgmt_app.entrypoint import IEntryPoint
+from email_mgmt_app.entrypoint import IEntryPoint, IEntryPointGenerator
 from email_mgmt_app.mschema import EntryPointSchema
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder
 from pyramid.paster import get_appsettings, setup_logging
@@ -85,6 +85,8 @@ def main():
     for entry_point in entry_points:
 
         ep = entry_point
+        generator = ep.generator
+        generator.generate()
         #ep.generate()
         entry_point_key = ep.key
         logger = logging.LoggerAdapter(_logger, extra={
@@ -106,7 +108,7 @@ def main():
                                                                                           'abbrname'] + '.entry_point_generator'})
                 new_logger.debug("!!! generator = %s", view.entry_point_generator)
                 request.view_name = ep.view_kwargs['name']
-                generator = view.entry_point_generator(ep, request, logger=new_logger)
+                generator = view.entry_point_generator()(ep, request, logger=new_logger)
 
                 if generator:
                     js_imports = generator.js_imports()

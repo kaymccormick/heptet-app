@@ -46,7 +46,7 @@ class EntryPoint:
     """
 
     """
-    def __init__(self, key: AnyStr, request=None, registry=None, js=None, view_kwargs: dict=None, mapper_wrapper: MapperWrapper=None) -> None:
+    def __init__(self, key: AnyStr, request=None, registry=None, generator=None, js=None, view_kwargs: dict=None, mapper_wrapper: MapperWrapper=None) -> None:
         """
 
         :param key:
@@ -59,6 +59,7 @@ class EntryPoint:
         if registry is None and request is not None:
             registry = request.registry
         self._registry = registry
+        self._generator = generator
         self._js = js
         self._view_kwargs = view_kwargs
         self._view = None
@@ -106,6 +107,14 @@ class EntryPoint:
     def mapper_wrapper(self):
         return self._mapper_wrapper
 
+    @property
+    def generator(self):
+        return self._generator
+
+    @generator.setter
+    def generator(self, new):
+        self._generator = new
+
 
 # we get a request, which means we get a registry
 @adapter(IEntryPoint)
@@ -133,9 +142,9 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
         else:
             self.logger = logging.getLogger(__name__)
 
-        environment = request.registry.queryUtility(IJinja2Environment, 'app_env')
-        assert environment
-        self._template_env = environment
+#        environment = request.registry.queryUtility(IJinja2Environment, 'app_env')
+ #       assert environment
+        #      self._template_env = environment
         self._html_id_store = request.registry.queryUtility(IHtmlIdStore)
 
     @abc.abstractmethod
@@ -157,10 +166,6 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def extra_js_stmts(self):
         pass
-
-    @property
-    def template_env(self) -> Environment:
-        return self._template_env
 
     @property
     def html_id_store(self) -> IHtmlIdStore:

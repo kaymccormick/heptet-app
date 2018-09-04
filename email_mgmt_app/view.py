@@ -7,7 +7,7 @@ from pyramid.request import Request
 
 from email_mgmt_app.argument import ArgumentContext
 from email_mgmt_app.exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
-from email_mgmt_app.entrypoint import EntryPoint
+from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
 from email_mgmt_app.util import get_exception_entry_point_key
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,9 @@ class ViewConfig:
 
 
 class BaseView:
-    entry_point_generator = None
+    @staticmethod
+    def entry_point_generator():
+        return EntryPointGenerator
 
     def __init__(self, context, request: Request=None) -> None:
         self._context = context

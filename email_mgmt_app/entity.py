@@ -285,14 +285,13 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         self._form = self.form_representation(self._request,
                                               self.entry_point._mapper_wrapper.mapper_info, # FIXME code smell digging into class internals
                                               outer_vars,
-                                              # we shuffled template_env even though i spose we didn't need it
-                                              self.template_env)
+                                              )
 
 
     def form_representation(self, request,
                             mapper,
                             outer_vars,
-                            environment,
+                            environment=None,
                             nest_level: int = 0,
                             do_modal=False,
                             prefix=""):
@@ -440,11 +439,11 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
         return the_form
 
-    def render_entity_form_wrapper(self, request, inspect, outer_vars, environment, nest_level: int = 0, do_modal=False, prefix=""):
+    def render_entity_form_wrapper(self, request, inspect, outer_vars, environment=None, nest_level: int = 0, do_modal=False, prefix=""):
         form = self.render_entity_form(request, inspect, outer_vars, environment, nest_level, do_modal, prefix)
         return render_template(request, templates.form_wrapper, {'form': form})
 
-    def render_entity_form(self, request, mapper: MapperInfo, outer_vars, environment, nest_level: int = 0, do_modal=False,
+    def render_entity_form(self, request, mapper: MapperInfo, outer_vars, environment=None, nest_level: int = 0, do_modal=False,
                            prefix=""):
         """
 
@@ -490,18 +489,20 @@ class EntityDesignView(BaseEntityRelatedView):
 
 
 class EntityFormView(BaseEntityRelatedView):
-    entry_point_generator = EntityFormViewEntryPointGenerator
+    @staticmethod
+    def entry_point_generator():
+        return EntityFormViewEntryPointGenerator
 
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
 
     def __call__(self, *args, **kwargs):
-        generator = self.entry_point_generator(self.entry_point, self.request)
+        generator = self.entry_point_generator()(self.entry_point, self.request)
         if self.request.method == "GET":
             outer_vars = {}
             wrapper = generator.render_entity_form_wrapper(
                 self.request, self.entry_point.mapper_wrapper.get_one_mapper_info(),
-                outer_vars, generator.template_env)
+                outer_vars)
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
                                                 'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
