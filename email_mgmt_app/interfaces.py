@@ -1,7 +1,28 @@
 from zope.interface import Interface
 
+
+class ITemplateSource(Interface):
+    def get_name():
+        pass
+    def render(**kwargs):
+        pass
+
+
+class ITemplate(Interface):
+    def get_name():
+        pass
+
+    def get_content():
+        pass
+
+    def render(**kwargs):
+        pass
+
+
 class ITemplateVariable(Interface):
     def get_name():
+        pass
+    def get_value():
         pass
 
 class ICollector(Interface):

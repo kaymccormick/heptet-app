@@ -22,8 +22,10 @@ from email_mgmt_app.util import render_template
 from email_mgmt_app.view import BaseView
 from pyramid.util import DottedNameResolver
 from pyramid_jinja2 import IJinja2Environment
+from email_mgmt_app.template import TemplateVariable
 
 logger = logging.getLogger(__name__)
+
 
 class IFormContext(Interface):
     pass
@@ -48,6 +50,10 @@ class FormRelationshipMapper:
         request = context.request
         nest_level = context.nest_level
 
+        js_stmts_col = request.registry.queryUtility(ICollector, 'js_stmts')
+        if js_stmts_col:
+            js_stmts_col.add_value('// %s' % rel)
+
         logger.debug("Encountering relationship %s", rel)
         assert rel.direction
         if rel.direction.upper() != 'MANYTOONE':
@@ -61,6 +67,8 @@ class FormRelationshipMapper:
         select = request.registry.getAdapter(rel, IRelationshipSelect)
         select.set_context(context)
         select_html = select.get_select()
+        logger.debug("select html is %s", select_html)
+        assert select_html
         return select_html
 
 
@@ -245,6 +253,7 @@ def template_source(request, template_name):
 class BaseEntityRelatedView(BaseView):
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
+        self._entity_type = None
 
     @property
     def entity_type(self):
@@ -256,7 +265,6 @@ class BaseEntityRelatedView(BaseView):
 
 
 class EntityView(BaseEntityRelatedView):
-
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
         self._entity = None
@@ -332,6 +340,7 @@ class FormContext:
     extra: dict = field(default_factory=lambda: {'suppress_cols': {}})
     namespace: INamespaceStore = None
 
+
 # class IRelationshipFormRenderer:
 #     pass
 #
@@ -346,7 +355,6 @@ class FormContext:
 class RelationshipSelect:
     def __init__(self, info) -> None:
         super().__init__()
-        logger.info("my ifno is %s", info)
         self._rel_info = info
         self._context = None
 
@@ -370,9 +378,7 @@ class RelationshipSelect:
 
         label_contents = stringcase.sentencecase(key_)
 
-
-        select_id = context.form.get_html_id('id_select_%s' % key_)
-        # ['select', prefix, key_])
+        select_id = context.form.get_html_id('id_select_%s' % key_)  # ['select', prefix, key_])
 
         select_name = "select_" + key_
         select_name = context.form.get_html_form_name(select_name, True)
@@ -403,11 +409,11 @@ class RelationshipSelect:
             logger.debug("prefix_key_ = %s", prefix_key_)
             sub_namespace = context.form.namespace.make_namespace(key)
             context2 = FormContext(context.request,
-                                    mapper2.get_one_mapper_info(),
-                                    context.outer_vars, context.nest_level + 1,
-                                    context.do_modal,
-                                    namespace=sub_namespace,
-                                    extra=context.extra)
+                                   mapper2.get_one_mapper_info(),
+                                   context.outer_vars, context.nest_level + 1,
+                                   context.do_modal,
+                                   namespace=sub_namespace,
+                                   extra=context.extra)
 
             builder = context.request.registry.getAdapter(context2, IFormRepresentationBuilder)
             entity_form = builder.form_representation()
@@ -423,14 +429,15 @@ class RelationshipSelect:
         options = []
         for entity in entities:
             option = FormOptionElement(entity.display_name,
-                                       entity.__dict__[remote.column])  # FIXME remote['column'] cant be right
+                                       entity.__dict__[remote.column])
             options.append(option)
 
-        select = FormSelect(name=select_name.get_id(), id=select_id.get_id(), options=options, attr={"class": "form-control"})
+        select = FormSelect(name=select_name.get_id(), id=select_id.get_id(), options=options,
+                            attr={"class": "form-control"})
         select_name.set_element(select)
         select_id.set_element(select)
-        label = FormLabel(form_control=select, label_contents=label_contents, attr={"class": "col-sm-4 col-form-label"})
-
+        label = FormLabel(form_control=select, label_contents=label_contents,
+                          attr={"class": "col-sm-4 col-form-label"})
 
         rel_select = select.as_html()
         logger.debug("select = %s", rel_select, extra={'element': select})
@@ -438,12 +445,16 @@ class RelationshipSelect:
         logger.debug("suppressing column %s", local.column)
         context.extra['suppress_cols'][local.column] = True
 
-        return Template(
-            '<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>{{ collapse }}') \
-            .render(**{'input_html': rel_select,
-                       'label_html': label.as_html(),
-                       'collapse': collapse,
-                       'help': rel.doc})
+        _vars = {'input_html': rel_select,
+                 'label_html': label.as_html(),
+                 'collapse': collapse,
+                 'help': rel.doc}
+        src = request.registry.getUtility(ITemplateSource, 'entity/field_relationship.jinja2')
+        tmp = request.registry.getAdapter(src, ITemplate)
+        x = tmp.render(**_vars)
+        logger.debug("result is %s", x)
+        assert x
+        return x
 
 
 @adapter(IFormContext)
@@ -487,9 +498,24 @@ class FormRepresentationBuilder:
             assert akey.table == mapper.local_table.key
             suppress[akey.column] = True
 
+        form_html = {}
+        # PROCESS RELATIONSHIP
+        # for each relationship
+        # where its appropriate, embed or supply a subordinate form
+        # additionally, supply a form variable and mapping for the relevant column.
+        for rel in mapper.relationships:
+            logger.debug("extra = %s", context.extra)
+            rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRelationshipMapper)
+            form_html[rel.local_remote_pairs[0].local.column] = rel_mapper.map_relationship()
+            logger.debug("now extra = %s", context.extra)
+
         # process each column
         for x in mapper.columns:
             key = x.key
+            if key in form_html:
+                form_contents = form_contents + form_html[key]
+                continue
+
             if key in suppress and suppress[key]:
                 logger.debug("skipping suppressed column %s", key)
                 continue
@@ -515,7 +541,8 @@ class FormRepresentationBuilder:
             div_col_sm_8.element.append(input_control.element)
 
             label_contents = stringcase.sentencecase(key)
-            label = FormLabel(form_control=input_control, label_contents=label_contents, attr={"class": "col-sm-4 col-form-label"})
+            label = FormLabel(form_control=input_control, label_contents=label_contents,
+                              attr={"class": "col-sm-4 col-form-label"})
 
             e = {'id': input_id,
                  'input_html': div_col_sm_8.as_html(),
@@ -526,22 +553,10 @@ class FormRepresentationBuilder:
                 '<div class="form-group row">{{ label_html }}{{ input_html }}{% if help %}<small class="form-text text-muted">{{ help }}</small>{% endif %}</div>').render(
                 **e)
 
-        # PROCESS RELATIONSHIP
-        # for each relationship
-        # where its appropriate, embed or supply a subordinate form
-        # additionally, supply a form variable and mapping for the relevant column.
-        for rel in mapper.relationships:
-            logger.debug("extra = %s", context.extra)
-            rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRelationshipMapper)
-            form_contents = form_contents + rel_mapper.map_relationship()
-            logger.debug("now extra = %s", context.extra)
-
         form_contents = form_contents + '</div>'
         the_form.element.append(html.fromstring(form_contents))
 
         return the_form
-
-
 
 
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
@@ -553,18 +568,31 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         # we might want to query for a mapper? except our entry point has it
         # request.registry.queryUtility(IMapperInfo,
 
-        context = FormContext(self._request,
-                               self.entry_point._mapper_wrapper.mapper_info,
-                               # FIXME code smell digging into class internals
-                               outer_vars,
-                               )
+        request = self._request
+        util = request.registry.getUtility
+        adapt = request.registry.getAdapter
+        multi = request.registry.getMultiAdapter
+
+        form_src = util(ITemplateSource, 'entity/form.jinja2')
+        form_template = adapt(form_src, ITemplate)
+        logger.debug("form template is %s", form_template)
+        for var in ('js_imports', 'js_stmts', 'extra_js_stmts'):
+            v = TemplateVariable(var, [])
+            c = adapt(v, ICollector)
+            request.registry.registerUtility(c, ICollector, var)
+
+        context = FormContext(request,
+                              self.entry_point._mapper_wrapper.mapper_info,
+                              # FIXME code smell digging into class internals
+                              outer_vars,
+                              )
         builder = context.request.registry.getAdapter(context, IFormRepresentationBuilder)
         logger.debug("calling builder.form_representation")
         self._form = builder.form_representation()
 
-
     def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)
+        # FIXME still weird templating
         return render_template(context.request, templates.form_wrapper, {'form': form})
 
     def render_entity_form(self, context: FormContext):
@@ -573,13 +601,13 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         return self._form.as_html()
 
     def js_stmts(self):
-        return []
+        return self._request.registry.getUtility(ICollector, 'js_stmts').get_value()
 
     def extra_js_stmts(self):
-        return []
+        return self._request.registry.getUtility(ICollector, 'extra_js_stmts').get_value()
 
     def js_imports(self):
-        return []
+        return self._request.registry.getUtility(ICollector, 'js_imports').get_value()
 
 
 class DesignViewEntryPointGenerator(EntryPointGenerator):
@@ -615,10 +643,11 @@ class EntityFormView(BaseEntityRelatedView):
         if self.request.method == "GET":
             outer_vars = {}
             context = FormContext(request=self.request,
-                                        mapper_info=mapper_info,
-                                        outer_vars=outer_vars)
+                                  mapper_info=mapper_info,
+                                  outer_vars=outer_vars)
 
             wrapper = generator.render_entity_form_wrapper(context)
+            # FIXME still weird templating!
             return Response(render_template(self.request, templates.form_enclosure,
                                             {**outer_vars, 'entry_point_template':
                                                 'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
@@ -651,9 +680,9 @@ class EntityAddView(BaseEntityRelatedView):
 
 
 def includeme(config: Configurator):
-#    config.registry.registerUtility(RelationshipSelect, IRelationshipSelect)
+    #    config.registry.registerUtility(RelationshipSelect, IRelationshipSelect)
     reg = config.registry.registerAdapter
     reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
     reg(FormRepresentationBuilder, [IFormContext], IFormRepresentationBuilder)
     reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
-    #reg(RelationshipFormRenderer, [IRelationshipInfo], IRelationshipFormRenderer)
+# reg(RelationshipFormRenderer, [IRelationshipInfo], IRelationshipFormRenderer)
