@@ -1,10 +1,13 @@
 import abc
+import logging
 from typing import AnyStr, Dict
 
-from lxml import etree
 from lxml import html
 
 from email_mgmt_app import MapperInfosMixin
+from email_mgmt_app.interfaces import IHtmlIdStore, INamespaceStore
+
+logger = logging.getLogger(__name__)
 
 
 class IMappingTarget(metaclass=abc.ABCMeta):
@@ -33,6 +36,8 @@ class MyHtmlElement:
     def element(self):
         return self._element
 
+class DivElement(MyHtmlElement):
+    pass
 
 class FormElement(MyHtmlElement):
     def __init__(self, name: AnyStr, attr: dict={}):
@@ -64,6 +69,11 @@ class FormButton(FormControl):
 # this does not necessarily mean 'input' tags only
 class FormInputElement(FormElement):
     pass
+
+
+class FormTextInputElement(FormInputElement):
+    def __init__(self, attr: dict = {}):
+        super().__init__('input', {'type': 'text', **attr})
 
 
 class FormSelect(FormInputElement):
@@ -151,13 +161,44 @@ class FormVariable:
     def id(self, new: AnyStr) -> None:
         self.id = new
 
-
+        
 class Form(FormElement, MapperInfosMixin):
-    def __init__(self) -> None:
+    # makes sense to have a unique namespace for each form-space for html ids
+    """
+    
+    """
+    def __init__(self, request, namespace_id, namespace, html_id_store: IHtmlIdStore, outer_form=False) -> None:
         super().__init__('form')
+        self._outer_form = outer_form
+        self._request = request
         self._variables = {}
         self._labels = []
         self._mapper_infos = {}
+        self._html_id_store = html_id_store
+        self._name_store = request.registry.getUtility(INamespaceStore, 'form_name')
+        self._namespace = request.registry.getUtility(INamespaceStore, 'namespace')
+        self._namespace_id = self._namespace.get_namespace(namespace_id, namespace)
+
+
+    def get_html_id(self, html_id, *args, **kwargs):
+        return self._html_id_store.get_id(html_id, True)
+
+    @property
+    def html_id_store(self) -> IHtmlIdStore:
+        return self._html_id_store
+
+    @property
+    def name_store(self) -> INamespaceStore:
+        return self._name_store
+
+    @property
+    def namespace(self) -> INamespaceStore:
+        return self._namespace
+
+    @property
+    def namespace_id(self):
+        return self._namespace_id
+
 
 
 class ProcessingUnit:

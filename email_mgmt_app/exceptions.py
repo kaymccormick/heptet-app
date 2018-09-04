@@ -4,6 +4,12 @@ from pyramid.interfaces import IExceptionResponse
 from zope.interface import implementer
 
 
+class IdTaken(Exception):
+    def __init__(self, html_id, ids) -> None:
+        self.message = "HTML id %s taken" % html_id
+
+
+
 @implementer(IExceptionResponse)
 class BaseAppException(HTTPClientError):
     def __init__(self, message):

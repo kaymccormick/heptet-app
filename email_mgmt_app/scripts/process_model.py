@@ -63,6 +63,7 @@ def mapper_adapter(mapper: Mapper, request):
     cols = []
     column: Column
 
+    # FIXME we need to do away with our custom reg key
     env = request.registry.email_mgmt_app.jinja2_env
 
     for column in mapper.columns:
@@ -135,6 +136,7 @@ def main(argv=sys.argv):
 
     env = Environment(loader=PackageLoader('email_mgmt_app.scripts', 'templates'),
                       autoescape=select_autoescape(default=False))
+
     #request.registry.email_mgmt_app.jinja2_env = env
     mapper: Mapper
     _m = {}

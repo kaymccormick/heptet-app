@@ -11,9 +11,10 @@ from sqlalchemy import String
 
 from email_mgmt_app.predicate import EntityTypePredicate
 from email_mgmt_app.entity import EntityFormView
-from email_mgmt_app.interfaces import IMapperInfo
-from email_mgmt_app.impl import MapperWrapper
-from jinja2 import TemplateNotFound
+from email_mgmt_app.interfaces import IMapperInfo, IHtmlIdStore
+from email_mgmt_app.impl import MapperWrapper, HtmlIdStore, IdStore
+from email_mgmt_app.interfaces import INamespaceStore
+from jinja2 import TemplateNotFound, Environment, PackageLoader, select_autoescape
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
@@ -23,6 +24,7 @@ from email_mgmt_app.root import RootFactory
 from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
 from pyramid.interfaces import IRootFactory
 from pyramid.renderers import get_renderer
+from pyramid_jinja2 import IJinja2Environment
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +37,8 @@ def config_process_struct(config, process):
         manager = ResourceManager(config, wrapper.key, node_name=node_name)
 
         # we add only a single operation because we're dumb and lazy
-        manager.operation('form', EntityFormView,
-           [OperationArgument.SubpathArgument('action', String, default='create')])
+        manager.operation(name='form', view=EntityFormView,
+           args=[OperationArgument.SubpathArgument('action', String, default='create')])
         config.add_resource_manager(manager)
 
 
@@ -64,6 +66,7 @@ def wsgi_app(global_config, **settings):
         wrapper = MapperWrapper(mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
 
+    # FIXME this needs to go away
     config.registry.email_mgmt_app = AppSubRegistry(process)
 
     config.include('.model.email_mgmt')
@@ -73,24 +76,27 @@ def wsgi_app(global_config, **settings):
     resource = RootResource({}, '')
     config.registry.registerUtility(resource, IRootResource)
 
-
+    # we can include viewderiver here because we haven't created all of our views yet
     config.include('.viewderiver')
     config.add_view_predicate('entity_type', EntityTypePredicate)
 
+    # this adds all our views, and other stuff
     config_process_struct(config, process)
 
+    jinja2_loader_package = settings['email_mgmt_app.jinja2_loader_package']
+    jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path']
+    env = Environment(loader=PackageLoader(jinja2_loader_package, jinja2_loader_template_path),
+                      autoescape=select_autoescape(default=False))
 
-    # def queryutil():
-    #     utility = config.registry.queryUtility(IRootFactory)
-    #     logger.debug("utility=  %s", utility)
-    #
-    # config.action(None, queryutil)
+    config.registry.registerUtility(env, IJinja2Environment, 'app_env')
 
     config.include('pyramid_jinja2')
     config.commit()
 
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
+
+
 
 #    config.add_view_predicate('entity_name', EntityNamePredicate)
 
@@ -115,11 +121,10 @@ def wsgi_app(global_config, **settings):
     config.add_subscriber(on_application_created, ApplicationCreated)
     config.commit()
 
-    # THIS MAY BE AGAINST PYRAMID PATTERNS
-    # not to mention my patterns  - all this does is :
-    # RootFactory.resources = config.registry.email_mgmt_app.resources
-    # RootFactory.populate_resources(config)
-
+    store = HtmlIdStore()
+    config.registry.registerUtility(store, IHtmlIdStore)
+    config.registry.registerUtility(IdStore('form_name'), INamespaceStore, 'form_name')
+    config.registry.registerUtility(IdStore('namespace'), INamespaceStore, 'namespace')
     return config.make_wsgi_app()
 
 

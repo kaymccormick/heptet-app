@@ -19,12 +19,12 @@ from pyramid.request import Request
 from sqlalchemy.orm import Mapper
 from sqlalchemy.orm.base import MANYTOONE
 
-
 from email_mgmt_app.entrypoint import EntryPoint
 from email_mgmt_app.util import render_template, get_entry_point_key
 from email_mgmt_app.viewdecorator import view_decorator
 
 logger = logging.getLogger(__name__)
+
 
 # right now this seems to only generate side effects
 
@@ -80,8 +80,9 @@ class OperationArgument:
     """
     An argument to an operation.
     """
+
     @staticmethod
-    def SubpathArgument(name: AnyStr, argtype, optional: bool=False, default=None, label=None, implicit_arg=False):
+    def SubpathArgument(name: AnyStr, argtype, optional: bool = False, default=None, label=None, implicit_arg=False):
         """
         "Convenience" method to create a subpath-sourced argument.
         :param name:
@@ -93,9 +94,10 @@ class OperationArgument:
         :return:
         """
         return OperationArgument(name, argtype, optional=optional, default=default, getter=SubpathArgumentGetter(),
-                                 label=label,implicit_arg=implicit_arg)
+                                 label=label, implicit_arg=implicit_arg)
 
-    def __init__(self, name: AnyStr, argtype, optional: bool=False, default=None, getter=None, has_value=None, label=None, implicit_arg=False) -> None:
+    def __init__(self, name: AnyStr, argtype, optional: bool = False, default=None, getter=None, has_value=None,
+                 label=None, implicit_arg=False) -> None:
         """
 
         :param name:
@@ -121,7 +123,7 @@ class OperationArgument:
         self._implicit_arg = implicit_arg
 
     def __json__(self, request):
-        return { 'name': self.name, 'optional': self.optional, 'default': self.default, 'label': self.label }
+        return {'name': self.name, 'optional': self.optional, 'default': self.default, 'label': self.label}
 
     def __str__(self):
         return repr(self.__dict__)
@@ -172,11 +174,11 @@ class ResourceOperation:
     """
     Class encapsulating an operation on a resource
     """
-    def entry_point_js(self, request: Request, prefix: AnyStr=""):
+
+    def entry_point_js(self, request: Request, prefix: AnyStr = ""):
         pass
 
-
-    def __init__(self, name, view, args, manager: 'ResourceManager', renderer=None) -> None:
+    def __init__(self, name, view, args, renderer=None) -> None:
         """
 
         :param name: name of the operation - add, view, etc
@@ -187,10 +189,9 @@ class ResourceOperation:
         self._args = args
         self._view = view
         self._name = name
-        self._resource_manager = manager
 
     def __json__(self, request):
-        return { 'name': self.name, 'args': self.args }
+        return {'name': self.name, 'args': self.args}
 
     def __str__(self):
         return repr(self.__dict__)
@@ -210,10 +211,6 @@ class ResourceOperation:
     @property
     def args(self):
         return self._args
-
-    @property
-    def resource_manager(self):
-        return self._resource_manager
 
 
 @implementer(IResourceManager)
@@ -238,7 +235,7 @@ class ResourceManager:
         self._entity_type = entity_type
         self._config = config
         self._ops = []
-        self._opsdict = {}
+        self._ops_dict = {}
         self._node_name = node_name
         self._title = title
         return
@@ -246,10 +243,10 @@ class ResourceManager:
     @property
     def factory_method(self):
         def factory(
-                    name: AnyStr = None,
-                    parent: 'ContainerResource' = None,
-                    title: AnyStr = None,
-                    entity_type=None):
+                name: AnyStr = None,
+                parent: 'ContainerResource' = None,
+                title: AnyStr = None,
+                entity_type=None):
             return Resource(name, parent, title, entity_type=entity_type)
 
         return factory
@@ -265,9 +262,9 @@ class ResourceManager:
         # should there be an implicit argument???
         logger.debug("in operation factory with %s, %s, %s, %s", name, view, args, renderer)
         args[0:0] = self.implicit_args()
-        op = ResourceOperation(name, view, args=args, manager=self, renderer=renderer)
+        op = ResourceOperation(name=name, view=view, args=args, renderer=renderer)
         self._ops.append(op)
-        self._opsdict[op.name] = op
+        self._ops_dict[op.name] = op
 
     def implicit_args(self):
         args = []
@@ -297,7 +294,6 @@ class ResourceManager:
         my_parent = root_resource
         assert my_parent is not None
 
-
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
         request.registry = config.registry
 
@@ -323,7 +319,7 @@ class ResourceManager:
         request.subpath = ()
         request.traversed = (node_name,)
 
-        #extra = {'inspect': self._inspect}
+        # extra = {'inspect': self._inspect}
         extra = {}
         # this is broken I think!
 
@@ -333,7 +329,7 @@ class ResourceManager:
             extra['entity_type'] = entity_type
             # this is not a predicate, but is predicateD on having
             # an entity type
-            #extra['mapper_info'] = self.mapper_info
+            # extra['mapper_info'] = self.mapper_info
 
         # config.add_view(view=lambda rs,rr: rs,renderer='json')
         for op in self._ops:
@@ -343,29 +339,28 @@ class ResourceManager:
                 d['renderer'] = op.renderer
 
             request.view_name = op.name
-            # register an entry point for the view
+
             entry_point_key = get_entry_point_key(request, root_resource[node_name], op.name)
-            # We are instantiating an EntryPoint here. We need to give it more
-            # info.
             view_kwargs = {'view': op.view,
                            'name': op.name,
                            'node_name': node_name,
-                           **d }
+                           **d}
             entry_point = EntryPoint(entry_point_key,
+                                     request,
+                                     request.registry,
                                      # we shouldn't be calling into the "operation" for
                                      # the entry point
                                      js=op.entry_point_js(request),
                                      mapper_wrapper=mapperWrapper,
                                      view_kwargs=view_kwargs)
-                                     #operation=op)
-            #config.registry.registerAdapter()
+            # operation=op)
+            # config.registry.registerAdapter()
             config.register_entry_point(entry_point)
 
             view_kwargs['entry_point'] = entry_point
-            #d['decorator'] = view_decorator
+            # d['decorator'] = view_decorator
             logger.debug("Adding view: %s", view_kwargs)
-            # register_entry_point(epstr)
-            v = config.add_view(**view_kwargs)
+            config.add_view(**view_kwargs)
 
             reg_view = True
 
@@ -374,15 +369,7 @@ class ResourceManager:
 
     @property
     def ops(self) -> dict:
-        return self._opsdict
-
-    # @property
-    # def inspect(self):
-    #     return self._inspect
-    #
-    # @inspect.setter
-    # def inspect(self, new):
-    #     self._inspect = new
+        return self._ops_dict
 
     @property
     def entity_type(self):
@@ -397,11 +384,12 @@ class Resource:
     """
     Base resource type. Implements functionality common to all resource types.
     """
+
     def __init__(self,
-                 name: AnyStr=None,
-                 parent: 'ContainerResource'=None,
-                 title: AnyStr=None,
-                 entity_type: AnyStr=None) -> None:
+                 name: AnyStr = None,
+                 parent: 'ContainerResource' = None,
+                 title: AnyStr = None,
+                 entity_type: AnyStr = None) -> None:
         """
 
         :param mgr: ResourceManager instance
@@ -423,8 +411,8 @@ class Resource:
         self.__name__ = name
 
     def __json__(self, request):
-        return { 'title': self.title, '__name__': self.__name__,
-        'entity_type': self.entity_type,  }
+        return {'title': self.title, '__name__': self.__name__,
+                'entity_type': self.entity_type, }
 
     def __str__(self):
         return "Resource[%s]" % self.entity_type
@@ -460,6 +448,7 @@ class ContainerResource(Resource, UserDict):
     """
     Resource containing sub-resources.
     """
+
     def __init__(self, dict_init, *args, **kwargs) -> None:
         # this is the only spot where we call Resource.__init__
         super().__init__(*args, **kwargs)
@@ -470,7 +459,7 @@ class ContainerResource(Resource, UserDict):
         return True
 
     def __json__(self, request):
-        return { 'entity_type': self.entity_type, 'children': self.data }
+        return {'entity_type': self.entity_type, 'children': self.data}
 
     def __getitem__(self, key=None):
         if key is None:
@@ -485,7 +474,6 @@ class ContainerResource(Resource, UserDict):
         super().__setitem__(key, value)
 
 
-
 class LeafResource(Resource):
     def __getattr__(self, item):
         raise KeyError
@@ -494,14 +482,17 @@ class LeafResource(Resource):
 class IRootResource(Interface):
     def get_data():
         pass
+
     def get_root_resource():
         pass
+
 
 @implementer(IRootResource)
 class RootResource(ContainerResource):
     """
     The root resource for the pyramid application. This is not the same as the RootFactory.
     """
+
     def __init__(self, dict_init, *args, **kwargs) -> None:
         """
         Initializer for a root resource. This is not a singleton class so it should only be instantiated
@@ -553,7 +544,6 @@ class EntityResource():
 #         if isinstance(context, ResourceRegistration) and context.node_name == self._val:
 #             return True
 #         return False
-
 
 
 # class AlchemyInfoResourceAdapter:
@@ -619,7 +609,6 @@ class EntityResource():
 #         return mgr
 
 
-
 def add_resource_manager(config: Configurator, mgr: ResourceManager):
     logger.debug("in add_resource_manager directive.")
     logger.debug("registering mgr.add_action as action for %s", mgr)
@@ -629,5 +618,5 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
 def includeme(config: Configurator):
     config.add_directive('add_resource_manager', add_resource_manager)
     # this just calls into the object for side effects
-    #adapter = AlchemyInfoResourceAdapter(config, config.registry.email_mgmt_app.alchemy)
+    # adapter = AlchemyInfoResourceAdapter(config, config.registry.email_mgmt_app.alchemy)
     logger.debug("Adding directive 'add_resource_manager'")

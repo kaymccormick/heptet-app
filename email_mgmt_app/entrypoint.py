@@ -1,13 +1,18 @@
 import abc
+import logging
 from typing import AnyStr
 
 from zope import interface
 
+from email_mgmt_app.interfaces import IHtmlIdStore
+from jinja2 import Environment
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
 from email_mgmt_app import MapperInfosMixin
 from email_mgmt_app.impl import MapperWrapper
+from pyramid_jinja2 import IJinja2Environment
+
 
 class IEntryPoints(Interface):
     def get_entry_points():
@@ -17,19 +22,23 @@ class IEntryPoints(Interface):
 
 
 
-@implementer(IEntryPoints)
-class EntryPoints:
-    def __init__(self) -> None:
-        self._entry_points = []
-
-    def get_entry_points(self):
-        return self._entry_points
-
-    def add_entry_point(self, entry_point):
-        self._entry_points.append(entry_point)
+# @implementer(IEntryPoints)
+# class EntryPoints:
+#     def __init__(self) -> None:
+#         self._entry_points = []
+#
+#     def get_entry_points(self):
+#         return self._entry_points
+#
+#     def add_entry_point(self, entry_point):
+#         self._entry_points.append(entry_point)
+#
+class IEntryPointGenerator(Interface):
+    pass
 
 class IEntryPoint(Interface):
-    pass
+    def generate():
+        pass
 
 
 @interface.implementer(IEntryPoint)
@@ -37,14 +46,19 @@ class EntryPoint:
     """
 
     """
-    def __init__(self, key: AnyStr, js=None, view_kwargs: dict=None, mapper_wrapper: MapperWrapper=None) -> None:
+    def __init__(self, key: AnyStr, request=None, registry=None, js=None, view_kwargs: dict=None, mapper_wrapper: MapperWrapper=None) -> None:
         """
 
         :param key:
         :param js:
         :param view:
         """
+        assert isinstance(key, str)
         self._key = key
+        self._request = request
+        if registry is None and request is not None:
+            registry = request.registry
+        self._registry = registry
         self._js = js
         self._view_kwargs = view_kwargs
         self._view = None
@@ -93,12 +107,11 @@ class EntryPoint:
         return self._mapper_wrapper
 
 
-
+# we get a request, which means we get a registry
+@adapter(IEntryPoint)
+@implementer(IEntryPointGenerator)
 class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
-    """
-
-    """
-    def __init__(self, entry_point: EntryPoint, request, logger=None) -> None:
+    def __init__(self, entry_point: EntryPoint, request=None, logger=None) -> None:
         """
 
         :param entry_point:
@@ -115,7 +128,19 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
         # self._mapper_infos[info['mapper_key']] = info
         self._request = request
 
-        self.logger = logger
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = logging.getLogger(__name__)
+
+        environment = request.registry.queryUtility(IJinja2Environment, 'app_env')
+        assert environment
+        self._template_env = environment
+        self._html_id_store = request.registry.queryUtility(IHtmlIdStore)
+
+    @abc.abstractmethod
+    def generate(self):
+        pass
 
     @property
     def entry_point(self) -> EntryPoint:
@@ -133,14 +158,19 @@ class EntryPointGenerator(MapperInfosMixin, metaclass=abc.ABCMeta):
     def extra_js_stmts(self):
         pass
 
-entry_points = EntryPoints()
+    @property
+    def template_env(self) -> Environment:
+        return self._template_env
+
+    @property
+    def html_id_store(self) -> IHtmlIdStore:
+        return self._html_id_store
+
 
 def register_entry_point(config, entry_point: IEntryPoint):
-    entry_points.add_entry_point(entry_point)
     config.registry.registerUtility(entry_point, IEntryPoint, entry_point.key)
 
 
 def includeme(config: 'Configurator'):
-    config.registry.registerUtility(EntryPoints())
     config.add_directive('register_entry_point', register_entry_point)
 

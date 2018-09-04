@@ -1,5 +1,18 @@
 from zope.interface import Interface
 
+class INamespaceStore(Interface):
+    def get_id(preferred, bits):
+        pass
+    def get_namespace(key, namespace):
+        pass
+
+
+class IHtmlIdStore(Interface):
+    def get_id(preferred, bits):
+        pass
+    def get_namespace(key, namespace):
+        pass
+
 
 # does it make sense to use 'key' here? no
 class IMapperInfo(Interface):

@@ -85,6 +85,7 @@ def main():
     for entry_point in entry_points:
 
         ep = entry_point
+        #ep.generate()
         entry_point_key = ep.key
         logger = logging.LoggerAdapter(_logger, extra={
             'entry_point': ep.key,
@@ -151,7 +152,9 @@ def main():
 
             logger.debug("uri = %s", uri)
             resp = test_app.get(uri)
-            with open('temp/%s.html' % ep.key, 'w') as fout:
+            fname = 'temp/%s.html' % ep.key
+            logger.info("Writing output file %s" % fname)
+            with open(fname, 'w') as fout:
                 fout.write(resp.text)
                 fout.close()
         except Exception as ex:

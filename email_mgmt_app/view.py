@@ -29,6 +29,8 @@ class BaseView:
         self._response_dict = { 'request': request,
                                 'context': context } # give it a nice default?
         self._entry_point_key = None
+
+
         #renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
         #request.override_renderer = renderer
 
@@ -102,6 +104,10 @@ class BaseView:
     def entry_point(self):
         return self._entry_point
 
+    @property
+    def entry_point_generator(self):
+        return self._entry_point_generator
+
 
 
 class ExceptionView(BaseView):
@@ -123,7 +129,7 @@ def includeme(config: Configurator):
         request.registry = config.registry
 
         entry_point_key = get_exception_entry_point_key(Exception)
-        entry_point = EntryPoint(entry_point_key)
+        entry_point = EntryPoint(entry_point_key, request)
         config.register_entry_point(entry_point)
         config.add_exception_view(view=ExceptionView, context=Exception,
                                   renderer="templates/exception/exception.jinja2",
@@ -134,7 +140,7 @@ def includeme(config: Configurator):
 
 
         entry_point_key = get_exception_entry_point_key(OperationArgumentException)
-        entry_point = EntryPoint(entry_point_key)
+        entry_point = EntryPoint(entry_point_key, request)
         config.register_entry_point(entry_point)
         config.add_exception_view(view=OperationArgumentExceptionView, context=OperationArgumentException,
                                   renderer="templates/exceptions/OperationArgumentException.jinja2",

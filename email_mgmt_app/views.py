@@ -14,11 +14,11 @@ class MainView(BaseView):
 
 
 class MainEntryPoint(EntryPoint):
-    def __init__(self, key: AnyStr='_main') -> None:
-        super().__init__(key)
+    def __init__(self, key: AnyStr='_main', registry=None) -> None:
+        super().__init__(key=key, registry=registry)
 
 
 def includeme(config: Configurator):
-    main = MainEntryPoint()
+    main = MainEntryPoint(registry=config.registry)
     config.register_entry_point(main)
     config.add_view(MainView, name='', renderer='templates/main_child.jinja2', context=RootFactory, entry_point=MainEntryPoint)
