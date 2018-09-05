@@ -157,6 +157,9 @@ class NamespaceStore(NamespaceEntry):
             x = self._parent.make_global_id() + '_'
         return "%s%s" % (x, self._name)
 
+    def __str__(self):
+        return str(self.make_global_id())
+
     #def __repr__(self):
 
 
