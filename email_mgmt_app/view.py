@@ -133,7 +133,6 @@ def includeme(config: Configurator):
         entry_point_key = get_exception_entry_point_key(Exception)
         entry_point = EntryPoint(entry_point_key, request)
         x = ExceptionView.entry_point_generator_factory()
-        logger.debug("x = %s", x)
         generator = x(entry_point, request)
         entry_point.generator = generator
         config.register_entry_point(entry_point)

@@ -102,7 +102,6 @@ class GenerateEntryPointProcess:
         ep = self._ep
         generator = ep.generator
         assert generator
-        generator.generate()
 
         entry_point_key = ep.key
 
@@ -131,7 +130,7 @@ class GenerateEntryPointProcess:
                     extra_js_stmts = generator.extra_js_stmts()
                     if extra_js_stmts:
                         for stmt in extra_js_stmts:
-                            logger.debug("js: %s", stmt)
+                            logger.debug("extra_js: %s", stmt)
 
                     ready_stmts = generator.ready_stmts()
 
@@ -155,7 +154,7 @@ class GenerateEntryPointProcess:
 
 def includeme(config: Configurator):
     def do_action():
-        logger.debug("registering subscriber %s", GenerateEntryPointProcess)
+        #logger.debug("registering subscriber %s", GenerateEntryPointProcess)
         config.registry.registerSubscriptionAdapter(GenerateEntryPointProcess)
 
     config.action(None, do_action)

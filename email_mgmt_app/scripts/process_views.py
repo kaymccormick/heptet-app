@@ -64,7 +64,7 @@ def main():
     ep_cmp = EntryPoints()
     col_context =  CollectorContext(ep_cmp, IEntryPoint)
     collector = registry.getAdapter(col_context, ICollector)
-    logger.debug("collector is %s", collector)
+    #logger.debug("collector is %s", collector)
 
     # this is a mess
     #eps = EntryPointSchema(many=True)
@@ -91,6 +91,8 @@ def main():
     entry_point_js_template =\
         pcontext.template_env.get_template('entry_point.js.jinja2')
     for ep in entry_points:
+        generator = ep.generator
+        generator.generate()
         ep.set_template(entry_point_js_template)
         ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
         subscribers = registry.subscribers([ep], IProcess)

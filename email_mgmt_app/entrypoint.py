@@ -38,6 +38,7 @@ class EntryPoints:
 
 
 class IEntryPointGenerator(Interface):
+
     pass
 
 

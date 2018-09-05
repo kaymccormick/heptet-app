@@ -3,6 +3,7 @@ import logging
 from typing import AnyStr
 
 from zope.component import adapter
+from zope.interface.registry import Components
 
 from jinja2 import FileSystemLoader, TemplateNotFound, BaseLoader
 from zope.interface import implementer
@@ -86,6 +87,7 @@ class TemplateVariable:
         return self._name
 
     def get_value(self):
+        logger.debug("in get_value for %s %s", self._name, self)
         return self._value
 
 
@@ -115,14 +117,18 @@ def _templates(config, env):
     pass
 
 
+def register_components(components: Components):
+    components.registerAdapter(Template, [ITemplateSource], ITemplate)
+    components.registerAdapter(VariableCollector, [ITemplateVariable], ICollector)
+
+
 def includeme(config: Configurator):
     config.add_jinja2_renderer('template-env', settings_prefix='email_mgmt_app.jinja2.')
 
     def do_action():
 #        renderer = config.get_renderer('template-env')
         env = config.registry.getUtility(IJinja2Environment, 'app_env')
-        config.registry.registerAdapter(Template, [ITemplateSource], ITemplate)
-        config.registry.registerAdapter(VariableCollector, [ITemplateVariable], ICollector)
+        register_components(config.registry)
         _templates(config, env)
 
     config.action(None, do_action)

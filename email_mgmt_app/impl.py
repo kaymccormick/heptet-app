@@ -157,8 +157,15 @@ class NamespaceStore(NamespaceEntry):
             x = self._parent.make_global_id() + '_'
         return "%s%s" % (x, self._name)
 
+    def get_namespace_data(self):
+        return self._namespace
+
     def __str__(self):
         return str(self.make_global_id())
+
+    @property
+    def namespace(self):
+        return self._namespace
 
 
 @implementer(IHtmlIdStore)

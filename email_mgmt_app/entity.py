@@ -1,3 +1,6 @@
+import json
+import re
+import sys
 from dataclasses import dataclass, field
 
 import stringcase
@@ -9,6 +12,7 @@ from email_mgmt_app.interfaces import *
 from email_mgmt_app.model.meta import Base
 from email_mgmt_app.util import render_template
 from email_mgmt_app.view import BaseView
+from email_mgmt_app.mschema import NamespaceSchema
 from pyramid.config import Configurator
 from pyramid.interfaces import IRendererFactory
 from pyramid.request import Request
@@ -304,9 +308,6 @@ class EntityCollectionView(BaseEntityRelatedView):
         return {'entities': collection}
 
 
-# TODO: this is clearly totally unimplememnted right now
-@implementer(IEntryPointGenerator)
-@adapter(IEntryPoint)
 class FormViewEntryPointGenerator(EntryPointGenerator):
     def extra_js_stmts(self):
         return []
@@ -398,7 +399,7 @@ class RelationshipSelect:
             mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
             prefix_key_ = "%s%s." % (prefix, key)
-            logger.debug("prefix_key_ = %s", prefix_key_)
+#            logger.debug("prefix_key_ = %s", prefix_key_)
             sub_namespace = context.form.namespace.make_namespace(stringcase.camelcase(key))
             context2 = FormContext(context.env, context.request,
                                    mapper2.get_one_mapper_info(),
@@ -475,7 +476,6 @@ class FormRepresentationBuilder:
         self._context = context
 
     def form_representation(self):
-        # having context passed in noew seems redundant
         context = self._context
         mapper = context.mapper_info
         assert context.prefix == ""
@@ -536,7 +536,7 @@ class FormRepresentationBuilder:
             kind = 'text'
             camel_key = stringcase.camelcase("input_%s" % key).replace('_', '')
             # not much of a key with the replacements.
-            assert '_' not in camel_key,    "Bad key %s" % camel_key
+            assert '_' not in camel_key, "Bad key %s" % camel_key
             input_id = context.form.get_html_id(camel_key, True)
             input_name = stringcase.camelcase(key).replace('_', '')
             input_name = context.form.get_html_form_name(input_name, True)
@@ -578,7 +578,9 @@ class FormRepresentationBuilder:
 
         return the_form
 
-
+# TODO: this is clearly totally unimplememnted right now
+@implementer(IEntryPointGenerator)
+@adapter(IEntryPoint)
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
     def __init__(self, entry_point: EntryPoint, request, **kwargs) -> None:
         super().__init__(entry_point, request, **kwargs)
@@ -590,13 +592,20 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
         request = self._request
         util = request.registry.getUtility
+        logger.info("registry is %s", request.registry)
         adapt = request.registry.getAdapter
         multi = request.registry.getMultiAdapter
 
         env = util(IJinja2Environment, 'app_env')
-        for var in ('js_imports', 'js_stmts', 'extra_js_stmts', 'ready_stmts'):
+        # fixme better way of doing this
+        vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
+        logger.warning("Resetting template variables %s", vars_)
+
+        for var in vars_:
             v = TemplateVariable(var, [])
             c = adapt(v, ICollector)
+            #unregistered = request.registry.unregisterUtility(c, ICollector, var)
+            #logger.info("unreg is %s", unregistered)
             request.registry.registerUtility(c, ICollector, var)
 
         context = FormContext(env, request,
@@ -607,6 +616,29 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         builder = context.request.registry.getAdapter(context, IFormRepresentationBuilder)
         logger.debug("calling builder.form_representation")
         self._form = builder.form_representation()
+        global_ = self._request.registry.getUtility(INamespaceStore, 'global')
+
+        def get_data(ns):
+            data = ns.get_namespace_data()
+            r = {}
+            for k, v in data.items():
+                r[k] = get_data(v)
+            return r
+
+        data = get_data(global_)
+        # namespace = self._form.namespace
+        # data = s.dump(namespace)
+        x = self._request.registry.queryUtility(ICollector, 'js_stmts')
+        s = json.dumps(data)
+        r1 = r'([\'\\])'
+        r2 = r'\\\1'
+        y = re.sub(r1, r2, s)
+        s_y = "const ns = JSON.parse('%s');" % y
+        logger.info("adding %s to %s", s_y, x)
+
+        x.add_value(s_y)
+
+
 
     def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)
@@ -616,6 +648,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
     def render_entity_form(self, context: FormContext):
         builder = context.request.registry.getAdapter(context, IFormRepresentationBuilder)
         self._form = builder.form_representation()
+
         return self._form.as_html()
 
     def js_stmts(self):
@@ -625,7 +658,11 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         return []
 
     def extra_js_stmts(self):
+        logger.info("querying extra_js_stmts")
         utility = self._request.registry.queryUtility(ICollector, 'extra_js_stmts')
+        assert utility
+        print("\n".join(utility.get_value()), file=sys.stderr)
+#        [logger.debug("%s", x) for x in utility.get_value()]
         if utility:
             return utility.get_value()
         return []
