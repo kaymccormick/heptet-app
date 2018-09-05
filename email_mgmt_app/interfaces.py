@@ -5,7 +5,8 @@ class IProcess(Interface):
         pass
 
 class ICollectorContext(Interface):
-    pass
+    def get_backing_var():
+        pass
 
 class IObject(Interface):
     pass

@@ -160,15 +160,12 @@ class NamespaceStore(NamespaceEntry):
     def __str__(self):
         return str(self.make_global_id())
 
-    #def __repr__(self):
-
 
 @implementer(IHtmlIdStore)
 class HtmlIdStore:
     def __init__(self):
         self._ids = {}
         self._namespace = {}
-
 
     def get_id(self, preferred, bits):
         assert bits
@@ -195,12 +192,14 @@ class MyCollector:
         self._value = []
 
     def add_value(self, instance):
-        if self._context._backing_var:
-            self._context._backing_var.add_value(instance)
+        var = self._context.get_backing_var()
+        if var:
+            var.add_value(instance)
         else:
             self._value.append(instance)
 
     def get_value(self):
-        if self._context._backing_var:
-            return self._context._backing_var.get_value()
+        var = self._context.get_backing_var()
+        if var:
+            return var.get_value()
         return self._value
