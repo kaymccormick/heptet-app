@@ -1,26 +1,18 @@
-import json
-import logging
-from dataclasses import dataclass, fields, field
-from typing import TypeVar, Generic
+from dataclasses import dataclass, field
 
 import stringcase
-from db_dump.info import MapperInfo, RelationshipInfo, IRelationshipInfo
+from db_dump.info import MapperInfo, IRelationshipInfo
 
-from jinja2 import Template
-
-from email_mgmt_app.form import *
 from email_mgmt_app.entrypoint import *
+from email_mgmt_app.form import *
 from email_mgmt_app.interfaces import *
+from email_mgmt_app.model.meta import Base
+from email_mgmt_app.util import render_template
+from email_mgmt_app.view import BaseView
 from pyramid.config import Configurator
 from pyramid.interfaces import IRendererFactory
 from pyramid.request import Request
 from pyramid.response import Response
-from sqlalchemy.orm.base import MANYTOONE
-
-from email_mgmt_app.model.meta import Base
-from email_mgmt_app.util import render_template
-from email_mgmt_app.view import BaseView
-from pyramid.util import DottedNameResolver
 from pyramid_jinja2 import IJinja2Environment
 from email_mgmt_app.template import TemplateVariable
 
@@ -380,9 +372,8 @@ class RelationshipSelect:
 
         label_contents = stringcase.sentencecase(key_)
 
-        select_id = context.form.get_html_id('id_select_%s' % key_)  # ['select', prefix, key_])
-
-        select_name = "select_" + key_
+        select_id = context.form.get_html_id(stringcase.camelcase('id_select_%s' % key_))  # ['select', prefix, key_])
+        select_name = stringcase.camelcase("select_" + key_)
         select_name = context.form.get_html_form_name(select_name, True)
 
         class_ = argument
@@ -393,13 +384,12 @@ class RelationshipSelect:
             except AttributeError as ex:
                 pass
 
-        modal_id = context.form.get_html_id('modal_%s%s' % (prefix, key_), True)
+        modal_id = context.form.get_html_id(stringcase.camelcase('modal_%s%s' % (prefix, key_)), True)
         buttons = []
         collapse = ''
-        button_id = context.form.get_html_id('button_%s%s' % (prefix, key_), True)
-        collapse_id = context.form.get_html_id('collapse_%s%s' % (prefix, key_), True)
+        button_id = context.form.get_html_id(stringcase.camelcase('button_%s%s' % (prefix, key_)), True)
+        collapse_id = context.form.get_html_id(stringcase.camelcase('collapse_%s%s' % (prefix, key_)), True)
 
-        #            mappers_ = alchemy['mappers']
         # control excessive nesting
         if nest_level < 1:
             key = rel.key
@@ -409,7 +399,7 @@ class RelationshipSelect:
 
             prefix_key_ = "%s%s." % (prefix, key)
             logger.debug("prefix_key_ = %s", prefix_key_)
-            sub_namespace = context.form.namespace.make_namespace(key)
+            sub_namespace = context.form.namespace.make_namespace(stringcase.camelcase(key))
             context2 = FormContext(context.env, context.request,
                                    mapper2.get_one_mapper_info(),
                                    context.outer_vars, context.nest_level + 1,
@@ -422,9 +412,18 @@ class RelationshipSelect:
 
             logger.debug("entity_form = %s", entity_form)
             collapse = env.get_template('entity/collapse.jinja2').render(
-                collapse_id=collapse_id,
-                collapse_contents=entity_form
+                collapse_id=collapse_id.get_id(),
+                collapse_contents=entity_form.as_html()
             )
+
+            ready_stmts = request.registry.queryUtility(ICollector, 'ready_stmts')
+            if ready_stmts:
+                ready_stmts.add_value(env.get_template('entity/button_create_new_js.jinja2').render(
+                    button_id=button_id.get_id()
+                    ,
+                    collapse_id=collapse_id.get_id(),
+                    select_id=select_id.get_id()
+                ))
 
             button = FormButton('button',
                                 {'id': button_id.get_id(),
@@ -448,7 +447,7 @@ class RelationshipSelect:
         select_html = select.as_html()
         rel_select = env.get_template('entity/rel_select.jinja2').render(
             select_html=select_html,
-            buttons = "\n".join(buttons)
+            buttons="\n".join(buttons)
         )
 
         logger.debug("suppressing column %s", local.column)
@@ -488,13 +487,12 @@ class FormRepresentationBuilder:
             outer_form = True
 
         mapper_key = mapper.local_table.key
-        namespace_id = mapper_key
+        namespace_id = stringcase.camelcase(mapper_key)
         logger.debug("in form_representation with namespace id of %s", namespace_id)
         the_form = Form(request, namespace_id, context.namespace,  # can be None
                         outer_form=outer_form)
         context.form = the_form
         assert prefix is not None
-
         form_contents = '<div>'
         #        the_form.set_mapper_info(mapper.local_table.key, mapper)
 
@@ -536,9 +534,11 @@ class FormRepresentationBuilder:
 
             # FIXME we default to text because we're lazy
             kind = 'text'
-            input_id = 'input_%s' % key
-            input_id = context.form.get_html_id(input_id, True)
-            input_name = prefix + key
+            camel_key = stringcase.camelcase("input_%s" % key).replace('_', '')
+            # not much of a key with the replacements.
+            assert '_' not in camel_key,    "Bad key %s" % camel_key
+            input_id = context.form.get_html_id(camel_key, True)
+            input_name = stringcase.camelcase(key).replace('_', '')
             input_name = context.form.get_html_form_name(input_name, True)
             f = {'input_name': input_name,
                  'input_id': input_id,
@@ -594,10 +594,10 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         multi = request.registry.getMultiAdapter
 
         env = util(IJinja2Environment, 'app_env')
-        # for var in ('js_imports', 'js_stmts', 'extra_js_stmts'):
-        #     v = TemplateVariable(var, [])
-        #     c = adapt(v, ICollector)
-        #     request.registry.registerUtility(c, ICollector, var)
+        for var in ('js_imports', 'js_stmts', 'extra_js_stmts', 'ready_stmts'):
+            v = TemplateVariable(var, [])
+            c = adapt(v, ICollector)
+            request.registry.registerUtility(c, ICollector, var)
 
         context = FormContext(env, request,
                               self.entry_point._mapper_wrapper.mapper_info,
@@ -632,6 +632,13 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
     def js_imports(self):
         utility = self._request.registry.queryUtility(ICollector, 'js_imports')
+        if utility:
+            return utility.get_value()
+        return []
+
+    def ready_stmts(self):
+        utility = self._request.registry.queryUtility(ICollector, 'ready_stmts')
+        assert utility
         if utility:
             return utility.get_value()
         return []

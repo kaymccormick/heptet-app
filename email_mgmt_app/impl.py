@@ -128,6 +128,7 @@ class NamespaceStore(NamespaceEntry):
         self._parent = parent
 
     def make_namespace(self, key):
+        assert '.' not in key and '_' not in key, "Invalid key %s" % key
         logger.debug("in get_namespace(%s)", key)
         element = None
         if key in self._namespace:
@@ -153,7 +154,7 @@ class NamespaceStore(NamespaceEntry):
     def make_global_id(self):
         x = ""
         if self._parent is not None:
-            x = self._parent.make_global_id() + '.'
+            x = self._parent.make_global_id() + '_'
         return "%s%s" % (x, self._name)
 
     #def __repr__(self):
@@ -182,3 +183,21 @@ class HtmlIdStore:
         #     logger.debug("going to use %s", test)
         #     return test
 
+
+@adapter(ICollectorContext)
+@implementer(ICollector)
+class MyCollector:
+    def __init__(self, context) -> None:
+        self._context = context
+        self._value = []
+
+    def add_value(self, instance):
+        if self._context._backing_var:
+            self._context._backing_var.add_value(instance)
+        else:
+            self._value.append(instance)
+
+    def get_value(self):
+        if self._context._backing_var:
+            return self._context._backing_var.get_value()
+        return self._value

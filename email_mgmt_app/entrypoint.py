@@ -1,41 +1,17 @@
-import abc
 import logging
-import sys
 from typing import AnyStr
 
 from zope import interface
 
-from zope.interface.interfaces import IInterface
-
 from email_mgmt_app.interfaces import *
-from jinja2 import Environment
+from email_mgmt_app.impl import MyCollector
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
 from email_mgmt_app import MapperInfosMixin
 from email_mgmt_app.impl import MapperWrapper
-from pyramid_jinja2 import IJinja2Environment
 
 logger = logging.getLogger(__name__)
-
-
-@adapter(ICollectorContext)
-@implementer(ICollector)
-class MyCollector:
-    def __init__(self, context) -> None:
-        self._context = context
-        self._value = []
-
-    def add_value(self, instance):
-        if self._context._backing_var:
-            self._context._backing_var.add_value(instance)
-        else:
-            self._value.append(instance)
-
-    def get_value(self):
-        if self._context._backing_var:
-            return self._context._backing_var.get_value()
-        return self._value
 
 
 class IEntryPoints(Interface):

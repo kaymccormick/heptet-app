@@ -23,12 +23,11 @@ class ComponentLoader(BaseLoader):
         return super().get_source(environment, template)
 
 
-@adapter(ITemplateVariable, IVariableType)
+@adapter(ITemplateVariable)
 @implementer(ICollector)
 class VariableCollector:
-    def __init__(self, template_variable, variable_type) -> None:
+    def __init__(self, template_variable) -> None:
         self._variable = template_variable
-        self._type = variable_type
         self._str = str
 
     def add_value(self, value):

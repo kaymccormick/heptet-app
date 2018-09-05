@@ -68,7 +68,7 @@ class OrganizationRole(Mixin, AssociationTableMixin, Base):
     id = Column(Integer, primary_key=True)
 
     organization_id = Column(Integer, ForeignKey('organization.id'))
-    role_id = Column(Integer, ForeignKey('role_.id'))
+    role_id = Column(Integer, ForeignKey('role.id'))
 
     role_persons = relationship('OrgRolePerson', back_populates='organization_role')
     organization = relationship('Organization', back_populates='roles')
@@ -112,7 +112,7 @@ class Organization(Mixin, Base):
 
 
 class Role(Mixin, Base):
-    __tablename__ = 'role_'
+    __tablename__ = 'role'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     organization_roles = relationship('OrganizationRole', back_populates='role')

@@ -170,7 +170,11 @@ class Form(FormElement, MapperInfosMixin):
     
     """
     def __init__(self, request, namespace_id, namespace: INamespaceStore=None, outer_form=False) -> None:
-        super().__init__('form')
+        name = 'div'
+        if outer_form:
+            name = 'form'
+
+        super().__init__(name)
         #assert '.' not in namespace_id, "namespace_id %s should not contain ." % namespace_id
         self._outer_form = outer_form
         self._request = request

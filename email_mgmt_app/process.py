@@ -51,12 +51,14 @@ class BaseProcessor:
     def pcontext(self, new):
         self._pcontex = new
 
+
 class ViewProcessor(BaseProcessor):
     def __init__(self, obj):
         self._obj = obj
 
     def process(self):
         return
+
     pass
 
 
@@ -80,7 +82,7 @@ def setup_jsonencoder():
                     v = old_default(self, obj)
                 except:
                     logger.critical("dont know how to jsonify %s", type(obj))
-                    #assert False, type(obj)
+                    # assert False, type(obj)
                     return str(obj)
                 return v
 
@@ -107,19 +109,14 @@ class GenerateEntryPointProcess:
         js_imports = []
         js_stmts = []
         extra_js_stmts = []
+        ready_stmts = []
 
         if ep.view_kwargs and 'view' in ep.view_kwargs:
             viewarg = ep.view_kwargs['view']
-            logger.debug("viewarg = %s", viewarg)
             view = resolver.maybe_resolve(viewarg)
             ep.view = view
 
             if view.entry_point_generator_factory():
-                # new_logger = logging.LoggerAdapter(logger.logger.getChild('entry_point_generator'),
-                #                                    extra={**logger.extra, 'abbrname': logger.extra[
-                #                                                                           'abbrname'] + '.entry_point_generator'})
-                logger.debug("!!! generator = %s", view.entry_point_generator)
-
                 if generator:
                     js_imports = generator.js_imports()
                     if js_imports:
@@ -136,16 +133,20 @@ class GenerateEntryPointProcess:
                         for stmt in extra_js_stmts:
                             logger.debug("js: %s", stmt)
 
+                    ready_stmts = generator.ready_stmts()
+
         fname = ep.get_output_filename()
         logger.info("generating output file %s", fname)
 
-        data = { 'filename': fname, 'vars': dict(js_imports=js_imports,
-                js_stmts=js_stmts,
-                extra_js_stmts=extra_js_stmts) }
+        data = {'filename': fname,
+                'vars': dict(js_imports=js_imports,
+                             js_stmts=js_stmts,
+                             extra_js_stmts=extra_js_stmts,
+                             ready_stmts=ready_stmts)}
 
         with open(fname, 'w') as f:
             content = ep.get_template().render(
-                **data
+                **data['vars']
             )
             # logger.debug("content for %s = %s", entry_point_key, content)
             f.write(content)
@@ -156,5 +157,5 @@ def includeme(config: Configurator):
     def do_action():
         logger.debug("registering subscriber %s", GenerateEntryPointProcess)
         config.registry.registerSubscriptionAdapter(GenerateEntryPointProcess)
-    config.action(None, do_action)
 
+    config.action(None, do_action)

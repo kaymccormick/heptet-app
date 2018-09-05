@@ -14,6 +14,13 @@ import 'bootstrap';
 import React, { Component} from 'react';
 import '../../node_modules/bootstrap/dist/css/bootstrap.min.css';
 
+jQuery(document).ready(function() {
+    let o = {};
+{% for ready_stmt in ready_stmts %}
+{{ ready_stmt }}
+{% endfor %}
+});
+
 {% block js_imports_block %}
 {% for import_str in js_imports %}
 import {{ import_str }};
