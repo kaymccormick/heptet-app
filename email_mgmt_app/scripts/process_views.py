@@ -1,3 +1,4 @@
+import atexit
 import json
 import logging
 import sys
@@ -5,33 +6,31 @@ import traceback
 from dataclasses import dataclass, field
 
 import pyramid_tm
-from db_dump.args import argument_parser
+import db_dump.args
 from sqlalchemy import inspect
 from sqlalchemy.engine.reflection import Inspector
 from webtest import TestApp
 
-from sqlalchemy_integration import get_tm_session
-from zope import component
-from zope.interface import classImplements
-
 import email_mgmt_app.webapp_main
-from email_mgmt_app.entrypoint import IEntryPoint, IEntryPointGenerator, ICollector, IObject, IEntryPoints, EntryPoints
-from email_mgmt_app.mschema import EntryPointSchema
-from email_mgmt_app.process import ProcessContext, setup_jsonencoder
+from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints
 from email_mgmt_app.impl import CollectorContext, IProcess
-from pyramid.paster import get_appsettings, setup_logging
-from pyramid.path import DottedNameResolver
-from pyramid.registry import Registry
-from pyramid.request import Request
+from email_mgmt_app.process import ProcessContext, setup_jsonencoder
 from email_mgmt_app.scripts.util import get_request, template_env
 from email_mgmt_app.webapp_main import on_new_request
+from pyramid.paster import get_appsettings, setup_logging
+from pyramid.registry import Registry
+from pyramid.request import Request
+from sqlalchemy_integration import get_tm_session
 
 logger = logging.getLogger(__name__)
 
 
 def main():
+    def do_atexit():
+        logger.critical("exiting...")
+    atexit.register(do_atexit)
     # deal with parsing args
-    parser = argument_parser()
+    parser = db_dump.args.argument_parser()
     parser.add_argument('--test-app', '-t', help="Test the application", action="store_true")
     args = parser.parse_args()
 
@@ -50,50 +49,54 @@ def main():
     myapp = email_mgmt_app.webapp_main.wsgi_app(None, **settings)
     registry = myapp.registry  # type: Registry
 
-    # first custom code
-    pcontext = ProcessContext(settings=settings,
-                              template_env=template_env(),
-                              )
+    pcontext = ProcessContext()
+
+    pcontext.template_env = template_env()
+    pcontext.settings = settings
+    registry.registerUtility(pcontext)
+
 
     # generate a request
     request = get_request(myapp.request_factory, registry)  # type: Request
+    assert request
     # we need to make this component based TODO
-#    app_dbsession = registry.email_mgmt_app.dbsession
+    #    app_dbsession = registry.email_mgmt_app.dbsession
 
-    # I guess app_dbsession is a 1-tuple with the function
+    # this should work with sqlalchemy cookiecutter projects
     session_factory = registry['dbsession_factory']
     dbsession = get_tm_session(session_factory, pyramid_tm.explicit_manager(request))
+    # we dont do inspection here
     db = inspect(dbsession.get_bind())  # type: Inspector
+    assert db
 
+    # wtf is this
     ep_cmp = EntryPoints()
-    col_context =  CollectorContext(ep_cmp, IEntryPoint)
+    col_context = CollectorContext(ep_cmp, IEntryPoint)
     collector = registry.getAdapter(col_context, ICollector)
-    #logger.debug("collector is %s", collector)
 
-    # this is a mess
-    #eps = EntryPointSchema(many=True)
     eps2 = []
     entry_points = []
-    for key,ep in registry.getUtilitiesFor(IEntryPoint):
+    for key, ep in registry.getUtilitiesFor(IEntryPoint):
         collector.add_value(ep)
         entry_points.append(ep)
         eps2.append(ep.key)
 
-    #dump = eps.dump(entry_points)
+    # dump = eps.dump(entry_points)
     with open('entry_points.json', 'w') as f:
-        json.dump({ 'list': eps2 }, f)
+        json.dump({'list': eps2}, f)
         f.close()
 
     @dataclass
     class MyEvent:
-        request: Request=field(default_factory=lambda: request)
+        request: Request = field(default_factory=lambda: request)
 
     event = MyEvent()
     on_new_request(event)
     test_app = TestApp(myapp)
 
-    entry_point_js_template =\
+    entry_point_js_template = \
         pcontext.template_env.get_template('entry_point.js.jinja2')
+    assert entry_points
     for ep in entry_points:
         generator = ep.generator
         generator.generate()

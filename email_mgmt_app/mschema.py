@@ -10,4 +10,3 @@ class EntryPointSchema(Schema):
     key = fields.String()
     view_kwargs = fields.Dict()
     view = TypeField()
-

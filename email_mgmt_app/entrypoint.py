@@ -1,6 +1,7 @@
 import logging
 from typing import AnyStr
 
+from pyramid.config import Configurator
 from zope import interface
 
 from email_mgmt_app.interfaces import *
@@ -38,7 +39,6 @@ class EntryPoints:
 
 
 class IEntryPointGenerator(Interface):
-
     pass
 
 
@@ -53,8 +53,13 @@ class EntryPoint:
         """
 
         :param key:
+        :param request:
+        :param registry:
+        :param generator:
         :param js:
-        :param view:
+        :param view_kwargs:
+        :param mapper_wrapper:
+        :param template_name:
         """
         assert isinstance(key, str)
         self._key = key
@@ -84,7 +89,7 @@ class EntryPoint:
         return self._output_filename
 
     def set_output_filename(self, filename):
-        self._output_filename =filename
+        self._output_filename = filename
 
     def get_template(self):
         return self._template
@@ -161,10 +166,6 @@ class EntryPointGenerator(MapperInfosMixin):
         super().__init__()
 
         self._entry_point = entry_point
-        # TODO we will need to handle more than a single mapper info
-        # info = entry_point.operation.resource_manager.mapper_info
-        # self._mapper_infos = {}
-        # self._mapper_infos[info['mapper_key']] = info
         self._request = request
 
         if logger:
@@ -172,18 +173,9 @@ class EntryPointGenerator(MapperInfosMixin):
         else:
             self.logger = logging.getLogger(__name__)
 
-        #        environment = request.registry.queryUtility(IJinja2Environment, 'app_env')
-        #       assert environment
-        #      self._template_env = environment
-        self._html_id_store = request.registry.queryUtility(IHtmlIdStore)
-
     @property
     def entry_point(self) -> EntryPoint:
         return self._entry_point
-
-    @property
-    def html_id_store(self) -> IHtmlIdStore:
-        return self._html_id_store
 
     def generate(self):
         pass
@@ -201,9 +193,6 @@ def register_entry_point(config, entry_point: IEntryPoint):
 
 def includeme(config: 'Configurator'):
     def do_action():
-        #args = (MyCollector, [IObject], ICollector)
-        #logger.debug("registering adapter %s", args)
-        #onfig.registry.registerAdapter(*args)
         config.registry.registerAdapter(MyCollector, [ICollectorContext], ICollector)
 
     config.add_directive('register_entry_point', register_entry_point)

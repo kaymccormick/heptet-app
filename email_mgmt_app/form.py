@@ -13,10 +13,13 @@ logger = logging.getLogger(__name__)
 class IMappingTarget(metaclass=abc.ABCMeta):
     pass
 
-# The caption can be associated with a specific form control, either using the for attribute, or by putting the form control inside the label element itself.
+
+# The caption can be associated with a specific form control, either using the for attribute, or by putting the form
+# control inside the label element itself.
+
 
 class MyHtmlElement:
-    def __init__(self, name: AnyStr, attr: dict={}, template=None):
+    def __init__(self, name: AnyStr, attr: dict = {}, template=None):
         self._element = html.Element(name, attr)
         self._prepared = False
         self._template = template
@@ -31,21 +34,22 @@ class MyHtmlElement:
     def prepare_element(self):
         pass
 
-
     @property
     def element(self):
         return self._element
 
+
 class DivElement(MyHtmlElement):
     pass
 
+
 class FormElement(MyHtmlElement):
-    def __init__(self, name: AnyStr, attr: dict={}):
+    def __init__(self, name: AnyStr, attr: dict = {}):
         super().__init__(name, attr)
 
 
 class FormControl(FormElement):
-    def __init__(self, name: AnyStr, attr: dict={}):
+    def __init__(self, name: AnyStr, attr: dict = {}):
         super().__init__(name, attr)
 
 
@@ -59,11 +63,8 @@ class FormOptionElement(FormElement):
 
 
 class FormButton(FormControl):
-    def __init__(self, name: AnyStr='button', attr: dict = {}):
+    def __init__(self, name: AnyStr = 'button', attr: dict = {}):
         super().__init__(name, attr)
-
-
-
 
 
 # this does not necessarily mean 'input' tags only
@@ -93,7 +94,7 @@ class FormSelect(FormInputElement):
 
 
 class FormLabel(FormElement):
-    def __init__(self, form_control: FormControl, label_contents, contains_form: bool=False, attr=None) -> None:
+    def __init__(self, form_control: FormControl, label_contents, contains_form: bool = False, attr=None) -> None:
         super().__init__('label', attr)
         self._form_control = form_control
         self._contains_form = contains_form
@@ -103,7 +104,7 @@ class FormLabel(FormElement):
     def prepare_element(self):
         assert not self._prepared
         super().prepare_element()
-        #this cant be done more than once!!
+        # this cant be done more than once!!
         if self.contains_form:
             self.element.append(self.form_control.element)
         else:
@@ -121,7 +122,7 @@ class FormLabel(FormElement):
 
     @property
     def attrs(self) -> Dict[AnyStr, AnyStr]:
-        attrs = { }
+        attrs = {}
         if not self.contains_form:
             attrs['for'] = self.form_control.id
         return {**self.attrs, **attrs}
@@ -136,10 +137,6 @@ class FormVariableMapping:
     @property
     def form_var(self) -> 'FormVariable':
         return self._form_var
-
-
-
-
 
 
 class FormVariable:
@@ -163,19 +160,20 @@ class FormVariable:
     def id(self, new: AnyStr) -> None:
         self.id = new
 
-        
+
 class Form(FormElement, MapperInfosMixin):
     # makes sense to have a unique namespace for each form-space for html ids
     """
     
     """
-    def __init__(self, request, namespace_id, namespace: INamespaceStore=None, outer_form=False) -> None:
+
+    def __init__(self, request, namespace_id, namespace: INamespaceStore = None, outer_form=False) -> None:
         name = 'div'
         if outer_form:
             name = 'form'
 
         super().__init__(name)
-        #assert '.' not in namespace_id, "namespace_id %s should not contain ." % namespace_id
+        # assert '.' not in namespace_id, "namespace_id %s should not contain ." % namespace_id
         self._outer_form = outer_form
         self._request = request
         self._variables = {}
@@ -189,19 +187,14 @@ class Form(FormElement, MapperInfosMixin):
         else:
             self._namespace = namespace
 
-        #self._namespace.set_namespace(self._namespace_id)
-        #logger.debug("my namespace is %s", self._namespace)
+        # self._namespace.set_namespace(self._namespace_id)
+        # logger.debug("my namespace is %s", self._namespace)
 
     def get_html_id(self, html_id, *args, **kwargs):
-        return self._namespace.get_namespace(html_id, True)
+        return self._namespace.get_namespace(html_id)
 
     def get_html_form_name(self, name, *args, **kwargs):
-        return self._namespace.get_namespace(name, True)
-
-
-    @property
-    def html_id_store(self) -> IHtmlIdStore:
-        return self._html_id_store
+        return self._namespace.get_namespace(name)
 
     @property
     def name_store(self) -> INamespaceStore:
@@ -214,7 +207,6 @@ class Form(FormElement, MapperInfosMixin):
     @property
     def namespace_id(self):
         return self._namespace_id
-
 
 
 class ProcessingUnit:

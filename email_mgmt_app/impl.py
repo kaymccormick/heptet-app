@@ -9,7 +9,6 @@ from email_mgmt_app.exceptions import NamespaceCollision
 logger = logging.getLogger(__name__)
 
 
-
 @implementer(ICollectorContext)
 class CollectorContext:
     def __init__(self, backing_var, item_type) -> None:
@@ -74,7 +73,7 @@ class NamespaceEntry:
         return self._element
 
 
-#@implementer(INamespaceStore)
+# @implementer(INamespaceStore)
 # class NamespaceStore(NamespaceEntry):
 #     def __init__(self, name) -> None:
 #         super().__init__(name)
@@ -142,7 +141,7 @@ class NamespaceStore(NamespaceEntry):
     def get_id(self, *args, **kwargs):
         return self.make_global_id()
 
-    def get_namespace(self, key, create: bool=True):
+    def get_namespace(self, key, create: bool = True):
         if key not in self._namespace and create:
             return self.make_namespace(key)
 

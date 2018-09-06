@@ -15,7 +15,6 @@ from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.interfaces import IMapperInfo
 from email_mgmt_app.interfaces import INamespaceStore
 from email_mgmt_app.predicate import EntityTypePredicate
-from email_mgmt_app.registry import AppSubRegistry
 from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
 from email_mgmt_app.root import RootFactory
 from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
