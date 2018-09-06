@@ -5,6 +5,9 @@ from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_fa
 from sqlalchemy.orm import relationship, configure_mappers, backref
 
 from email_mgmt_app.model.meta import Base
+from interfaces import ISqlAlchemySession
+from zope.component import IFactory
+from zope.component.factory import Factory
 
 logger = logging.getLogger(__name__)
 mappers = {}
@@ -226,13 +229,15 @@ def includeme(config):
         logging.warning("sqlalchemy.url not in settings!")
 
     session_factory = get_session_factory(get_engine(settings))
-    config.registry['dbsession_factory'] = session_factory
+    factory = Factory(session_factory, 'sqlalchemy_session', 'sqlalchemy_session', ISqlAlchemySession)
+    config.registry.registerUtility(factory, IFactory, 'sqlalchemy_session')
+    #config.registry['dbsession_factory'] = session_factory
 
     # make request.dbsession available for use in Pyramid
 #FIXME    config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
     config.add_request_method(
         # r.tm is the transaction manager used by pyramid_tm
-        lambda r: get_tm_session(session_factory, r.tm),
+        lambda r: get_tm_session(r.registry.getUtility(IFactory, 'sqlalchemy_session'), r.tm),
         'dbsession',
         reify=True
     )

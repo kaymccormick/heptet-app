@@ -4,6 +4,8 @@ from abc import abstractmethod
 from collections import UserDict, OrderedDict
 from typing import AnyStr, Type
 
+from zope.component import IFactory
+from zope.component.factory import Factory
 from zope.interface import Interface, implementer
 
 import pyramid
@@ -14,6 +16,7 @@ from email_mgmt_app.model.meta import Base
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
+import zope
 
 logger = logging.getLogger(__name__)
 
@@ -234,17 +237,6 @@ class ResourceManager:
         self._title = title
         self._resource = None
 
-    @property
-    def factory_method(self):
-        def factory(
-                name: AnyStr = None,
-                parent: 'ContainerResource' = None,
-                title: AnyStr = None,
-                entity_type=None):
-            return Resource(name, parent, title, entity_type=entity_type)
-
-        return factory
-
     def operation(self, name, view, args, renderer=None) -> None:
         """
         Add operation to res manager.
@@ -276,8 +268,8 @@ class ResourceManager:
 
         reg_view = False
         node_name = self._node_name
-        root_resource = config.registry.queryUtility(IRootResource)
-        assert root_resource is not None and isinstance(root_resource, RootResource)
+        root_resource = config.registry.queryUtility(IResource, 'root_resource')
+        assert root_resource is not None and isinstance(root_resource, RootResource), root_resource
         my_parent = root_resource
         assert my_parent is not None
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
@@ -295,9 +287,16 @@ class ResourceManager:
         mapper_wrapper = request.registry.queryUtility(IMapperInfo, self._mapper_key)
         entity_type = mapper_wrapper.mapper_info.entity
 
-        resource = root_resource[node_name] = self.factory_method \
-            (name=node_name, title=self._title,
-             parent=my_parent, entity_type=entity_type)
+        resource = root_resource[node_name] = Resource(
+            name=node_name, title=self._title,
+            parent=my_parent, entity_type=entity_type
+        )
+        # implemented = factory.getInterfaces()
+        # logger.info("implemented is %s", implemented)
+        # assert list(implemented) == [IResource]
+        # assert implemented.isOrExtends(IResource)
+
+        assert IResource.providedBy(resource)
 
         request.context = root_resource[node_name]
         request.root = root_resource
@@ -376,6 +375,10 @@ class Resource:
     Base resource type. Implements functionality common to all resource types.
     """
 
+    def __conform__(self, iface, default=None):
+        if iface == IResource:
+            return self
+
     def __init__(self,
                  name: AnyStr = None,
                  parent: 'ContainerResource' = None,
@@ -434,6 +437,7 @@ class Resource:
         self._names.append(name)
 
 
+@implementer(IResource)
 class ContainerResource(Resource, UserDict):
     """
     Resource containing sub-resources.
@@ -474,7 +478,7 @@ class IRootResource(Interface):
         pass
 
 
-@implementer(IRootResource, IResource)
+@implementer(IResource)
 class RootResource(ContainerResource):
     """
     The root resource for the pyramid application. This is not the same as the RootFactory.
@@ -603,4 +607,9 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
 
 
 def includeme(config: Configurator):
+    factory = Factory(Resource, 'resource',
+                      'ResourceFactory', (IResource,))
+    config.registry.registerUtility(factory, IFactory, 'resource')
+
     config.add_directive('add_resource_manager', add_resource_manager)
+#    config.action(None, do_action)

@@ -1,18 +1,18 @@
 import atexit
 import json
 import logging
-import os
 import sys
 import traceback
 from dataclasses import dataclass, field
 
-import pyramid_tm
 import db_dump.args
+import pyramid_tm
 from sqlalchemy import inspect
 from sqlalchemy.engine.reflection import Inspector
 from webtest import TestApp
 
 import email_mgmt_app.webapp_main
+import zope
 from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints
 from email_mgmt_app.impl import CollectorContext, IProcess
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder, AssetManager
@@ -22,6 +22,7 @@ from pyramid.interfaces import IView
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
+from res import IRootResource, IResource
 from root import RootFactory
 from sqlalchemy_integration import get_tm_session
 
@@ -67,14 +68,27 @@ def main():
         return r
 
     # generate a request
-    request = get_request(myapp.request_factory, registry)  # type: Request
+    request = get_request(myapp.request_factory, myapp)  # type: Request
     assert request
+    for k,v in registry._utility_registrations.items():
+        logger.warn("%s = %s", k,v )
+    root = registry.queryUtility(IResource, 'root_resource')
+    assert root is not None
 
-    root_res = dump_resources(RootFactory()(request))
-    logger.warning("res = %s", root_res)
+    #assert request.root
+    root_res = dump_resources(root)
+    for node_name, resource in root_res.items():
+        logger.warning("%s", resource)
 
-    adapter = registry.queryMultiAdapter((root_res, request), IView)
-    assert adapter
+        #assert res.IResource.providedBy(resource)
+        # logger.warning("%s", IResource.__bases__)
+        # logger.warning("%s", IResource.__sro__)
+        # logger.warning("%s", IResource.__iro__)
+        logger.warning("%s is %s", node_name, resource)
+        res = zope.component.createObject('resource', '', None, '', None)
+        adapter = registry.queryMultiAdapter((res, request), IView)
+        logger.warning("adapter is %s", adapter)
+        assert adapter
 
     # we need to make this component based TODO
     #    app_dbsession = registry.email_mgmt_app.dbsession

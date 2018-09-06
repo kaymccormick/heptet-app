@@ -15,7 +15,7 @@ from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.interfaces import IMapperInfo
 from email_mgmt_app.interfaces import INamespaceStore
 from email_mgmt_app.predicate import EntityTypePredicate
-from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
+from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource, IResource
 from email_mgmt_app.root import RootFactory
 from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -24,6 +24,7 @@ from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid.renderers import get_renderer
 from pyramid_jinja2 import IJinja2Environment
+from zope.component import getGlobalSiteManager
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,16 @@ def wsgi_app(global_config, **settings):
         f.close()
 
     # we changed the root factory to an instance of our factory, which maybe would help??
-    config = Configurator(package="email_mgmt_app", settings=settings, root_factory=RootFactory())
+    use_global_reg = True
+    global_reg = None
+    if use_global_reg:
+        global_reg = getGlobalSiteManager()
+
+    config = Configurator(package="email_mgmt_app",
+                          registry=global_reg)
+    if use_global_reg:
+        config.setup_registry(settings=settings,root_factory=RootFactory()
+                              )
     # exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
 
     config.include('email_mgmt_app.model.email_mgmt')
@@ -78,10 +88,12 @@ def wsgi_app(global_config, **settings):
     # config.registry.email_mgmt_app = AppSubRegistry(process)
 
     config.include('.entrypoint')
-    config.include('.res')
 
     resource = RootResource({}, '')
-    config.registry.registerUtility(resource, IRootResource)
+    config.registry.registerUtility(resource, IResource, 'root_resource')
+    assert config.registry.queryUtility(IResource, 'root_resource') is not None
+    config.commit()
+    config.include('.res')
 
     # we can include viewderiver here because we haven't created all of our views yet
     config.include('.viewderiver')
@@ -122,7 +134,7 @@ def wsgi_app(global_config, **settings):
         ACLAuthorizationPolicy()
     )
 
-    config.add_subscriber(set_renderer, ContextFound)
+    config.add_subscriber(on_context_found, ContextFound)
     config.add_subscriber(on_before_render, BeforeRender)
     config.add_subscriber(on_new_request, NewRequest)
     config.add_subscriber(on_application_created, ApplicationCreated)
@@ -175,7 +187,7 @@ def on_before_render(event):
     logger.debug("VAL=%s", val)
 
 
-def set_renderer(event):
+def on_context_found(event):
     """
     Routine for overriding the renderer, called by pyramid event subscription
     :param event: the event
@@ -188,6 +200,7 @@ def set_renderer(event):
     if isinstance(context, Exception):
         return
 
+    logger.warning("type of context is %s", type(context))
     if context.entity_type:
         # sets incorrect template
         def try_template(template_name):

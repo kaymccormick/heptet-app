@@ -110,3 +110,7 @@ class IMapperInfo(Interface):
 
     def get_one_mapper_info():
         pass
+
+
+class ISqlAlchemySession(object):
+    pass
