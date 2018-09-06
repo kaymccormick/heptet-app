@@ -18,6 +18,10 @@ from pyramid.request import Request
 logger = logging.getLogger(__name__)
 
 
+class IResource(Interface):
+    pass
+
+
 class IResourceManager(Interface):
     pass
 
@@ -214,12 +218,13 @@ class ResourceManager:
 
     def __init__(self, config=None, mapper_key=None, title=None, entity_type=None, node_name=None):
         """
-        Instantiate a new instance of ResourceManager
-        :type registration: ResourceRegistration
-        :param config: Configurator class
-        :param registration: Registration instance
-        """
 
+        :param config:
+        :param mapper_key:
+        :param title:
+        :param entity_type:
+        :param node_name:
+        """
         self._mapper_key = mapper_key
         self._entity_type = entity_type
         self._config = config
@@ -227,7 +232,7 @@ class ResourceManager:
         self._ops_dict = {}
         self._node_name = node_name
         self._title = title
-        return
+        self._resource = None
 
     @property
     def factory_method(self):
@@ -248,7 +253,6 @@ class ResourceManager:
         :param renderer:
         :return:
         """
-        logger.debug("in operation factory with %s, %s, %s, %s", name, view, args, renderer)
         args[0:0] = self.implicit_args()
         op = ResourceOperation(name=name, view=view, args=args, renderer=renderer)
         self._ops.append(op)
@@ -271,16 +275,11 @@ class ResourceManager:
         op: ResourceOperation
 
         reg_view = False
-
         node_name = self._node_name
-
         root_resource = config.registry.queryUtility(IRootResource)
         assert root_resource is not None and isinstance(root_resource, RootResource)
-        logger.debug("ok util = %s", root_resource)
-
         my_parent = root_resource
         assert my_parent is not None
-
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
         request.registry = config.registry
 
@@ -293,11 +292,10 @@ class ResourceManager:
         # Our parent is the "email_mgmt_app.resources" in our
         # app registry. That's the root resource!!
 
-        mapperWrapper = request.registry.queryUtility(IMapperInfo, self._mapper_key)
-        logger.debug("mapper Wrapper = %s", mapperWrapper)
-        entity_type = mapperWrapper.mapper_info.entity
+        mapper_wrapper = request.registry.queryUtility(IMapperInfo, self._mapper_key)
+        entity_type = mapper_wrapper.mapper_info.entity
 
-        root_resource[node_name] = self.factory_method \
+        resource = root_resource[node_name] = self.factory_method \
             (name=node_name, title=self._title,
              parent=my_parent, entity_type=entity_type)
 
@@ -319,13 +317,13 @@ class ResourceManager:
 
         # config.add_view(view=lambda rs,rr: rs,renderer='json')
         for op in self._ops:
+            resource.add_name(op.name)
             d = extra.copy()
             d['operation'] = op
             if op.renderer is not None:
                 d['renderer'] = op.renderer
 
             request.view_name = op.name
-
 
             entry_point_key = get_entry_point_key(request, root_resource[node_name], op.name)
             view_kwargs = {'view': op.view,
@@ -335,8 +333,9 @@ class ResourceManager:
             entry_point = EntryPoint(entry_point_key,
                                      request,
                                      request.registry,
-                                     js=op.entry_point_js(request), # we shouldn't be calling into the "operation" for the entry point
-                                     mapper_wrapper=mapperWrapper,
+                                     js=op.entry_point_js(request),
+                                     # we shouldn't be calling into the "operation" for the entry point
+                                     mapper_wrapper=mapper_wrapper,
                                      view_kwargs=view_kwargs)
             generator = (op.view.entry_point_generator_factory())(entry_point, request)
             logger.debug("setting generator to %s", generator)
@@ -352,6 +351,7 @@ class ResourceManager:
 
         if not reg_view:
             logger.warning("No view registered!")
+        self._resource = resource
 
     @property
     def ops(self) -> dict:
@@ -365,7 +365,12 @@ class ResourceManager:
     def title(self):
         return self._title
 
+    @property
+    def resource(self) -> 'Resource':
+        return self._resource
 
+
+@implementer(IResource)
 class Resource:
     """
     Base resource type. Implements functionality common to all resource types.
@@ -391,17 +396,14 @@ class Resource:
 
         self.__parent__ = parent
         self._entity_type = entity_type
+        self._names = []
 
     def attach(self, parent, name):
         self.__parent__ = parent
         self.__name__ = name
 
-    def __json__(self, request):
-        return {'title': self.title, '__name__': self.__name__,
-                'entity_type': self.entity_type, }
-
     def __str__(self):
-        return "Resource[%s]" % self.entity_type
+        return "Resource[%s]" % self.__name__
 
     def __repr__(self):
         return str(self)
@@ -414,6 +416,10 @@ class Resource:
     def title(self):
         return self._title
 
+    @property
+    def names(self):
+        return self._names
+
     def path(self):
         return pyramid.threadlocal.get_current_request().resource_path(self)
 
@@ -424,10 +430,8 @@ class Resource:
     def entity_type(self):
         return self._entity_type
 
-    @property
-    def resource_manager(self):
-        assert False
-        return self._resource_manager
+    def add_name(self, name):
+        self._names.append(name)
 
 
 class ContainerResource(Resource, UserDict):
@@ -443,9 +447,6 @@ class ContainerResource(Resource, UserDict):
     @property
     def is_container(self) -> bool:
         return True
-
-    def __json__(self, request):
-        return {'entity_type': self.entity_type, 'children': self.data}
 
     def __getitem__(self, key=None):
         if key is None:
@@ -473,7 +474,7 @@ class IRootResource(Interface):
         pass
 
 
-@implementer(IRootResource)
+@implementer(IRootResource, IResource)
 class RootResource(ContainerResource):
     """
     The root resource for the pyramid application. This is not the same as the RootFactory.
@@ -603,6 +604,3 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
 
 def includeme(config: Configurator):
     config.add_directive('add_resource_manager', add_resource_manager)
-    # this just calls into the object for side effects
-    # adapter = AlchemyInfoResourceAdapter(config, config.registry.email_mgmt_app.alchemy)
-    logger.debug("Adding directive 'add_resource_manager'")

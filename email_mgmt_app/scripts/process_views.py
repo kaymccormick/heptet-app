@@ -1,6 +1,7 @@
 import atexit
 import json
 import logging
+import os
 import sys
 import traceback
 from dataclasses import dataclass, field
@@ -14,12 +15,14 @@ from webtest import TestApp
 import email_mgmt_app.webapp_main
 from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints
 from email_mgmt_app.impl import CollectorContext, IProcess
-from email_mgmt_app.process import ProcessContext, setup_jsonencoder
+from email_mgmt_app.process import ProcessContext, setup_jsonencoder, AssetManager
 from email_mgmt_app.scripts.util import get_request, template_env
 from email_mgmt_app.webapp_main import on_new_request
+from pyramid.interfaces import IView
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
+from root import RootFactory
 from sqlalchemy_integration import get_tm_session
 
 logger = logging.getLogger(__name__)
@@ -49,16 +52,30 @@ def main():
     myapp = email_mgmt_app.webapp_main.wsgi_app(None, **settings)
     registry = myapp.registry  # type: Registry
 
-    pcontext = ProcessContext()
+    manager = AssetManager("build/assets", mkdir=True)
+    proc_context = ProcessContext(settings, template_env(), manager)
 
-    pcontext.template_env = template_env()
-    pcontext.settings = settings
-    registry.registerUtility(pcontext)
+    registry.registerUtility(proc_context)
 
+    def dump_resources(resource):
+        r = {}
+        if hasattr(resource, "data"):
+            for k,v in resource.data.items():
+                r[k] = dump_resources(v)
+        else:
+            return resource
+        return r
 
     # generate a request
     request = get_request(myapp.request_factory, registry)  # type: Request
     assert request
+
+    root_res = dump_resources(RootFactory()(request))
+    logger.warning("res = %s", root_res)
+
+    adapter = registry.queryMultiAdapter((root_res, request), IView)
+    assert adapter
+
     # we need to make this component based TODO
     #    app_dbsession = registry.email_mgmt_app.dbsession
 
@@ -95,7 +112,7 @@ def main():
     test_app = TestApp(myapp)
 
     entry_point_js_template = \
-        pcontext.template_env.get_template('entry_point.js.jinja2')
+        proc_context.template_env.get_template('entry_point.js.jinja2')
     assert entry_points
     for ep in entry_points:
         generator = ep.generator

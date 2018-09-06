@@ -33,15 +33,18 @@ def config_process_struct(config, process):
         wrapper = MapperWrapper(mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, wrapper.key)
         node_name = mapper.local_table.key
-        manager = ResourceManager(config, wrapper.key, node_name=node_name)
+        manager = ResourceManager(
+            config,
+            wrapper.key,
+            node_name=node_name,
+        )
 
-        # we add only a single operation because we're dumb and lazy
         manager.operation(name='form', view=EntityFormView,
-           args=[OperationArgument.SubpathArgument('action', String, default='create')])
+                          args=[OperationArgument.SubpathArgument('action', String, default='create')])
         config.add_resource_manager(manager)
 
 
-VALID_MODES=('development', 'production')
+VALID_MODES = ('development', 'production')
 
 
 def wsgi_app(global_config, **settings):
@@ -63,16 +66,16 @@ def wsgi_app(global_config, **settings):
 
     # we changed the root factory to an instance of our factory, which maybe would help??
     config = Configurator(package="email_mgmt_app", settings=settings, root_factory=RootFactory())
-                          #exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
+    # exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
 
     config.include('email_mgmt_app.model.email_mgmt')
-    process = load_process_struct() # type: ProcessStruct
+    process = load_process_struct()  # type: ProcessStruct
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
 
     # FIXME this needs to go away
-    #config.registry.email_mgmt_app = AppSubRegistry(process)
+    # config.registry.email_mgmt_app = AppSubRegistry(process)
 
     config.include('.entrypoint')
     config.include('.res')
@@ -99,9 +102,7 @@ def wsgi_app(global_config, **settings):
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
 
-
-
-#    config.add_view_predicate('entity_name', EntityNamePredicate)
+    #    config.add_view_predicate('entity_name', EntityNamePredicate)
 
     config.include('.view')
 
@@ -118,7 +119,7 @@ def wsgi_app(global_config, **settings):
                                     callback=groupfinder)
     )
     config.set_authorization_policy(
-       ACLAuthorizationPolicy()
+        ACLAuthorizationPolicy()
     )
 
     config.add_subscriber(set_renderer, ContextFound)
@@ -180,8 +181,8 @@ def set_renderer(event):
     :param event: the event
     :return:
     """
-    request = event.request # type: Request
-    context = request.context # type: Resource
+    request = event.request  # type: Request
+    context = request.context  # type: Resource
     logger.debug("context is %s", context)
 
     if isinstance(context, Exception):
@@ -216,4 +217,3 @@ def set_renderer(event):
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
-

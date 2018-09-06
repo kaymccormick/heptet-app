@@ -1,6 +1,5 @@
 import json
 import re
-import sys
 from dataclasses import dataclass, field
 
 import stringcase
@@ -10,15 +9,14 @@ from email_mgmt_app.entrypoint import *
 from email_mgmt_app.form import *
 from email_mgmt_app.interfaces import *
 from email_mgmt_app.model.meta import Base
-from email_mgmt_app.util import render_template
+from email_mgmt_app.template import TemplateVariable
 from email_mgmt_app.view import BaseView
-from email_mgmt_app.mschema import NamespaceSchema
 from pyramid.config import Configurator
-from pyramid.interfaces import IRendererFactory
+from pyramid.interfaces import IRendererFactory, IRequest, IView
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
-from email_mgmt_app.template import TemplateVariable
+from res import IResource
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
@@ -638,7 +636,8 @@ class EntityDesignViewEntryPointGenerator(DesignViewEntryPointGenerator):
 class EntityDesignView(BaseEntityRelatedView):
     pass
 
-
+@adapter(IResource, IRequest)
+@implementer(IView)
 class EntityFormView(BaseEntityRelatedView):
     @staticmethod
     def entry_point_generator_factory():
@@ -697,5 +696,6 @@ def includeme(config: Configurator):
         reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
         reg(FormRepresentationBuilder, [IFormContext], IFormRepresentationBuilder)
         reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
+        reg(EntityFormView, [IResource, IRequest], IView)
 
     config.action(None, do_action)

@@ -1,19 +1,17 @@
 import json
 import logging
-from typing import Dict
+import os
+from pathlib import Path
 
 from sqlalchemy import Column
 
 from email_mgmt_app.interfaces import IProcess, IEntryPoint
 from pyramid.config import Configurator
 from pyramid.path import DottedNameResolver
-from pyramid_jinja2 import Environment
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
 logger = logging.getLogger(__name__)
-SettingsType = Dict[str, str]
-TemplateEnvironmentType = Environment
 
 
 class IProcessContext(Interface):
@@ -22,25 +20,22 @@ class IProcessContext(Interface):
 
 @implementer(IProcessContext)
 class ProcessContext:
-    def __init__(self):
-        self._settings = None
-        self._template_env = None
+    def __init__(self, settings, template_env, asset_manager):
+        self._settings = settings
+        self._template_env = template_env
+        self._asset_manager = asset_manager
 
     @property
     def settings(self):
         return self._settings
 
-    @settings.setter
-    def settings(self, new):
-        self._settings = new
-
     @property
     def template_env(self):
         return self._template_env
 
-    @template_env.setter
-    def template_env(self, new):
-        self._template_env = new
+    @property
+    def asset_manager(self):
+        return self._asset_manager
 
 
 class BaseProcessor:
@@ -58,6 +53,24 @@ class BaseProcessor:
     @pcontext.setter
     def pcontext(self, new):
         self._pcontex = new
+
+
+class AssetManager:
+    def __init__(self, output_dir, mkdir=False) -> None:
+        super().__init__()
+        p = Path(output_dir)
+        if p.exists():
+            if not p.is_dir():
+                raise Exception("%s should be directory." % output_dir)
+        else:
+            os.mkdir(output_dir)
+
+        self._output_dir = output_dir
+
+
+    @property
+    def output_dir(self):
+        return self._output_dir
 
 
 def setup_jsonencoder():
