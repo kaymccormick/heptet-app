@@ -7,6 +7,7 @@ from webtest import TestApp
 import transaction
 import lxml
 
+logger = logging.getLogger(__name__)
 import webapp_main
 from sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 
@@ -22,14 +23,18 @@ packed_assets = ['./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_
                  './node_modules/style-loader/lib/addStyles.js', './node_modules/style-loader/lib/urls.js',
                  './node_modules/webpack/buildin/global.js', './src/index.prod.js']
 
-logging.basicConfig(level=logging.DEBUG)
+
+# logging.basicConfig(level=logging.DEBUG)
 
 @pytest.fixture
 def webapp_settings():
-    return {'sqlalchemy.url': 'sqlite:///:memory',#'postgresql://flaskuser:FcQCPDM7%40RpRCsnO@localhost/email',
-            'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
-            'email_mgmt_app.authsource': 'db',
-            'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals'}
+    return {
+        'sqlalchemy.url': 'sqlite:///:memory:',  # 'postgresql://flaskuser:FcQCPDM7%40RpRCsnO@localhost/email',
+        'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
+        'email_mgmt_app.authsource': 'db',
+        'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
+        'email_mgmt_app.jinja2_loader_template_path': 'email_mgmt_app/templates:email_mgmt_app',
+    }
 
 
 def init_database(engine, session):
@@ -44,7 +49,7 @@ def webapp_factory():
 
 @pytest.fixture
 def webapp(webapp_factory, webapp_settings):
-    webapp_factory(None, **webapp_settings)
+    return webapp_factory(None, **webapp_settings)
 
 
 @pytest.fixture
@@ -61,6 +66,7 @@ def sqlalchemy_engine(webapp_settings):
 def session_factory(sqlalchemy_engine):
     return get_session_factory(sqlalchemy_engine)
 
+
 @pytest.fixture
 def transaction_manager():
     return transaction.manager
@@ -70,11 +76,19 @@ def transaction_manager():
 def tm_session(session_factory, transaction_manager):
     return get_tm_session(session_factory, transaction_manager)
 
+@pytest.fixture
+def app_test_get(request, app_test):
+    logger.critical("%s", request)
 
-def test_webtest2(sqlalchemy_engine, tm_session, app_test):
+
+@pytest.fixture(params=['/', '/domain/form'])
+def url(request):
+    return request.param
+
+def test_webtest2(sqlalchemy_engine, tm_session, app_test, url):
     init_database(sqlalchemy_engine, tm_session)
 
-    resp = app_test.get('/person/form')
+    resp = app_test.get(url)
     assert resp.status_int == 200
     assert resp.content_type == 'text/html'
     assert resp.content_length > 0
@@ -86,8 +100,8 @@ def test_webtest2(sqlalchemy_engine, tm_session, app_test):
     for script in scripts:
         print(script.keys())
         if 'src' in script.attrib:
-            scriptsrc = script.get('src')
-            srcs.append(scriptsrc)
+            srcript_src = script.get('src')
+            srcs.append(srcript_src)
 
     for src in srcs:
         print(src)

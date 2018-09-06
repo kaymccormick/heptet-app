@@ -88,7 +88,6 @@ def wsgi_app(global_config, **settings):
     # this adds all our views, and other stuff
     config_process_struct(config, process)
 
-    jinja2_loader_package = settings['email_mgmt_app.jinja2_loader_package']
     jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
     env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
                       autoescape=select_autoescape(default=False))

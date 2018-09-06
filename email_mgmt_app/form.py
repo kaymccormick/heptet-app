@@ -190,7 +190,7 @@ class Form(FormElement, MapperInfosMixin):
             self._namespace = namespace
 
         #self._namespace.set_namespace(self._namespace_id)
-        logger.debug("my namespace is %s", self._namespace)
+        #logger.debug("my namespace is %s", self._namespace)
 
     def get_html_id(self, html_id, *args, **kwargs):
         return self._namespace.get_namespace(html_id, True)

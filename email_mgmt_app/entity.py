@@ -396,7 +396,7 @@ class RelationshipSelect:
             mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
             prefix_key_ = "%s%s." % (prefix, key)
-#            logger.debug("prefix_key_ = %s", prefix_key_)
+            #            logger.debug("prefix_key_ = %s", prefix_key_)
             sub_namespace = context.form.namespace.make_namespace(stringcase.camelcase(key))
             context2 = FormContext(context.env, context.request,
                                    mapper2.get_one_mapper_info(),
@@ -469,10 +469,19 @@ class RelationshipSelect:
 @adapter(IFormContext)
 @implementer(IFormRepresentationBuilder)
 class FormRepresentationBuilder:
-    def __init__(self, context: IFormContext) -> None:
+    def __init__(self, context: FormContext) -> None:
+        """
+        Fixed by ZCA
+        :type context: FormContext
+        :param context: The object to be adapted.
+        """
         self._context = context
 
     def form_representation(self):
+        """
+        Generate a logical representation of an entity form.
+        :return:
+        """
         context = self._context
         mapper = context.mapper_info
         assert context.prefix == ""
@@ -497,7 +506,7 @@ class FormRepresentationBuilder:
         #         script = html.Element('script')
         # #        script.text = "mapper = %s;" % json.dumps(mapper)
         #         the_form.element.append(script)
-        logger.info("Generating form representation for prefix=%s, %s" % (prefix, mapper_key))
+        logger.debug("Generating form representation for %s" % mapper_key)
 
         # suppress primary keys
         suppress = context.extra['suppress_cols'] = {}
@@ -575,6 +584,7 @@ class FormRepresentationBuilder:
 
         return the_form
 
+
 # TODO: this is clearly totally unimplememnted right now
 @implementer(IEntryPointGenerator)
 @adapter(IEntryPoint)
@@ -589,20 +599,20 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
 
         request = self._request
         util = request.registry.getUtility
-        logger.info("registry is %s", request.registry)
+        # logger.info("registry is %s", request.registry)
         adapt = request.registry.getAdapter
         multi = request.registry.getMultiAdapter
 
         env = util(IJinja2Environment, 'app_env')
         # fixme better way of doing this
         vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
-        logger.warning("Resetting template variables %s", vars_)
+        logger.debug("Resetting template variables %s", vars_)
 
         for var in vars_:
             v = TemplateVariable(var, [])
             c = adapt(v, ICollector)
-            #unregistered = request.registry.unregisterUtility(c, ICollector, var)
-            #logger.info("unreg is %s", unregistered)
+            # unregistered = request.registry.unregisterUtility(c, ICollector, var)
+            # logger.info("unreg is %s", unregistered)
             request.registry.registerUtility(c, ICollector, var)
 
         context = FormContext(env, request,
@@ -631,11 +641,9 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         r2 = r'\\\1'
         y = re.sub(r1, r2, s)
         s_y = "const ns = JSON.parse('%s');" % y
-        logger.info("adding %s to %s", s_y, x)
+        logger.debug("adding %s to %s", s_y, x)
 
         x.add_value(s_y)
-
-
 
     def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)

@@ -102,7 +102,8 @@ def main():
         subscribers = registry.subscribers([ep], IProcess)
         for s in subscribers:
             result = s.process()
-            logger.debug("result = %s", result)
+            if result:
+                logger.debug("result = %s", result)
 
     if args.test_app:
         for ep in entry_points:

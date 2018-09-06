@@ -87,7 +87,7 @@ class TemplateVariable:
         return self._name
 
     def get_value(self):
-        logger.debug("in get_value for %s %s", self._name, self)
+#        logger.debug("in get_value for %s %s", self._name, self)
         return self._value
 
 

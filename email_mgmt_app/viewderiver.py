@@ -41,7 +41,7 @@ def entity_view(view, info):
 
             if issubclass(original_view, BaseEntityRelatedView):
                 # is this still in effect? (why wouldn't it be in effect?)
-                logger.info("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
+                logger.debug("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
                 original_view.entity_type = et
                 original_view.mapper_info = mapper_info
 
