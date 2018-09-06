@@ -3,7 +3,8 @@ from collections import UserDict
 
 from pyramid.request import Request
 from pyramid.security import Allow, Authenticated
-from email_mgmt_app.res import IRootResource, IResource
+from email_mgmt_app.res import IRootResource
+from interfaces import IResource
 
 logger = logging.getLogger(__name__)
 

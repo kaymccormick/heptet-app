@@ -7,22 +7,26 @@ from dataclasses import dataclass, field
 
 import db_dump.args
 import pyramid_tm
+
+import interfaces
 from sqlalchemy import inspect
 from sqlalchemy.engine.reflection import Inspector
 from webtest import TestApp
 
 import email_mgmt_app.webapp_main
+import email_mgmt_app.res
 import zope
 from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints
 from email_mgmt_app.impl import CollectorContext, IProcess
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder, AssetManager
 from email_mgmt_app.scripts.util import get_request, template_env
 from email_mgmt_app.webapp_main import on_new_request
-from pyramid.interfaces import IView
+import pyramid.interfaces
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
-from res import IRootResource, IResource
+from res import IRootResource
+from interfaces import IResource
 from root import RootFactory
 from sqlalchemy_integration import get_tm_session
 
@@ -72,7 +76,8 @@ def main():
     assert request
     for k,v in registry._utility_registrations.items():
         logger.warn("%s = %s", k,v )
-    root = registry.queryUtility(IResource, 'root_resource')
+    root = RootFactory()(request)
+    #root = registry.queryUtility(IResource, 'root_resource')
     assert root is not None
 
     #assert request.root
@@ -80,25 +85,27 @@ def main():
     for node_name, resource in root_res.items():
         logger.warning("%s", resource)
 
-        #assert res.IResource.providedBy(resource)
+        assert interfaces.IResource.providedBy(resource)
         # logger.warning("%s", IResource.__bases__)
         # logger.warning("%s", IResource.__sro__)
         # logger.warning("%s", IResource.__iro__)
         logger.warning("%s is %s", node_name, resource)
-        res = zope.component.createObject('resource', '', None, '', None)
-        adapter = registry.queryMultiAdapter((res, request), IView)
-        logger.warning("adapter is %s", adapter)
-        assert adapter
+        #res = zope.component.createObject('resource', '', None, '', None)
+        for x in registry.registeredAdapters():
+            logger.warning("%s", x)
+#        adapter = registry.getMultiAdapter((resource, request), pyramid.interfaces.IView)
+#        logger.warning("adapter is %s", adapter)
+#        assert adapter
 
     # we need to make this component based TODO
     #    app_dbsession = registry.email_mgmt_app.dbsession
 
     # this should work with sqlalchemy cookiecutter projects
-    session_factory = registry['dbsession_factory']
-    dbsession = get_tm_session(session_factory, pyramid_tm.explicit_manager(request))
-    # we dont do inspection here
-    db = inspect(dbsession.get_bind())  # type: Inspector
-    assert db
+    # session_factory = registry['dbsession_factory']
+    # dbsession = get_tm_session(session_factory, pyramid_tm.explicit_manager(request))
+    # # we dont do inspection here
+    # db = inspect(dbsession.get_bind())  # type: Inspector
+    # assert db
 
     # wtf is this
     ep_cmp = EntryPoints()

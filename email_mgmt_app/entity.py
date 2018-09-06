@@ -1,4 +1,5 @@
 import json
+import json
 import re
 from dataclasses import dataclass, field
 
@@ -7,16 +8,15 @@ from db_dump.info import MapperInfo, IRelationshipInfo
 
 from email_mgmt_app.entrypoint import *
 from email_mgmt_app.form import *
-from email_mgmt_app.interfaces import *
+import email_mgmt_app.interfaces
 from email_mgmt_app.model.meta import Base
 from email_mgmt_app.template import TemplateVariable
 from email_mgmt_app.view import BaseView
 from pyramid.config import Configurator
-from pyramid.interfaces import IRendererFactory, IRequest, IView
+import pyramid.interfaces
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
-from res import IResource
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
@@ -636,8 +636,9 @@ class EntityDesignViewEntryPointGenerator(DesignViewEntryPointGenerator):
 class EntityDesignView(BaseEntityRelatedView):
     pass
 
-@adapter(IResource, IRequest)
-@implementer(IView)
+
+@adapter(email_mgmt_app.interfaces.IResource, pyramid.interfaces.IRequest)
+@implementer(pyramid.interfaces.IView)
 class EntityFormView(BaseEntityRelatedView):
     @staticmethod
     def entry_point_generator_factory():
@@ -696,6 +697,7 @@ def includeme(config: Configurator):
         reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
         reg(FormRepresentationBuilder, [IFormContext], IFormRepresentationBuilder)
         reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
-        reg(EntityFormView, [IResource, IRequest], IView)
+        reg(EntityFormView, [email_mgmt_app.interfaces.IResource, pyramid.interfaces.IRequest],
+            pyramid.interfaces.IView)
 
     config.action(None, do_action)

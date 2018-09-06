@@ -4,6 +4,7 @@ from abc import abstractmethod
 from collections import UserDict, OrderedDict
 from typing import AnyStr, Type
 
+from interfaces import IResource
 from zope.component import IFactory
 from zope.component.factory import Factory
 from zope.interface import Interface, implementer
@@ -16,13 +17,8 @@ from email_mgmt_app.model.meta import Base
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
-import zope
 
 logger = logging.getLogger(__name__)
-
-
-class IResource(Interface):
-    pass
 
 
 class IResourceManager(Interface):

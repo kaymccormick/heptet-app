@@ -15,7 +15,8 @@ from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.interfaces import IMapperInfo
 from email_mgmt_app.interfaces import INamespaceStore
 from email_mgmt_app.predicate import EntityTypePredicate
-from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource, IResource
+from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
+from interfaces import IResource
 from email_mgmt_app.root import RootFactory
 from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -66,13 +67,13 @@ def wsgi_app(global_config, **settings):
         f.close()
 
     # we changed the root factory to an instance of our factory, which maybe would help??
-    use_global_reg = True
+    use_global_reg = False
     global_reg = None
     if use_global_reg:
         global_reg = getGlobalSiteManager()
 
     config = Configurator(package="email_mgmt_app",
-                          registry=global_reg)
+                          registry=global_reg, settings=settings,root_factory=RootFactory())
     if use_global_reg:
         config.setup_registry(settings=settings,root_factory=RootFactory()
                               )

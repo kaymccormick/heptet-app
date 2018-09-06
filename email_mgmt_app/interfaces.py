@@ -114,3 +114,7 @@ class IMapperInfo(Interface):
 
 class ISqlAlchemySession(object):
     pass
+
+
+class IResource(Interface):
+    pass
