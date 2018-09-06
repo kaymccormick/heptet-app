@@ -194,9 +194,6 @@ class EntryPointGenerator(MapperInfosMixin):
     def js_imports(self):
         return []
 
-    def extra_js_stmts(self):
-        return []
-
 
 def register_entry_point(config, entry_point: IEntryPoint):
     config.registry.registerUtility(entry_point, IEntryPoint, entry_point.key)

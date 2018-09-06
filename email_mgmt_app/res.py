@@ -7,7 +7,6 @@ from typing import AnyStr, Type
 from zope.interface import Interface, implementer
 
 import pyramid
-from email_mgmt_app.constants import ENTITY_VIEW_ARG_NAME
 from email_mgmt_app.entrypoint import EntryPoint
 from email_mgmt_app.interfaces import IMapperInfo
 from email_mgmt_app.util import get_entry_point_key
@@ -258,7 +257,7 @@ class ResourceManager:
     def implicit_args(self):
         args = []
         if self._entity_type is not None:
-            args.append(OperationArgument(ENTITY_VIEW_ARG_NAME, Type, default=self._entity_type,
+            args.append(OperationArgument('entity_view', Type, default=self._entity_type,
                                           label='Entity Type', implicit_arg=True))
         return args
 

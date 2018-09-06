@@ -4,11 +4,6 @@ from pyramid.interfaces import IExceptionResponse
 from zope.interface import implementer
 
 
-class IdTaken(Exception):
-    def __init__(self, html_id, ids) -> None:
-        self.message = "HTML id %s taken" % html_id
-
-
 class InvalidMode(Exception):
     def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)

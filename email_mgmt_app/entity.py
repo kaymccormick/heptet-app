@@ -309,9 +309,6 @@ class EntityCollectionView(BaseEntityRelatedView):
 
 
 class FormViewEntryPointGenerator(EntryPointGenerator):
-    def extra_js_stmts(self):
-        return []
-
     def js_imports(self):
         return []
 
@@ -657,16 +654,6 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
             return utility.get_value()
         return []
 
-    def extra_js_stmts(self):
-        logger.info("querying extra_js_stmts")
-        utility = self._request.registry.queryUtility(ICollector, 'extra_js_stmts')
-        assert utility
-        print("\n".join(utility.get_value()), file=sys.stderr)
-#        [logger.debug("%s", x) for x in utility.get_value()]
-        if utility:
-            return utility.get_value()
-        return []
-
     def js_imports(self):
         utility = self._request.registry.queryUtility(ICollector, 'js_imports')
         if utility:
@@ -687,9 +674,6 @@ class DesignViewEntryPointGenerator(EntryPointGenerator):
 
     def js_stmts(self):
         return ['window.view_name = \'%s\';' % self._request.view_name]
-
-    def extra_js_stmts(self):
-        return []
 
 
 class EntityDesignViewEntryPointGenerator(DesignViewEntryPointGenerator):

@@ -5,7 +5,7 @@ from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 
-from email_mgmt_app.argument import ArgumentContext
+from email_mgmt_app import ArgumentContext
 from email_mgmt_app.exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
 from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
 from email_mgmt_app.util import get_exception_entry_point_key
@@ -43,7 +43,7 @@ class BaseView:
         key = self.entry_point.key
         assert key, "Entry point key for view should be truthy"
         # todo it might be super helpful to sanity check this value, because this generates errors
-        # later that trace to here
+        # later that t+race to here
         self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % key
 
         return self._response_dict

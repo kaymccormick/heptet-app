@@ -4,10 +4,13 @@ import sys
 import traceback
 from dataclasses import dataclass, field
 
+import pyramid_tm
 from db_dump.args import argument_parser
 from sqlalchemy import inspect
 from sqlalchemy.engine.reflection import Inspector
 from webtest import TestApp
+
+from sqlalchemy_integration import get_tm_session
 from zope import component
 from zope.interface import classImplements
 
@@ -55,10 +58,11 @@ def main():
     # generate a request
     request = get_request(myapp.request_factory, registry)  # type: Request
     # we need to make this component based TODO
-    app_dbsession = registry.email_mgmt_app.dbsession
+#    app_dbsession = registry.email_mgmt_app.dbsession
 
     # I guess app_dbsession is a 1-tuple with the function
-    dbsession = app_dbsession[0](request)
+    session_factory = registry['dbsession_factory']
+    dbsession = get_tm_session(session_factory, pyramid_tm.explicit_manager(request))
     db = inspect(dbsession.get_bind())  # type: Inspector
 
     ep_cmp = EntryPoints()

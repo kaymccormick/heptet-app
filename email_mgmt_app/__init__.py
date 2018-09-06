@@ -1,4 +1,5 @@
 # package
+import logging
 from typing import AnyStr
 
 from db_dump.info import MapperInfo
@@ -14,3 +15,17 @@ class MapperInfosMixin:
 
     def set_mapper_info(self, mapper_key: AnyStr, mapper_info: MapperInfo) -> None:
         self.mapper_infos[mapper_key] = mapper_info
+
+
+class ArgumentContext:
+    def __init__(self) -> None:
+        self._subpath_index = 0
+
+    @property
+    def subpath_index(self):
+        return self._subpath_index
+
+    @subpath_index.setter
+    def subpath_index(self, new):
+        logging.info("setting subpath_index to %s", new)
+        self._subpath_index = new

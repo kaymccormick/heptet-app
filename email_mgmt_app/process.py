@@ -107,7 +107,6 @@ class GenerateEntryPointProcess:
 
         js_imports = []
         js_stmts = []
-        extra_js_stmts = []
         ready_stmts = []
 
         if ep.view_kwargs and 'view' in ep.view_kwargs:
@@ -127,11 +126,6 @@ class GenerateEntryPointProcess:
                         for stmt in js_stmts:
                             logger.debug("js: %s", stmt)
 
-                    extra_js_stmts = generator.extra_js_stmts()
-                    if extra_js_stmts:
-                        for stmt in extra_js_stmts:
-                            logger.debug("extra_js: %s", stmt)
-
                     ready_stmts = generator.ready_stmts()
 
         fname = ep.get_output_filename()
@@ -140,7 +134,6 @@ class GenerateEntryPointProcess:
         data = {'filename': fname,
                 'vars': dict(js_imports=js_imports,
                              js_stmts=js_stmts,
-                             extra_js_stmts=extra_js_stmts,
                              ready_stmts=ready_stmts)}
 
         with open(fname, 'w') as f:
