@@ -31,9 +31,9 @@ class BaseTest(unittest.TestCase):
         settings = self.config.get_settings()
         self.settings = settings
 
-        from model.email_mgmt import get_tm_session
-        from model.email_mgmt import get_session_factory
-        from model.email_mgmt import get_engine
+        from sqlalchemy_integration import get_tm_session
+        from sqlalchemy_integration import get_session_factory
+        from sqlalchemy_integration import get_engine
 
         self.engine = get_engine(settings)
         session_factory = get_session_factory(self.engine)

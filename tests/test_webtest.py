@@ -7,9 +7,7 @@ import transaction
 import lxml
 
 import webapp_main
-from model.email_mgmt import get_tm_session
-from model.email_mgmt import get_session_factory
-from model.email_mgmt import get_engine
+from sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 
 javascript_contenttypes = ['application/javascript', 'text/plain']
 

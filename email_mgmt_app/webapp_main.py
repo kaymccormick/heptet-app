@@ -1,32 +1,30 @@
 import json
-import os
 import logging
+import os
 
 from db_dump.info import ProcessStruct
-from marshmallow import ValidationError
-
 from db_dump.schema import get_process_schema
+from marshmallow import ValidationError
 from pyramid_ldap3 import groupfinder
 from sqlalchemy import String
+from sqlalchemy.exc import InvalidRequestError
 
-from email_mgmt_app.predicate import EntityTypePredicate
 from email_mgmt_app.entity import EntityFormView
-from email_mgmt_app.interfaces import IMapperInfo, IHtmlIdStore
-from email_mgmt_app.impl import MapperWrapper, HtmlIdStore, NamespaceStore
-from email_mgmt_app.interfaces import INamespaceStore
 from email_mgmt_app.exceptions import InvalidMode
-from jinja2 import TemplateNotFound, Environment, PackageLoader, select_autoescape, FileSystemLoader
+from email_mgmt_app.impl import MapperWrapper, NamespaceStore
+from email_mgmt_app.interfaces import IMapperInfo
+from email_mgmt_app.interfaces import INamespaceStore
+from email_mgmt_app.predicate import EntityTypePredicate
+from email_mgmt_app.registry import AppSubRegistry
+from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
+from email_mgmt_app.root import RootFactory
+from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
-from email_mgmt_app.registry import AppSubRegistry
-from email_mgmt_app.root import RootFactory
-from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
-from pyramid.interfaces import IRootFactory
 from pyramid.renderers import get_renderer
-from pyramid_jinja2 import IJinja2Environment, SmartAssetSpecLoader
-from email_mgmt_app.template import ComponentLoader
+from pyramid_jinja2 import IJinja2Environment
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +52,7 @@ def wsgi_app(global_config, **settings):
     :param settings:
     :return: A WSGI application.
     """
-    mode = settings['mode']
+    mode = 'mode' in settings and settings['mode'] or VALID_MODES[1]
     if mode not in VALID_MODES:
         os.environ['APP_MODE'] = mode
         raise InvalidMode(mode, VALID_MODES)
@@ -65,18 +63,18 @@ def wsgi_app(global_config, **settings):
         f.close()
 
     # we changed the root factory to an instance of our factory, which maybe would help??
-    config = Configurator(settings=settings, root_factory=RootFactory())
+    config = Configurator(package="email_mgmt_app", settings=settings, root_factory=RootFactory())
                           #exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
 
+    config.include('email_mgmt_app.model.email_mgmt')
     process = load_process_struct() # type: ProcessStruct
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
 
     # FIXME this needs to go away
-    config.registry.email_mgmt_app = AppSubRegistry(process)
+    #config.registry.email_mgmt_app = AppSubRegistry(process)
 
-    config.include('.model.email_mgmt')
     config.include('.entrypoint')
     config.include('.res')
 
@@ -131,8 +129,6 @@ def wsgi_app(global_config, **settings):
     config.add_subscriber(on_application_created, ApplicationCreated)
     config.commit()
 
-    store = HtmlIdStore()
-    config.registry.registerUtility(store, IHtmlIdStore)
     config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
     return config.make_wsgi_app()
@@ -149,6 +145,10 @@ def load_process_struct():
     try:
         process = process_schema.load(json.loads(email_db_json))
         logger.debug("process = %s", repr(process))
+    except InvalidRequestError as ex:
+        logger.critical("Unable to load database json.")
+        logger.critical(ex)
+        raise ex
     except ValidationError as ve:
         # todo better error handling
         for k, v in ve.messages.items():
@@ -160,7 +160,6 @@ def load_process_struct():
 def on_new_request(event):
     logger.debug("Resetting namespaces")
     registry = event.request.registry
-    registry.registerUtility(HtmlIdStore(), IHtmlIdStore)
     registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
     registry.registerUtility(NamespaceStore('global'), INamespaceStore, 'global')
@@ -220,28 +219,3 @@ def set_renderer(event):
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
 
-
-# def load_alchemy_json(config):
-#     """
-#
-#     :param config:
-#     :return:
-#     """
-#     alchemy = None
-#     try:
-#         with open('alchemy.json', 'r') as f:
-#             lines = f.readlines()
-#             s="\n".join(lines)
-#             alchemy = json.loads(s)
-#             #alchemy = AlchemyInfo.from_json(s)
-#             f.close()
-#     except FileNotFoundError:
-#         pass
-#     except:
-#         raise
-#     assert alchemy
-#
-#     # dont want to propogate this way
-#     if False:
-#         config.registry.email_mgmt_app.alchemy = alchemy
-#     return alchemy

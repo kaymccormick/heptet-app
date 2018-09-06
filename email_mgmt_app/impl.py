@@ -4,7 +4,7 @@ from zope.component import adapter
 from zope.interface import implementer
 
 from email_mgmt_app.interfaces import *
-from email_mgmt_app.exceptions import IdTaken, NamespaceCollision
+from email_mgmt_app.exceptions import NamespaceCollision
 
 logger = logging.getLogger(__name__)
 
@@ -168,28 +168,28 @@ class NamespaceStore(NamespaceEntry):
         return self._namespace
 
 
-@implementer(IHtmlIdStore)
-class HtmlIdStore:
-    def __init__(self):
-        self._ids = {}
-        self._namespace = {}
-
-    def get_id(self, preferred, bits):
-        assert bits
-        if preferred not in self._ids:
-            self._ids[preferred] = bits
-            return preferred
-
-        raise IdTaken(preferred, self._ids)
-        # else:
-        #     assert False
-        #     logger.debug("uh oh! preferred id %s taken", preferred)
-        #     test = '.'.join(bits)
-        #     import re
-        #     test = re.sub('[^A-Za-z\._]', '_', test)
-        #     logger.debug("going to use %s", test)
-        #     return test
-
+# @implementer(IHtmlIdStore)
+# class HtmlIdStore:
+#     def __init__(self):
+#         self._ids = {}
+#         self._namespace = {}
+#
+#     def get_id(self, preferred, bits):
+#         assert bits
+#         if preferred not in self._ids:
+#             self._ids[preferred] = bits
+#             return preferred
+#
+#         raise IdTaken(preferred, self._ids)
+#         # else:
+#         #     assert False
+#         #     logger.debug("uh oh! preferred id %s taken", preferred)
+#         #     test = '.'.join(bits)
+#         #     import re
+#         #     test = re.sub('[^A-Za-z\._]', '_', test)
+#         #     logger.debug("going to use %s", test)
+#         #     return test
+#
 
 @adapter(ICollectorContext)
 @implementer(ICollector)
