@@ -29,6 +29,7 @@ from res import IRootResource
 from interfaces import IResource
 from root import RootFactory
 from sqlalchemy_integration import get_tm_session
+from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ logger = logging.getLogger(__name__)
 def main():
     def do_atexit():
         logger.critical("exiting...")
+
     atexit.register(do_atexit)
     # deal with parsing args
     parser = db_dump.args.argument_parser()
@@ -65,7 +67,7 @@ def main():
     def dump_resources(resource):
         r = {}
         if hasattr(resource, "data"):
-            for k,v in resource.data.items():
+            for k, v in resource.data.items():
                 r[k] = dump_resources(v)
         else:
             return resource
@@ -74,28 +76,44 @@ def main():
     # generate a request
     request = get_request(myapp.request_factory, myapp)  # type: Request
     assert request
-    for k,v in registry._utility_registrations.items():
-        logger.warn("%s = %s", k,v )
+    for k, v in registry._utility_registrations.items():
+        logger.warn("%s = %s", k, v)
     root = RootFactory()(request)
-    #root = registry.queryUtility(IResource, 'root_resource')
+    # root = registry.queryUtility(IResource, 'root_resource')
     assert root is not None
 
-    #assert request.root
+    for x in registry.registeredAdapters():
+        if len(x.required) != 3:
+            continue
+
+        (ivc, rq, rs) = x.required
+        if ivc != pyramid.interfaces.IViewClassifier:
+            continue
+
+        logger.debug("%s", rq)
+        logger.debug("%s", rs)
+        #logger.debug("view is %s", x.factory)
+        orig = getattr(x.factory, "__original_view__", None)
+        logger.debug("view is %s (%s)", x.factory, orig)
+
     root_res = dump_resources(root)
     for node_name, resource in root_res.items():
         logger.warning("%s", resource)
 
+
         assert interfaces.IResource.providedBy(resource)
+
+        #        [IViewClassifier, IRequest, Interface], IView, 'form', EntityFormView, '')
         # logger.warning("%s", IResource.__bases__)
         # logger.warning("%s", IResource.__sro__)
         # logger.warning("%s", IResource.__iro__)
         logger.warning("%s is %s", node_name, resource)
-        #res = zope.component.createObject('resource', '', None, '', None)
-        for x in registry.registeredAdapters():
-            logger.warning("%s", x)
-#        adapter = registry.getMultiAdapter((resource, request), pyramid.interfaces.IView)
-#        logger.warning("adapter is %s", adapter)
-#        assert adapter
+        # res = zope.component.createObject('resource', '', None, '', None)
+
+
+    #        adapter = registry.getMultiAdapter((resource, request), pyramid.interfaces.IView)
+    #        logger.warning("adapter is %s", adapter)
+    #        assert adapter
 
     # we need to make this component based TODO
     #    app_dbsession = registry.email_mgmt_app.dbsession

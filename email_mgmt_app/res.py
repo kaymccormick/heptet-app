@@ -299,7 +299,7 @@ class ResourceManager:
         request.subpath = ()
         request.traversed = (node_name,)
 
-        extra = {}
+        extra = {'context': Resource}
 
         if entity_type is not None:
             # this is a predicate!
@@ -370,11 +370,12 @@ class Resource:
     """
     Base resource type. Implements functionality common to all resource types.
     """
-
-    def __conform__(self, iface, default=None):
-        if iface == IResource:
-            return self
-
+    # def __new__(cls,
+    #              name: AnyStr = None,
+    #              parent: 'ContainerResource' = None,
+    #              title: AnyStr = None,
+    #              entity_type: AnyStr = None):
+    #
     def __init__(self,
                  name: AnyStr = None,
                  parent: 'ContainerResource' = None,
@@ -396,6 +397,10 @@ class Resource:
         self.__parent__ = parent
         self._entity_type = entity_type
         self._names = []
+
+    def __conform__(self, iface, default=None):
+        if iface == IResource:
+            return self
 
     def attach(self, parent, name):
         self.__parent__ = parent

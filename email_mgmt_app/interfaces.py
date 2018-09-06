@@ -1,4 +1,6 @@
-from zope.interface import Interface
+from zope.interface.interfaces import IInterface
+
+from zope.interface import Interface, implementer
 
 
 class IProcess(Interface):
@@ -115,6 +117,6 @@ class IMapperInfo(Interface):
 class ISqlAlchemySession(object):
     pass
 
-
+#@implementer(IInterface)
 class IResource(Interface):
     pass
