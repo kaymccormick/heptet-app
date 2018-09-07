@@ -5,19 +5,21 @@ import pytest
 from db_dump.info import MapperInfo
 from pyramid_tm.tests import DummyRequest
 
-from entity import EntityFormViewEntryPointGenerator, EntryPoint, FormRepresentationBuilder, FormContext
-from impl import NamespaceStore, MapperWrapper
+from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, EntryPoint, FormRepresentationBuilder, FormContext
+from email_mgmt_app.impl import NamespaceStore, MapperWrapper
+from email_mgmt_app.res import RootResource, Resource, ResourceManager
+from email_mgmt_app.viewderiver import entity_view
+from jinja2 import Environment
 from pyramid.config import Configurator
 from pyramid.response import Response
-from res import RootResource, Resource, ResourceManager
-from viewderiver import entity_view
-from zope.component import getGlobalSiteManager
 
 logger = logging.getLogger(__name__)
+
 
 @pytest.fixture
 def app_registry(app_request):
     return app_request.registry
+
 
 @pytest.fixture()
 def root_resource():
@@ -90,6 +92,7 @@ def mapper_wrapper(mapper_info):
 def resource_manager(config_fixture, entity_type, mapper_wrapper):
     return ResourceManager(config_fixture, "", "", entity_type, mapper_wrapper)
 
+
 @pytest.fixture
 def root_namespace_store():
     return NamespaceStore("root")
@@ -109,24 +112,35 @@ def make_resource(root_resource, entity_type):
 
 
 @pytest.fixture
-def entry_point(mapper_wrapper, app_request, app_registry):
-    return EntryPoint("", app_request, app_registry, mapper_wrapper=mapper_wrapper)
+def entry_point(mapper_wrapper, app_request, app_registry, jinja2_env):
+    return EntryPoint("", app_request, app_registry, mapper_wrapper=mapper_wrapper, output_filename="tmp.out",
+                      template=jinja2_env.get_template('entry_point.js.jinja2'))
 
 
 @pytest.fixture
-def entity_form_view():
+def entity_form_view_entry_point_generator(form_context, form_representation_builder, entry_point,
+                                           entity_form_view_mock,
+                                           ):
+    return EntityFormViewEntryPointGenerator(form_context, form_representation_builder, entry_point, entity_form_view_mock,
+                                             )
+
+@pytest.fixture
+def entity_form_view_mock():
     return MagicMock('entity_form_view')
 
 
 @pytest.fixture
 def jinja2_env():
-    return MagicMock('jinja2_env')
+    mock = MagicMock('jinja2_env')
+    mock.mock_add_spec(Environment())
+    return mock
+
 
 @pytest.fixture
-def form_context(jinja2_env, app_registry, mapper_info, root_namespace_store):
-    return FormContext(jinja2_env, app_registry, mapper_info=mapper_info, root_namespace=root_namespace_store)
+def form_context(jinja2_env, mapper_info, root_namespace_store):
+    return FormContext(env=jinja2_env, mapper_info=mapper_info, root_namespace=root_namespace_store)
+
 
 @pytest.fixture
 def form_representation_builder(form_context):
     return FormRepresentationBuilder(form_context)
-

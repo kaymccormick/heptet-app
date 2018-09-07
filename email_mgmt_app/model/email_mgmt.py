@@ -13,6 +13,7 @@ from zope.interface import implementer
 logger = logging.getLogger(__name__)
 mappers = {}
 
+
 # marker class for objects which are "association tables"
 class AssociationTableMixin(object):
     pass
@@ -27,7 +28,6 @@ class AssociationTableMixin(object):
 #     pass
 
 
-
 @implementer(IResource)
 class Mixin(object):
     """
@@ -37,10 +37,6 @@ class Mixin(object):
     @property
     def display_name(self):
         return self.name
-
-    # def __json__(self, request):
-    #     logging.warning("ie = %s", type(self))
-    #     return [self.__module__, self.__name__]
 
 
 class PublicKey(Mixin, Base):
@@ -71,7 +67,6 @@ class FileUpload(Mixin, Base):
     info = {'hide': True}
 
 
-
 class OrganizationRole(Mixin, AssociationTableMixin, Base):
     __tablename__ = 'organization_role'
     id = Column(Integer, primary_key=True)
@@ -83,7 +78,7 @@ class OrganizationRole(Mixin, AssociationTableMixin, Base):
     organization = relationship('Organization', back_populates='roles')
     role = relationship('Role', back_populates='organization_roles')
 
-    info = { 'hide': True }
+    info = {'hide': True}
 
     @property
     def display_name(self):
@@ -99,7 +94,7 @@ class OrgRolePerson(AssociationTableMixin, Mixin, Base):
     person = relationship('Person', back_populates='organization_roles')
     organization_role = relationship('OrganizationRole', back_populates='role_persons')
 
-    info = {'hide': True }
+    info = {'hide': True}
 
     @property
     def display_name(self):
@@ -167,7 +162,6 @@ class Recipient(Mixin, Base):
     info = {'hide': True}
 
 
-
 class Domain(Mixin, Base):
     __tablename__ = 'domain'
 
@@ -177,7 +171,7 @@ class Domain(Mixin, Base):
     organization_id = Column(Integer, ForeignKey('organization.id'))
     organization = relationship('Organization', backref='domains', doc="Associated organization.")
 
-    info = {'hide': True }
+    info = {'hide': True}
 
 
 class ServiceEntry(Mixin, Base):
@@ -189,7 +183,6 @@ class ServiceEntry(Mixin, Base):
     weight = Column(Float, default=0)
     description = Column(String, default="")
     info = {'hide': True}
-
 
 
 class Host(Mixin, Base):
@@ -237,14 +230,13 @@ def includeme(config):
     session_factory = get_session_factory(get_engine(settings))
     factory = Factory(session_factory, 'sqlalchemy_session', 'sqlalchemy_session', ISqlAlchemySession)
     config.registry.registerUtility(factory, IFactory, 'sqlalchemy_session')
-    #config.registry['dbsession_factory'] = session_factory
+    # config.registry['dbsession_factory'] = session_factory
 
     # make request.dbsession available for use in Pyramid
-#FIXME    config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
+    # FIXME    config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
     config.add_request_method(
         # r.tm is the transaction manager used by pyramid_tm
         lambda r: get_tm_session(r.registry.getUtility(IFactory, 'sqlalchemy_session'), r.tm),
         'dbsession',
         reify=True
     )
-

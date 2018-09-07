@@ -15,6 +15,6 @@ def test_template_vars():
     template_vars['y']['x'] = 'test'
     logger.critical("%s", template_vars['y'])
     template_vars['zz'] = []
+    template_vars['zx'] = object()
     logger.critical("%s <%s>", template_vars['zz'], type(template_vars['zz']))
-    assert 0
 

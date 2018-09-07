@@ -6,8 +6,8 @@ import webapp_main
 from pyramid.interfaces import IRootFactory
 from pyramid.request import Request
 
-from email_mgmt_app import RootFactory, RootResource, ResourceManager
-from model.email_mgmt import Domain
+from email_mgmt_app.root import RootFactory
+from email_mgmt_app.res import RootResource, ResourceManager
 from pyramid import testing
 
 
@@ -44,9 +44,6 @@ class BaseTest(unittest.TestCase):
         from model.meta import Base
         Base.metadata.create_all(self.engine)
 
-        domain = Domain()
-        domain.name = "testdomain.com";
-        self.session.add(domain)
 
     def tearDown(self):
         from model.meta import Base

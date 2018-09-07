@@ -11,11 +11,6 @@ from interfaces import ITemplateSource, ITemplate, ICollector
 from pyramid_jinja2 import IJinja2Environment
 
 
-@pytest.fixture
-def entity_form_view_entry_point_generator(form_context, form_representation_builder, entry_point, entity_form_view,
-                                           app_request):
-    return EntityFormViewEntryPointGenerator(form_context, form_representation_builder, entry_point, entity_form_view,
-                                             app_request)
 
 
 def test_generate(entity_form_view_entry_point_generator):

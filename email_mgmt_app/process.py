@@ -137,6 +137,7 @@ class GenerateEntryPointProcess:
                 #     ready_stmts = generator.ready_stmts()
 
         fname = ep.get_output_filename()
+        assert fname
         logger.info("generating output file %s", fname)
 
         data = {'filename': fname,
@@ -145,11 +146,12 @@ class GenerateEntryPointProcess:
                             js_stmts=js_stmts,
                              ready_stmts=ready_stmts)}
 
+
         with open(fname, 'w') as f:
             content = ep.get_template().render(
                 **data['vars']
             )
-            f.write(content)
+            f.write(str(content))
             f.close()
 
 

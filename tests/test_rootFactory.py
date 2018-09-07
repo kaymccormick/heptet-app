@@ -1,19 +1,13 @@
 import logging
-from unittest import TestCase
 
-from email_mgmt_app import RootFactory
-from pyramid.testing import DummyRequest
+from email_mgmt_app.root import RootFactory
+from res import RootResource
 
 logger = logging.getLogger(__name__)
 
-class TestRootFactory(TestCase):
 
-    def setUp(self):
-        super().setUp()
-        request = DummyRequest()
-        self.rf = RootFactory(request)
-        logger.critical("in setup %s", self.rf)
-
-    def test___init__(self):
-        logger.critical("rf = %s", repr(self.rf))
-
+def test_root_factory(app_request):
+    rf = RootFactory(app_request)
+    assert rf is not None
+    r = rf()
+    assert r is RootResource()

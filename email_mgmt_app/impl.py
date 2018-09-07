@@ -1,7 +1,7 @@
 import abc
 import logging
 
-from tvars import TemplateVars
+from email_mgmt_app.tvars import TemplateVars
 from zope.component import adapter
 from zope.interface import implementer
 
@@ -60,19 +60,6 @@ class MapperWrapper:
         return self.mapper_info.local_table.key
 
 
-class NamespaceEntry:
-    def __init__(self, namespace_id) -> None:
-        self._namespace_id = namespace_id
-        self._element = None
-
-    def __str__(self):
-        return str(self._namespace_id)
-
-    def set_element(self, element):
-        self._element = element
-
-    def get_element(self):
-        return self._element
 
 
 # @implementer(INamespaceStore)
@@ -127,12 +114,18 @@ class NamespaceMeta(abc.ABCMeta):
 
 
 @implementer(INamespaceStore)
-class NamespaceStore(NamespaceEntry, TemplateVars, metaclass=NamespaceMeta):
+class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
     def __init__(self, name, parent=None) -> None:
-        super().__init__(name)
+        super().__init__()
         self._namespace = {}
         self._name = name
         self._parent = parent
+
+    def set_element(self, element):
+        self._element = element
+
+    def get_element(self):
+        return self._element
 
     def make_namespace(self, key):
         assert '.' not in key and '_' not in key, "Invalid key %s" % key

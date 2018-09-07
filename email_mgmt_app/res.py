@@ -114,9 +114,6 @@ class OperationArgument:
 
         self._implicit_arg = implicit_arg
 
-    def __json__(self, request):
-        return {'name': self.name, 'optional': self.optional, 'default': self.default, 'label': self.label}
-
     def __str__(self):
         return repr(self.__dict__)
 
@@ -181,9 +178,6 @@ class ResourceOperation:
         self._args = args
         self._view = view
         self._name = name
-
-    def __json__(self, request):
-        return {'name': self.name, 'args': self.args}
 
     def __str__(self):
         return repr(self.__dict__)
@@ -274,7 +268,7 @@ class ResourceManager:
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
         request.registry = config.registry
 
-        env = request.registry.getUtility(IJinja2Environment, 'app_env')
+        #        env = request.registry.getUtility(IJinja2Environment, 'app_env')
 
         #
         # Populate the root resource dictionary with our

@@ -35,11 +35,6 @@ class RootFactory(UserDict):
         # logger.debug("root = %s; root2 = %s", root, root2)
         return root
 
-
-    @staticmethod
-    def __json__(request):
-        return RootFactory.resources
-
     @staticmethod
     def register_model_type():
         pass

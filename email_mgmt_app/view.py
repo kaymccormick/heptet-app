@@ -9,7 +9,7 @@ from email_mgmt_app import ArgumentContext
 from email_mgmt_app.exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
 from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
 from email_mgmt_app.util import get_exception_entry_point_key
-from res import Resource, OperationArgument
+from email_mgmt_app.res import Resource, OperationArgument
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +27,7 @@ class BaseView:
         self._entry_point = None
         self._response_dict = {'request': request,
                                'context': context}  # give it a nice default?
+        self._template_env = None
 
 
     def __call__(self, *args, **kwargs):

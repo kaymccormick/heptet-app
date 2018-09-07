@@ -75,10 +75,8 @@ class ICollector(Interface):
         pass
 
 
-class IFormRepresentationBuilder(Interface):
-    def form_representation(context):
-        pass
-
+class IBuilder(Interface):
+    pass
 
 class IRelationshipSelect(Interface):
     def get_select():

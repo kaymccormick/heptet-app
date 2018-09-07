@@ -25,9 +25,7 @@ class IFormContext(Interface):
 
 
 class IFormRelationshipMapper(Interface):
-    def map_relationship(rel):
-        pass
-
+    pass
 
 @adapter(IRelationshipInfo, IFormContext)
 @implementer(IFormRelationshipMapper)
@@ -122,8 +120,8 @@ class EntityCollectionView(BaseEntityRelatedView):
 
 
 class FormViewEntryPointGenerator(EntryPointGenerator):
-    def __init__(self, entry_point: EntryPoint, view, request) -> None:
-        super().__init__(entry_point, view, request)
+    def __init__(self, entry_point: EntryPoint, view) -> None:
+        super().__init__(entry_point, view)
         self._form = None
 
     def js_imports(self):
@@ -133,18 +131,17 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
         return []
 
 
-@implementer(IFormContext)
+#@implementer(IFormContext)
 @dataclass
 class FormContext:
+    root_namespace: NamespaceStore
     env: IJinja2Environment
-    registry: Components = None
     mapper_info: MapperInfo = None
     nest_level: int = 0
     do_modal: bool = False
     form: Form = None
     extra: dict = field(default_factory=lambda: {'suppress_cols': {}})
     namespace: NamespaceStore = None
-    root_namespace: NamespaceStore = None
 
 
 @implementer(IRelationshipSelect)
@@ -205,7 +202,7 @@ class RelationshipSelect:
                                    namespace=sub_namespace,
                                    extra=context.extra)
 
-            builder = context.request.registry.getAdapter(context2, IFormRepresentationBuilder)
+            builder = context.request.registry.getAdapter(context2, IBuilder)
             entity_form = builder.form_representation()
 
             collapse = env.get_template('entity/collapse.jinja2').render(
@@ -260,7 +257,7 @@ class RelationshipSelect:
 
 
 @adapter(IFormContext)
-@implementer(IFormRepresentationBuilder)
+@implementer(IBuilder)
 class FormRepresentationBuilder:
     def __init__(self, context: FormContext) -> None:
         """
@@ -285,7 +282,7 @@ class FormRepresentationBuilder:
         mapper_key = mapper.local_table.key  # ??
         namespace_id = stringcase.camelcase(mapper_key)
         logger.debug("in form_representation with namespace id of %s", namespace_id)
-        the_form = Form(context.registry, namespace_id, context.root_namespace, context.namespace,  # can be None
+        the_form = Form(namespace_id, context.root_namespace, context.namespace,  # can be None
                         outer_form=outer_form)
         context.form = the_form
 
@@ -369,14 +366,12 @@ class FormRepresentationBuilder:
 
 
 @implementer(IEntryPointGenerator)
-@adapter(IFormContext, IFormRepresentationBuilder, IEntryPoint, IEntryPointView, IRequest)
+@adapter(IFormContext, IBuilder, IEntryPoint, IEntryPointView, IRequest)
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-
-    def __init__(self, form_context, builder, entry_point: EntryPoint, view, request) -> None:
-        super().__init__(entry_point, view, request)
+    def __init__(self, form_context, builder, entry_point: EntryPoint, view) -> None:
+        super().__init__(entry_point, view)
         self._builder = builder
         self._form_context = form_context
-
 
     def generate(self):
         vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
@@ -388,11 +383,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         for var in vars_:
             t_vars[var] = []
 
-        registry = self.request.registry
-        context = self._form_context #FormContext(registry,
-        #                       # FIXME code smell digging into class internals
-        #                       self.entry_point._mapper_wrapper.mapper_info,
-        #                       )
+        context = self._form_context
         builder = self._builder
         self._form = builder.form_representation()
         root_namespace = context.root_namespace
@@ -423,7 +414,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         )
 
     def render_entity_form(self, context: FormContext):
-        builder = context.request.registry.getAdapter(context, IFormRepresentationBuilder)
+        builder = FormRepresentationBuilder(context)
         self._form = builder.form_representation()
 
         return self._form.as_html()
@@ -477,9 +468,13 @@ class EntityFormView(BaseEntityRelatedView):
         mapper_info = self.entry_point.mapper_wrapper.get_one_mapper_info()
         assert mapper_info
         if self.request.method == "GET":
-            env = self._request.registry.getUtility(IJinja2Environment, 'app_env')
+            env = self.template_env
+            namespace = EntityFormView.root_namespace
+            if callable(namespace):
+                namespace = namespace()
+
             context = FormContext(
-                env, request=self.request,
+                env=env, root_namespace=namespace,
                 mapper_info=mapper_info,
             )
 
@@ -518,10 +513,12 @@ class EntityAddView(BaseEntityRelatedView):
 
 
 def includeme(config: Configurator):
-    reg = config.registry.registerAdapter
-    reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
-    reg(FormRepresentationBuilder, [IFormContext], IFormRepresentationBuilder)
-    reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
-    reg(EntityFormViewEntryPointGenerator, [IEntryPoint, IEntryPointView], IEntryPointGenerator)
+
+    # reg = config.registry.registerAdapter
+    # reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
+    # reg(FormRepresentationBuilder, [IFormContext], IBuilder)
+    # reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
+    # reg(EntityFormViewEntryPointGenerator, [IFormContext, IBuilder, IEntryPoint, IEntryPointView, IRequest], IEntryPointGenerator)
     # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
     #    IEntryPointView)
+    pass

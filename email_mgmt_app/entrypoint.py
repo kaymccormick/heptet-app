@@ -2,7 +2,7 @@ import logging
 from typing import AnyStr, TypeVar, Generic
 
 from pyramid.config import Configurator
-from tvars import TemplateVars
+from email_mgmt_app.tvars import TemplateVars
 from zope import interface
 
 from email_mgmt_app.interfaces import *
@@ -10,7 +10,6 @@ from email_mgmt_app.impl import MyCollector
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
-from email_mgmt_app import MapperInfosMixin
 from email_mgmt_app.impl import MapperWrapper
 
 logger = logging.getLogger(__name__)
@@ -52,7 +51,9 @@ class EntryPoint:
     """
 
     def __init__(self, key: AnyStr, request=None, registry=None, generator=None, js=None, view_kwargs: dict = None,
-                 mapper_wrapper: MapperWrapper = None, template_name=None) -> None:
+                 mapper_wrapper: MapperWrapper = None, template_name=None,
+                 template=None,
+                 output_filename=None) -> None:
         """
 
         :param key:
@@ -76,8 +77,8 @@ class EntryPoint:
         self._view = None
         self._mapper_wrapper = mapper_wrapper
         self._template_name = template_name
-        self._output_filename = None
-        self._template = None
+        self._output_filename = output_filename
+        self._template = template
         self._vars = TemplateVars()
 
     def get_template_name(self):
@@ -103,9 +104,6 @@ class EntryPoint:
 
     def __str__(self):
         return repr(self.__dict__)
-
-    def __json__(self, request):
-        return self.key
 
     @property
     def key(self):
@@ -164,8 +162,8 @@ class EntryPoint:
 # we get a request, which means we get a registry
 @adapter(IEntryPoint, IEntryPointView)
 @implementer(IEntryPointGenerator)
-class EntryPointGenerator(MapperInfosMixin):
-    def __init__(self, entry_point: EntryPoint, view, request) -> None:
+class EntryPointGenerator:
+    def __init__(self, entry_point: EntryPoint, view) -> None:
         """
 
         :param entry_point:
@@ -175,7 +173,6 @@ class EntryPointGenerator(MapperInfosMixin):
 
         self._entry_point = entry_point
         self._view = view
-        self._request = request
 
     @property
     def entry_point(self) -> EntryPoint:

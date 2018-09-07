@@ -4,9 +4,8 @@ from typing import AnyStr, Dict
 
 from lxml import html
 
-from email_mgmt_app import MapperInfosMixin
 from email_mgmt_app.interfaces import INamespaceStore
-from impl import NamespaceStore
+from email_mgmt_app.impl import NamespaceStore
 
 logger = logging.getLogger(__name__)
 
@@ -162,13 +161,13 @@ class FormVariable:
         self.id = new
 
 
-class Form(FormElement, MapperInfosMixin):
+class Form(FormElement):
     # makes sense to have a unique namespace for each form-space for html ids
     """
     
     """
 
-    def __init__(self, registry, namespace_id, root_namespace, namespace: NamespaceStore = None, outer_form=False) -> None:
+    def __init__(self, namespace_id, root_namespace, namespace: NamespaceStore = None, outer_form=False) -> None:
         name = 'div'
         if outer_form:
             name = 'form'
@@ -179,7 +178,6 @@ class Form(FormElement, MapperInfosMixin):
         self._variables = {}
         self._labels = []
         self._mapper_infos = {}
-        self._registry = registry
 
         assert root_namespace is not None
         self._root_namespace = root_namespace

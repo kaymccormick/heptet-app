@@ -123,9 +123,10 @@ def main():
         proc_context.template_env.get_template('entry_point.js.jinja2')
     assert entry_points
     for ep in entry_points:
-
-#        generator = ep.generator
-#        generator.generate()
+        #generator = registry.getMultiAdapter([form_context, ])
+        generator = ep.generator
+        assert generator is not None
+        generator.generate()
         ep.set_template(entry_point_js_template)
         ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
         subscribers = registry.subscribers((proc_context,ep), IProcess)

@@ -59,9 +59,6 @@ class FileTemplateSource:
             return None
 
 
-
-
-
 @adapter(ITemplateSource)
 @implementer(ITemplate)
 class Template:
@@ -77,6 +74,7 @@ class Template:
     def __str__(self):
         return "Template<%s>" % self.get_name()
 
+
 @implementer(ITemplateVariable)
 class TemplateVariable:
     def __init__(self, name, value=None) -> None:
@@ -87,9 +85,8 @@ class TemplateVariable:
         return self._name
 
     def get_value(self):
-#        logger.debug("in get_value for %s %s", self._name, self)
+        #        logger.debug("in get_value for %s %s", self._name, self)
         return self._value
-
 
 
 class TemplateManager:
@@ -126,10 +123,9 @@ def includeme(config: Configurator):
     config.add_jinja2_renderer('template-env', settings_prefix='email_mgmt_app.jinja2.')
 
     def do_action():
-#        renderer = config.get_renderer('template-env')
+        #        renderer = config.get_renderer('template-env')
         env = config.registry.getUtility(IJinja2Environment, 'app_env')
         register_components(config.registry)
         _templates(config, env)
 
     config.action(None, do_action)
-
