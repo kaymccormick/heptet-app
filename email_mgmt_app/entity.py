@@ -1,5 +1,4 @@
 import json
-import json
 import re
 from dataclasses import dataclass, field
 
@@ -8,15 +7,14 @@ from db_dump.info import MapperInfo, IRelationshipInfo
 
 from email_mgmt_app.entrypoint import *
 from email_mgmt_app.form import *
-import email_mgmt_app.interfaces
 from email_mgmt_app.model.meta import Base
-from email_mgmt_app.template import TemplateVariable
 from email_mgmt_app.view import BaseView
 from pyramid.config import Configurator
-import pyramid.interfaces
+from pyramid.interfaces import IRequest
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
+from zope.interface.registry import Components
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
@@ -62,162 +60,6 @@ class FormRelationshipMapper:
         select_html = select.get_select()
         assert select_html
         return select_html
-
-
-def template_source(request, template_name):
-    f = request.registry.queryUtility(IRendererFactory, '.jinja2')
-    source = f.environment.loader.get_source({}, template_name)
-    return source[0]
-
-    #
-    # mapper_key = mapper['mapper_key']
-    # logger.info("Rendering entity form for %s" % mapper_key)
-    # d = {'form_contents': '', 'header': stringcase.sentencecase(mapper_key),
-    #      'header2': mapper['doc'] or '',
-    #      'modals': ''}
-    #
-    # suppress = {}
-    #
-    # alchemy: AlchemyInfo
-    # alchemy = request.registry.email_mgmt_app.alchemy
-    #
-    # assert mapper
-    #
-    #
-    # # for pkey_col in inspect.primary_key:
-    # #     suppress[pkey_col.key] = True
-    #
-    # readycode = ''
-    #
-    # for rel in mapper['relationships']:
-    #     if rel['direction'] == MANYTOONE:
-    #         continue
-    #     arg = rel['argument']
-    #     rel_o = arg
-    #
-    #     pairs = rel['local_remote_pairs']
-    #     local = pairs[0]['local']
-    #     remote = pairs[0]['remote']
-    #
-    #     key_ = rel['key']
-    #     label_contents = stringcase.sentencecase(key_)
-    #     if isinstance(rel_o, Base):
-    #         entities = request.dbsession.query(rel_o).all()
-    #     else:
-    #         entities = []
-    #
-    #     select_contents = ''
-    #
-    #     modal_id = 'modal_%s%s' % (prefix, key_)
-    #     buttons = ''
-    #     collapse = ''
-    #     select_id = 'select_%s%s' % (prefix, key_)
-    #     button_id = 'button_%s%s' % (prefix, key_)
-    #
-    #     if nest_level < 1:
-    #         #logger.warning("keys = %s", repr(request.registry.email_mgmt_app.mappers.keys()))
-    #         do_modal = False
-    #
-    #         key = rel['key']
-    #         entity_form = render_entity_form\
-    #             ( request                           ,
-    #               alchemy.mappers[remote['table']]     ,
-    #               outer_vars                        ,
-    #               nest_level + 1                    ,
-    #               do_modal=do_modal                 ,
-    #               prefix="%s%s." % (prefix, key),
-    #               )
-    #
-    #         if do_modal:
-    #             d['modals'] = d['modals'] + render_template \
-    #                 (request, templates.modal,
-    #                  {
-    #                      'is_modal': True,
-    #                      'modal_id': modal_id, 'modal_title': label_contents,
-    #                      'modal_body': entity_form
-    #                  })
-    #             # buttons = buttons + render_template(request, templates.button_create_new_modal, { 'modal_id': modal_id })
-    #         else:
-    #             collapse_id = 'collapse_%s' % key
-    #             collapse = render_template(request, templates.collapse, {'collapse_contents': entity_form,
-    #                                                                      'collapse_id': collapse_id})
-    #
-    #             readycode = readycode + render_template(request, templates.button_create_new_click_js,
-    #                                                     { 'button_id': button_id,
-    #                                                       'collapse_id': collapse_id,
-    #                                                       'select_id': select_id })
-    #
-    #             buttons = buttons + render_template \
-    #                 (request,
-    #                  templates.button_create_new,
-    #                  {'button_id': button_id,
-    #                   'select_id': select_id,
-    #                   'collapse_id': collapse_id})
-    #
-    #
-    #
-    #     select_contents = select_contents + \
-    #                       render_template(request, templates.rel_select_option,
-    #                                       {'option_value': 0,
-    #                      'option_contents': "None"})
-    #     select_contents = select_contents + \
-    #                       render_template(request, templates.rel_select_option,
-    #                                       {'option_value': -1,
-    #                      'option_contents': "New"})
-    #
-    #     for entity in entities:
-    #         select_contents = select_contents + \
-    #                           render_template(request, templates.rel_select_option,
-    #                                           {'option_value': entity.__dict__[remote.name],
-    #                                            'option_contents': entity.display_name})
-    #
-    #
-    #     rel_select = render_template(request, templates.rel_select, {'select_name': prefix + local['column'],
-    #                                                                  'select_id': select_id,
-    #                                                                  'select_value': None,
-    #                                                                  'select_contents': select_contents,
-    #                                                                  'buttons': buttons,
-    #
-    #                                                                  'collapse': collapse,
-    #                                                                  })
-    #     d['form_contents'] = d['form_contents'] + render_template(request, templates.field_relationship,
-    #                                                               {'input_html': rel_select,
-    #                                                              'label_html': label_html(request, select_id,
-    #                                                                                       label_contents),
-    #                                                              'collapse': collapse,
-    #                                                              'help': rel['doc']})
-    #
-    #     suppress[local['column']] = True
-    #
-    # for x in mapper['columns']:
-    #     key = x['key']
-    #     if key in suppress and suppress[key]:
-    #         logger.debug("skipping suppressed column %s", key)
-    #         continue
-    #
-    #     # vname = x.type.__visit_name__
-    #     # if not vname in typemap:
-    #     #     kind = typemap[''][0]
-    #     # else:
-    #     #     kind = typemap[vname][0]
-    #
-    #     kind = 'text'
-    #     select_id = 'input_%s' % (key)
-    #     f = {'input_name': prefix + key,
-    #          'input_id': select_id,
-    #          'input_value': ''}
-    #
-    #     input_html = render_template(request, "templates/entity/field\_%s.jinja2" % kind, f)
-    #     #logger.debug("input_html = %s", input_html)
-    #     e = {'id': select_id,
-    #          'input_html': input_html,
-    #          'label_html': label_html(request, select_id, stringcase.sentencecase(key)),
-    #          'help': x['doc']
-    #          }
-    #     d['form_contents'] = d['form_contents'] + render_template(request, templates.field, e)
-    #
-    # outer_vars['readycode'] = readycode
-    # return render_template(request, templates.form, d)
 
 
 class BaseEntityRelatedView(BaseView):
@@ -280,9 +122,8 @@ class EntityCollectionView(BaseEntityRelatedView):
 
 
 class FormViewEntryPointGenerator(EntryPointGenerator):
-
-    def __init__(self, entry_point: EntryPoint, request=None, logger=None) -> None:
-        super().__init__(entry_point, request, logger)
+    def __init__(self, entry_point: EntryPoint, view, request) -> None:
+        super().__init__(entry_point, view, request)
         self._form = None
 
     def js_imports(self):
@@ -296,23 +137,14 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
 @dataclass
 class FormContext:
     env: IJinja2Environment
-    request: Request = None
+    registry: Components = None
     mapper_info: MapperInfo = None
     nest_level: int = 0
     do_modal: bool = False
     form: Form = None
     extra: dict = field(default_factory=lambda: {'suppress_cols': {}})
-    namespace: INamespaceStore = None
-
-
-# class IRelationshipFormRenderer:
-#     pass
-#
-# @adapter(IRelationshipInfo)
-# @implementer(IRelationshipFormRenderer)
-# class RelationshipFormRenderer:
-#     def render_relationship_form(self):
-#         pass
+    namespace: NamespaceStore = None
+    root_namespace: NamespaceStore = None
 
 
 @implementer(IRelationshipSelect)
@@ -366,7 +198,7 @@ class RelationshipSelect:
             mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
             sub_namespace = context.form.namespace.make_namespace(stringcase.camelcase(key))
-            context2 = FormContext(context.env, context.request,
+            context2 = FormContext(context.env, context.registry,
                                    mapper2.get_one_mapper_info(),
                                    context.nest_level + 1,
                                    context.do_modal,
@@ -445,7 +277,6 @@ class FormRepresentationBuilder:
         """
         context = self._context
         mapper = context.mapper_info
-        request = context.request
 
         outer_form = False
         if context.nest_level == 0:
@@ -454,7 +285,7 @@ class FormRepresentationBuilder:
         mapper_key = mapper.local_table.key  # ??
         namespace_id = stringcase.camelcase(mapper_key)
         logger.debug("in form_representation with namespace id of %s", namespace_id)
-        the_form = Form(request, namespace_id, context.namespace,  # can be None
+        the_form = Form(context.registry, namespace_id, context.root_namespace, context.namespace,  # can be None
                         outer_form=outer_form)
         context.form = the_form
 
@@ -538,37 +369,33 @@ class FormRepresentationBuilder:
 
 
 @implementer(IEntryPointGenerator)
-@adapter(IEntryPoint)
+@adapter(IFormContext, IFormRepresentationBuilder, IEntryPoint, IEntryPointView, IRequest)
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-    def __init__(self, entry_point: EntryPoint, request, **kwargs) -> None:
-        super().__init__(entry_point, request, **kwargs)
+
+    def __init__(self, form_context, builder, entry_point: EntryPoint, view, request) -> None:
+        super().__init__(entry_point, view, request)
+        self._builder = builder
+        self._form_context = form_context
+
 
     def generate(self):
-        request = self._request
-        util = request.registry.getUtility
-        adapt = request.registry.getAdapter
-        multi = request.registry.getMultiAdapter
-
-        env = util(IJinja2Environment, 'app_env')
         vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
 
         # I am not sure 'resetting is the proper terminology'
         # logger.debug("Resetting template variables %s", vars_)
 
+        t_vars = self.entry_point.vars
         for var in vars_:
-            v = TemplateVariable(var, [])
-            c = adapt(v, ICollector)
-            # unregistered = request.registry.unregisterUtility(c, ICollector, var)
-            # logger.info("unreg is %s", unregistered)
-            request.registry.registerUtility(c, ICollector, var)
+            t_vars[var] = []
 
-        context = FormContext(env, request,
-                              # FIXME code smell digging into class internals
-                              self.entry_point._mapper_wrapper.mapper_info,
-                              )
-        builder = request.registry.getAdapter(context, IFormRepresentationBuilder)
+        registry = self.request.registry
+        context = self._form_context #FormContext(registry,
+        #                       # FIXME code smell digging into class internals
+        #                       self.entry_point._mapper_wrapper.mapper_info,
+        #                       )
+        builder = self._builder
         self._form = builder.form_representation()
-        global_ = self._request.registry.getUtility(INamespaceStore, GLOBAL_NAMESPACE)
+        root_namespace = context.root_namespace
 
         def get_data(ns):
             d_data = ns.get_namespace_data()
@@ -577,9 +404,9 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
                 r[k] = get_data(d_v)
             return r
 
-        data = get_data(global_)
+        data = get_data(root_namespace)
         # this is super random and generic.
-        x = self._request.registry.queryUtility(ICollector, 'js_stmts')
+        x = t_vars['js_stmts']
         s = json.dumps(data)
         r1 = r'([\'\\])'
         r2 = r'\\\1'
@@ -587,7 +414,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         s_y = "const ns = JSON.parse('%s');" % y
         logger.debug("adding %s to %s", s_y, x)
 
-        x.add_value(s_y)
+        x.append(s_y)
 
     def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)
@@ -637,13 +464,8 @@ class EntityDesignView(BaseEntityRelatedView):
     pass
 
 
-@adapter(email_mgmt_app.interfaces.IResource, pyramid.interfaces.IRequest)
-@implementer(pyramid.interfaces.IView)
+@implementer(IEntryPointView)
 class EntityFormView(BaseEntityRelatedView):
-    @staticmethod
-    def entry_point_generator_factory():
-        return EntityFormViewEntryPointGenerator
-
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
 
@@ -696,12 +518,10 @@ class EntityAddView(BaseEntityRelatedView):
 
 
 def includeme(config: Configurator):
-    def do_action():
-        reg = config.registry.registerAdapter
-        reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
-        reg(FormRepresentationBuilder, [IFormContext], IFormRepresentationBuilder)
-        reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
-        reg(EntityFormView, [email_mgmt_app.interfaces.IResource, pyramid.interfaces.IRequest],
-            pyramid.interfaces.IView)
-
-    config.action(None, do_action)
+    reg = config.registry.registerAdapter
+    reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
+    reg(FormRepresentationBuilder, [IFormContext], IFormRepresentationBuilder)
+    reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
+    reg(EntityFormViewEntryPointGenerator, [IEntryPoint, IEntryPointView], IEntryPointGenerator)
+    # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
+    #    IEntryPointView)

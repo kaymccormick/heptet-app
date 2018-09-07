@@ -112,8 +112,6 @@ class GenerateEntryPointProcess:
     def process(self):
         resolver = DottedNameResolver()
         ep = self._ep
-        generator = ep.generator
-        assert generator
 
         js_imports = []
         js_stmts = []
@@ -124,26 +122,27 @@ class GenerateEntryPointProcess:
             view = resolver.maybe_resolve(view_arg)
             ep.view = view
 
-            if view.entry_point_generator_factory():
-                if generator:
-                    js_imports = generator.js_imports()
-                    if js_imports:
-                        for stmt in js_imports:
-                            logger.debug("import: %s", stmt)
 
-                    js_stmts = generator.js_stmts()
-                    if js_stmts:
-                        for stmt in js_stmts:
-                            logger.debug("js: %s", stmt)
-
-                    ready_stmts = generator.ready_stmts()
+                # if generator:
+                #     js_imports = generator.js_imports()
+                #     if js_imports:
+                #         for stmt in js_imports:
+                #             logger.debug("import: %s", stmt)
+                #
+                #     js_stmts = generator.js_stmts()
+                #     if js_stmts:
+                #         for stmt in js_stmts:
+                #             logger.debug("js: %s", stmt)
+                #
+                #     ready_stmts = generator.ready_stmts()
 
         fname = ep.get_output_filename()
         logger.info("generating output file %s", fname)
 
         data = {'filename': fname,
                 'vars': dict(js_imports=js_imports,
-                             js_stmts=js_stmts,
+
+                            js_stmts=js_stmts,
                              ready_stmts=ready_stmts)}
 
         with open(fname, 'w') as f:

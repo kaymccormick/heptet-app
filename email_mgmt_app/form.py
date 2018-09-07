@@ -168,7 +168,7 @@ class Form(FormElement, MapperInfosMixin):
     
     """
 
-    def __init__(self, request, namespace_id, namespace: NamespaceStore = None, outer_form=False) -> None:
+    def __init__(self, registry, namespace_id, root_namespace, namespace: NamespaceStore = None, outer_form=False) -> None:
         name = 'div'
         if outer_form:
             name = 'form'
@@ -176,13 +176,14 @@ class Form(FormElement, MapperInfosMixin):
         super().__init__(name)
         # assert '.' not in namespace_id, "namespace_id %s should not contain ." % namespace_id
         self._outer_form = outer_form
-        self._request = request
         self._variables = {}
         self._labels = []
         self._mapper_infos = {}
+        self._registry = registry
 
-        self._global = request.registry.getUtility(INamespaceStore, 'global')
-        self._form_namespace = self._global.get_namespace('form', True)
+        assert root_namespace is not None
+        self._root_namespace = root_namespace
+        self._form_namespace = self._root_namespace.get_namespace('form', True)
         if namespace is None:
             self._namespace = self._form_namespace.make_namespace(namespace_id)
         else:

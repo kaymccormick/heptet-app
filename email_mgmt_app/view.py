@@ -19,10 +19,6 @@ class ViewConfig:
 
 
 class BaseView:
-    @staticmethod
-    def entry_point_generator_factory():
-        return EntryPointGenerator
-
     def __init__(self, context, request: Request = None) -> None:
         self._context = context
         self._request = request
@@ -129,9 +125,9 @@ def includeme(config: Configurator):
 
         entry_point_key = get_exception_entry_point_key(Exception)
         entry_point = EntryPoint(entry_point_key, request)
-        x = ExceptionView.entry_point_generator_factory()
-        generator = x(entry_point, request)
-        entry_point.generator = generator
+        #x = ExceptionView.entry_point_generator_factory()
+        #generator = x(entry_point, request)
+        #entry_point.generator = generator
         config.register_entry_point(entry_point)
         config.add_exception_view(view=ExceptionView, context=Exception,
                                   renderer="templates/exception/exception.jinja2",
@@ -142,8 +138,8 @@ def includeme(config: Configurator):
 
         entry_point_key = get_exception_entry_point_key(OperationArgumentException)
         entry_point = EntryPoint(entry_point_key, request)
-        generator = OperationArgumentExceptionView.entry_point_generator_factory()(entry_point, request)
-        entry_point.generator = generator
+        #generator = OperationArgumentExceptionView.entry_point_generator_factory()(entry_point, request)
+        #entry_point.generator = generator
         config.register_entry_point(entry_point)
         config.add_exception_view(view=OperationArgumentExceptionView, context=OperationArgumentException,
                                   renderer="templates/exceptions/OperationArgumentException.jinja2",

@@ -2,6 +2,8 @@ from zope.interface.interfaces import IInterface
 
 from zope.interface import Interface, implementer
 
+class IEntryPointView(Interface):
+    pass
 
 class IProcess(Interface):
     def process():

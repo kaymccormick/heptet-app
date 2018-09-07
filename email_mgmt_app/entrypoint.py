@@ -1,7 +1,8 @@
 import logging
-from typing import AnyStr
+from typing import AnyStr, TypeVar, Generic
 
 from pyramid.config import Configurator
+from tvars import TemplateVars
 from zope import interface
 
 from email_mgmt_app.interfaces import *
@@ -42,6 +43,8 @@ class IEntryPointGenerator(Interface):
     pass
 
 
+
+
 @interface.implementer(IEntryPoint)
 class EntryPoint:
     """
@@ -75,6 +78,7 @@ class EntryPoint:
         self._template_name = template_name
         self._output_filename = None
         self._template = None
+        self._vars = TemplateVars()
 
     def get_template_name(self):
         return self._template_name
@@ -150,28 +154,28 @@ class EntryPoint:
         # traceback.print_stack(file=sys.stderr)
         self._generator = new
 
+    @property
+    def vars(self):
+        return self._vars
+    # @property
+    # def vars(self):
+
 
 # we get a request, which means we get a registry
-@adapter(IEntryPoint)
+@adapter(IEntryPoint, IEntryPointView)
 @implementer(IEntryPointGenerator)
 class EntryPointGenerator(MapperInfosMixin):
-    def __init__(self, entry_point: EntryPoint, request=None, logger=None) -> None:
+    def __init__(self, entry_point: EntryPoint, view, request) -> None:
         """
 
         :param entry_point:
-        :param context:
-        :param request:
-        :param logger:
+        :param view:
         """
         super().__init__()
 
         self._entry_point = entry_point
+        self._view = view
         self._request = request
-
-        if logger:
-            self.logger = logger
-        else:
-            self.logger = logging.getLogger(__name__)
 
     @property
     def entry_point(self) -> EntryPoint:
@@ -185,6 +189,10 @@ class EntryPointGenerator(MapperInfosMixin):
 
     def js_imports(self):
         return []
+
+    @property
+    def request(self):
+        return self._request
 
 
 def register_entry_point(config, entry_point: IEntryPoint):

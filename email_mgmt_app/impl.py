@@ -1,5 +1,7 @@
+import abc
 import logging
 
+from tvars import TemplateVars
 from zope.component import adapter
 from zope.interface import implementer
 
@@ -118,8 +120,14 @@ class NamespaceEntry:
 #         return NamespaceEntry(id)
 #
 
+class NamespaceMeta(abc.ABCMeta):
+    def __new__(cls, clsname, superclasses, attr_dict):
+        new__ = super().__new__(cls, clsname, superclasses, attr_dict)
+        return new__
+
+
 @implementer(INamespaceStore)
-class NamespaceStore(NamespaceEntry):
+class NamespaceStore(NamespaceEntry, TemplateVars, metaclass=NamespaceMeta):
     def __init__(self, name, parent=None) -> None:
         super().__init__(name)
         self._namespace = {}

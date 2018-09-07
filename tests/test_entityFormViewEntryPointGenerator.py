@@ -1,5 +1,7 @@
+from unittest import TestCase
 from unittest.mock import MagicMock
 
+import pytest
 from pyramid_tm.tests import DummyRequest
 from zope.component import adapter
 from zope.interface import implementer
@@ -9,22 +11,19 @@ from interfaces import ITemplateSource, ITemplate, ICollector
 from pyramid_jinja2 import IJinja2Environment
 
 
-def test_generate():
-    request = DummyRequest()
+@pytest.fixture
+def entity_form_view_entry_point_generator(form_context, form_representation_builder, entry_point, entity_form_view,
+                                           app_request):
+    return EntityFormViewEntryPointGenerator(form_context, form_representation_builder, entry_point, entity_form_view,
+                                             app_request)
 
-    # components = request.registry
-    # @adapter(ITemplateVariable)
-    # @implementer(ICollector)
-    # class MyMock(MagicMock):
-    #     def __init__(self, var):
-    #         super().__init__()
-    #
-    # #mock = MyMock()
-    # components.registerAdapter(MagicMock, [ITemplateSource], ITemplate)
-    # components.registerAdapter(MyMock, [ITemplateVariable], ICollector)
-    #
-    ep = MagicMock()
 
-    # request.registry.registerUtility(MagicMock(), IJinja2Environment, 'app_env')
-    epg = EntityFormViewEntryPointGenerator(ep, request)
-    epg.generate()
+def test_generate(entity_form_view_entry_point_generator):
+    entity_form_view_entry_point_generator.generate()
+    entry_point = entity_form_view_entry_point_generator.entry_point
+    assert entry_point.vars
+    assert entity_form_view_entry_point_generator
+
+
+class TestEntityFormViewEntryPointGenerator(TestCase):
+    pass

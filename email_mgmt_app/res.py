@@ -6,12 +6,13 @@ from collections import UserDict, OrderedDict
 from typing import AnyStr, Type
 
 import pyramid
-from email_mgmt_app.entrypoint import EntryPoint
-from email_mgmt_app.interfaces import IResource
+from email_mgmt_app.entrypoint import EntryPoint, IEntryPointGenerator
+from email_mgmt_app.interfaces import IResource, IEntryPointView
 from email_mgmt_app.util import get_entry_point_key
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
+from pyramid_jinja2 import IJinja2Environment
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.component import IFactory
 from zope.component.factory import Factory
@@ -209,6 +210,7 @@ class ResourceManager:
     """
     ResourceManager class. Provides access to res operations.
     """
+
     # templates = [ResourceOperationTemplate('view'),
     #              ResourceOperationTemplate('list'),
     #              ResourceOperationTemplate('form'),
@@ -272,6 +274,8 @@ class ResourceManager:
         request = config.registry.queryUtility(IRequestFactory, default=Request)({})
         request.registry = config.registry
 
+        env = request.registry.getUtility(IJinja2Environment, 'app_env')
+
         #
         # Populate the root resource dictionary with our
         # { node_name, ContainerResource } pair.
@@ -322,9 +326,11 @@ class ResourceManager:
                                      # we shouldn't be calling into the "operation" for the entry point
                                      mapper_wrapper=mapper_wrapper,
                                      view_kwargs=view_kwargs)
-            generator = (op.view.entry_point_generator_factory())(entry_point, request)
-            # logger.debug("setting generator to %s", generator)
-            entry_point.generator = generator
+            logger.critical("op.view is %s", op.view)
+            x = op.view(resource, request)
+            # generator = config.registry.getMultiAdapter([env, entry_point, x], IEntryPointGenerator)
+            # # logger.debug("setting generator to %s", generator)
+            # entry_point.generator = generator
             config.register_entry_point(entry_point)
 
             view_kwargs['entry_point'] = entry_point
