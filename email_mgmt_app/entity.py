@@ -451,7 +451,7 @@ class FormRepresentationBuilder:
         if context.nest_level == 0:
             outer_form = True
 
-        mapper_key = mapper.local_table.key
+        mapper_key = mapper.local_table.key  # ??
         namespace_id = stringcase.camelcase(mapper_key)
         logger.debug("in form_representation with namespace id of %s", namespace_id)
         the_form = Form(request, namespace_id, context.namespace,  # can be None
@@ -480,13 +480,14 @@ class FormRepresentationBuilder:
         # additionally, supply a form variable and mapping for the relevant column.
         for rel in mapper.relationships:
             rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRelationshipMapper)
-            form_html[rel.local_remote_pairs[0].local.column] = rel_mapper.map_relationship()
-            logger.debug("now extra = %s", context.extra)
+            column_name = rel.local_remote_pairs[0].local.column
+            form_html[column_name] = rel_mapper.map_relationship()
 
         # process each column
         for x in mapper.columns:
             key = x.key
             if key in form_html:
+                # we already have the html, append it and continue
                 form_contents = form_contents + form_html[key]
                 continue
 
@@ -504,9 +505,6 @@ class FormRepresentationBuilder:
             input_id = context.form.get_html_id(camel_key, True)
             input_name = stringcase.camelcase(key).replace('_', '')
             input_name = context.form.get_html_form_name(input_name, True)
-            f = {'input_name': input_name,
-                 'input_id': input_id,
-                 'input_value': ''}
 
             div_col_sm_8 = DivElement('div', {'class': 'col-sm-8'})
 
@@ -514,6 +512,8 @@ class FormRepresentationBuilder:
                                                   'value': '',
                                                   'name': input_name.get_id(),
                                                   'class': 'form-control'})
+            input_id.element = input_control
+            input_name.element = input_control
             div_col_sm_8.element.append(input_control.element)
 
             label_contents = stringcase.sentencecase(key)
@@ -648,8 +648,12 @@ class EntityFormView(BaseEntityRelatedView):
         super().__init__(context, request)
 
     def __call__(self, *args, **kwargs):
-        generator = self.entry_point_generator_factory()(self.entry_point, self.request)
+        context = self.context
+        assert self.entry_point
+        generator = self.entry_point.generator
+        assert generator
         mapper_info = self.entry_point.mapper_wrapper.get_one_mapper_info()
+        assert mapper_info
         if self.request.method == "GET":
             env = self._request.registry.getUtility(IJinja2Environment, 'app_env')
             context = FormContext(

@@ -9,6 +9,7 @@ from email_mgmt_app import ArgumentContext
 from email_mgmt_app.exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
 from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
 from email_mgmt_app.util import get_exception_entry_point_key
+from res import Resource, OperationArgument
 
 logger = logging.getLogger(__name__)
 
@@ -22,22 +23,19 @@ class BaseView:
     def entry_point_generator_factory():
         return EntryPointGenerator
 
-    def __init__(self, context, request: Request=None) -> None:
+    def __init__(self, context, request: Request = None) -> None:
         self._context = context
         self._request = request
         self._operation = None
         self._values = {}
         self._entry_point = None
-        self._response_dict = { 'request': request,
-                                'context': context } # give it a nice default?
-        self._entry_point_key = None
+        self._response_dict = {'request': request,
+                               'context': context}  # give it a nice default?
 
-
-        #renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
-        #request.override_renderer = renderer
 
     def __call__(self, *args, **kwargs):
         self.collect_args(self.request)
+        assert self.entry_point
         self._response_dict['entry_point_key'] = self.entry_point.key
         assert self.entry_point, "Entry point for view should not be None"
         key = self.entry_point.key
@@ -69,10 +67,9 @@ class BaseView:
             return
         assert self.operation is not None
         args = self.operation.args
-#        logging.warning("checking args %s", repr(args))
         values = []
         arg_context = ArgumentContext()
-        arg=None # type: 'OperationArgument'
+        arg: 'OperationArgument' = None
         for arg in args:
             has_value = arg.has_value(request, arg_context)
             got_value = False
@@ -93,7 +90,8 @@ class BaseView:
 
             if not has_value:
                 if not arg.optional:
-                    raise MissingArgumentException(self.operation, arg, "Missing argument %s for operation %s" % (arg.name, self.operation.name))
+                    raise MissingArgumentException(self.operation, arg, "Missing argument %s for operation %s" % (
+                        arg.name, self.operation.name))
 
             if not got_value:
                 value = arg.get_value(request, arg_context)
@@ -107,15 +105,14 @@ class BaseView:
         return self._entry_point
 
     @property
-    def entry_point_generator(self):
-        return self._entry_point_generator
-
+    def context(self) -> Resource:
+        return self._context
 
 
 class ExceptionView(BaseView):
     def __init__(self, context, request) -> None:
         super().__init__(context, request)
-        #request.override_renderer = "templates/exception.jinja2"
+        # request.override_renderer = "templates/exception.jinja2"
 
 
 class OperationArgumentExceptionView(ExceptionView):
@@ -143,7 +140,6 @@ def includeme(config: Configurator):
         # need to issue more context!
         # entry point itself needs a way to 'declare' its dependencies
 
-
         entry_point_key = get_exception_entry_point_key(OperationArgumentException)
         entry_point = EntryPoint(entry_point_key, request)
         generator = OperationArgumentExceptionView.entry_point_generator_factory()(entry_point, request)
@@ -152,4 +148,5 @@ def includeme(config: Configurator):
         config.add_exception_view(view=OperationArgumentExceptionView, context=OperationArgumentException,
                                   renderer="templates/exceptions/OperationArgumentException.jinja2",
                                   entry_point=entry_point)
+
     config.action(None, action)

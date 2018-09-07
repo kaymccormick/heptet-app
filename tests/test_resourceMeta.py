@@ -14,5 +14,7 @@ def test_resource_meta():
 
 def test_root_Resource():
     root = RootResource()
-    assert type(root) == RootResource
+    root2 = RootResource()
+    assert root is root2
+    #assert type(root) == RootResource
     assert False

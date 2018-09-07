@@ -87,22 +87,7 @@ class IRelationshipSelect(Interface):
 
 
 class INamespaceStore(Interface):
-    def get_id(preferred, bits):
-        pass
-
-    def make_namespace(key, namespace):
-        pass
-
-    def get_namespace(key):
-        pass
-
-
-class IHtmlIdStore(Interface):
-    def get_id(preferred, bits):
-        pass
-
-    def get_namespace(key, namespace):
-        pass
+    pass
 
 
 # does it make sense to use 'key' here? no
@@ -117,6 +102,7 @@ class IMapperInfo(Interface):
 class ISqlAlchemySession(object):
     pass
 
-#@implementer(IInterface)
+
+# @implementer(IInterface)
 class IResource(Interface):
     pass

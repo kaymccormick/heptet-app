@@ -5,7 +5,8 @@ from typing import AnyStr, Dict
 from lxml import html
 
 from email_mgmt_app import MapperInfosMixin
-from email_mgmt_app.interfaces import IHtmlIdStore, INamespaceStore
+from email_mgmt_app.interfaces import INamespaceStore
+from impl import NamespaceStore
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +168,7 @@ class Form(FormElement, MapperInfosMixin):
     
     """
 
-    def __init__(self, request, namespace_id, namespace: INamespaceStore = None, outer_form=False) -> None:
+    def __init__(self, request, namespace_id, namespace: NamespaceStore = None, outer_form=False) -> None:
         name = 'div'
         if outer_form:
             name = 'form'
@@ -186,9 +187,6 @@ class Form(FormElement, MapperInfosMixin):
             self._namespace = self._form_namespace.make_namespace(namespace_id)
         else:
             self._namespace = namespace
-
-        # self._namespace.set_namespace(self._namespace_id)
-        # logger.debug("my namespace is %s", self._namespace)
 
     def get_html_id(self, html_id, *args, **kwargs):
         return self._namespace.get_namespace(html_id)

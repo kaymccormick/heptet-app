@@ -23,11 +23,7 @@ def munge_view(view, info):
 # this function needs major help! TODO
 def entity_view(view, info):
     # pull entity type from options (out of date!!)
-    et = info.options.get('entity_type')
     operation = info.options.get('operation')
-    mapper_info = info.options.get('mapper_info')
-
-# FIXME    info.registry.email_mgmt_app.views.append(info)
 
     def wrapper_view(context, request):
         logger.debug("original view = %s", repr(info.original_view))
@@ -39,11 +35,11 @@ def entity_view(view, info):
                 original_view.operation = operation
                 original_view.entry_point = info.options['entry_point']
 
-            if issubclass(original_view, BaseEntityRelatedView):
-                # is this still in effect? (why wouldn't it be in effect?)
-                logger.debug("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
-                original_view.entity_type = et
-                original_view.mapper_info = mapper_info
+            # if issubclass(original_view, BaseEntityRelatedView):
+            #     # is this still in effect? (why wouldn't it be in effect?)
+            #     logger.debug("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
+            #     original_view.entity_type = et
+            #     original_view.mapper_info = mapper_info
 
         # if renderer:
 
