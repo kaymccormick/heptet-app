@@ -1,8 +1,9 @@
 import abc
 import logging
-from abc import abstractmethod
+import sys
+from abc import abstractmethod, ABCMeta
 from collections import UserDict, OrderedDict
-from typing import AnyStr, Type
+from typing import AnyStr, Type, Any
 
 from interfaces import IResource
 from zope.component import IFactory
@@ -299,7 +300,7 @@ class ResourceManager:
         request.subpath = ()
         request.traversed = (node_name,)
 
-        extra = {'context': Resource}
+        extra = {'context': type(resource)}
 
         if entity_type is not None:
             # this is a predicate!
@@ -366,16 +367,51 @@ class ResourceManager:
 
 
 @implementer(IResource)
-class Resource:
+class _Resource:
     """
     Base resource type. Implements functionality common to all resource types.
     """
-    # def __new__(cls,
-    #              name: AnyStr = None,
-    #              parent: 'ContainerResource' = None,
-    #              title: AnyStr = None,
-    #              entity_type: AnyStr = None):
+
     #
+    def __new__(cls, *args, **kwargs):
+        logger.critical("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
+        if cls == Resource:
+            count = getattr(cls, "__count__", 0)
+            count = count + 1
+            clsname = "%s_%04X" % (cls.__name__, count)
+            setattr(cls, "__count__", count)
+            meta = ResourceMeta(clsname, (cls,), {})
+            #logger.critical("meta = %s", meta)
+            inst = meta(*args, **kwargs)
+            try:
+                inst.__init__(*args, **kwargs)
+            except:
+                ex = sys.exc_info()[1]
+                raise ex
+            return inst
+        try:
+            x = super().__new__(cls)
+        except:
+            ex = sys.exc_info()[1]
+            logger.critical(ex)
+            #logger.critical("%s", )
+            raise ex
+
+        return x
+    #
+    #     clsname = "%s%04X" % (cls.__name__, getattr(cls, '__count__', 0))
+    #     setattr(cls, '__count__', getattr(cls, '__count__', 0) + 1)
+    #     logger.warning("name is %s", clsname)
+    #     dict__ = sys.modules[cls.__module__].__dict__
+    #     #dict__[clsname] = _Resource
+    #     t = type(clsname, (_Resource), dict())
+    #     assert False, t
+        #
+        # new__ = type((_Resource), {})
+        #
+        # logger.warning("__new = %s", new__)
+        # return new__(name, parent, title, entity_type)
+
     def __init__(self,
                  name: AnyStr = None,
                  parent: 'ContainerResource' = None,
@@ -388,7 +424,8 @@ class Resource:
         :param parent: Parent resources.
         :param title: Defaults to name if not given.
         """
-        assert parent is not None or isinstance(self, RootResource), "invalid parent %s" % parent
+        # we dont check anything related to parent
+        assert parent is not None or isinstance(self, RootResource), "invalid parent %s or self %s" % (parent, type(self))
         self._title = title
         assert isinstance(name, str), "name must be str type"
 
@@ -405,12 +442,6 @@ class Resource:
     def attach(self, parent, name):
         self.__parent__ = parent
         self.__name__ = name
-
-    def __str__(self):
-        return "Resource[%s]" % self.__name__
-
-    def __repr__(self):
-        return str(self)
 
     @property
     def is_container(self) -> bool:
@@ -438,16 +469,43 @@ class Resource:
         self._names.append(name)
 
 
+class ResourceMeta(ABCMeta):
+    count = 0
+
+    def __new__(cls, *args, **kwargs):
+        logger.critical("meta in new %s %s %s", cls, args, kwargs)
+        x = super().__new__(cls, *args, **kwargs)
+        logger.critical("meta x = %s", x)
+        return x
+    # if '__count__' not in cls.__dict__:
+        #     setattr(cls, '__count__', 0)
+        # dict__ = sys.modules[cls.__module__].__dict__
+        # # superclasses = list(superclasses)
+        # # superclasses.insert(0, _Resource)
+        # # superclasses = tuple(superclasses)
+        # #superclasses = list(_Resource, superclasses)
+        # clsname = "%s%04X" % (clsname, getattr(cls, '__count__'))
+        # setattr(cls, '__count__', getattr(cls, '__count__') + 1)
+        # logger.warning("name is %s", clsname)
+        # new__ = type.__new__(cls, clsname, superclasses, attributedict)
+        # logger.warning("__new = %s", new__)
+        # return new__
+
+
+class Resource(_Resource, metaclass=ResourceMeta):
+    pass
+
+
 @implementer(IResource)
 class ContainerResource(Resource, UserDict):
     """
     Resource containing sub-resources.
     """
 
-    def __init__(self, dict_init, *args, **kwargs) -> None:
+    def __init__(self, dict_init=None, **kwargs) -> None:
         # this is the only spot where we call Resource.__init__
-        super().__init__(*args, **kwargs)
-        self.data = OrderedDict(dict_init)
+        super().__init__(**kwargs)
+        self.data = OrderedDict(dict_init or {})
 
     @property
     def is_container(self) -> bool:
@@ -485,17 +543,15 @@ class RootResource(ContainerResource):
     The root resource for the pyramid application. This is not the same as the RootFactory.
     """
 
-    def __init__(self, dict_init, *args, **kwargs) -> None:
+    def __init__(self, dict_init=None, **kwargs) -> None:
         """
         Initializer for a root resource. This is not a singleton class so it should only be instantiated
         once.
         :param dict_init:
-        :param args:
         :param kwargs:
         """
-        self.__name__ = ''
-        self.__parent__ = None
-        super().__init__(dict_init, *args, **kwargs)
+
+        super().__init__(dict_init, name='', parent=None, **kwargs)
 
     def get_root_resource(self):
         return self
@@ -521,86 +577,6 @@ class EntityResource():
         return self._name
 
 
-# class NodeNamePredicate():
-#
-#     def __init__(self, val, config) -> None:
-#         self._val = val
-#         self._config = config
-#
-#     def text(self):
-#         return 'node_name = %s' % (self._val)
-#
-#     phash = text
-#
-#     def __call__(self, context, request):
-#         if isinstance(context, ResourceRegistration) and context.node_name == self._val:
-#             return True
-#         return False
-
-
-# class AlchemyInfoResourceAdapter:
-#     def __init__(self, config: Configurator, alchemy_info: AlchemyInfo) -> None:
-#         self._alchemy_info = alchemy_info
-#         #try:
-#         self.process_alchemy_info(config)
-#         #except KeyError as ex:
-#         #    pass
-#
-#         pass
-#
-#     @property
-#     def alchemy_info(self):
-#         return self._alchemy_info
-#
-#     @alchemy_info.setter
-#     def alchemy_info(self, new):
-#         self._alchemy_info = new
-#
-
-#     def process_alchemy_info(self, config):
-#         logger.debug("in process_alchemy_info")
-#         mi: MapperInfo
-#         for mapper_key, mi in self.alchemy_info['mappers'].items():
-#             entity = config.registry.email_mgmt_app.mappers[mapper_key].entity
-#
-#             manager = self.manager(
-#                 config=config,
-#                 title=stringcase.sentencecase(mapper_key),
-#                 node_name=mapper_key,
-#                 mapper_info=mi,
-#                 entity_type=entity
-#             )
-#
-#             pkey_args = []
-#             for (pkey_table, pkey_col) in mi['primary_key']:
-#                 assert pkey_table == mi['mapped_table']
-#                 colinfo = mi['columns'][mi['column_map'][pkey_table][pkey_col]]
-#                 pkey_args.append(OperationArgument(\
-#                     pkey_col, colinfo['type_'], label=stringcase.sentencecase(pkey_col),
-#                     getter=ArgumentGetter()))
-#
-#             manager.operation('view', '..entity.EntityView', pkey_args)
-#             manager.operation('form', EntityFormView,
-#                               [OperationArgument.SubpathArgument('action', String, default='create')])
-#             manager.operation('design', EntityDesignView, [])
-#             config.add_resource_manager(manager)
-#         pass
-#
-#     def manager(self, config=None, title=None, entity_type=None, node_name=None, mapper_info: MapperInfo=None):
-#         """
-#         Factory method for ResourceManager
-#         :param config:
-#         :param name:  ??
-#         :param title:
-#         :param entity_type:
-#         :param inspect:
-#         :param node_name:
-#         :return:
-#         """
-#         mgr = ResourceManager(config=config, title=title, entity_type=entity_type, node_name=node_name, mapper_info=mapper_info)
-#         return mgr
-
-
 def add_resource_manager(config: Configurator, mgr: ResourceManager):
     logger.debug("in add_resource_manager directive.")
     logger.debug("registering mgr.add_action as action for %s", mgr)
@@ -613,4 +589,3 @@ def includeme(config: Configurator):
     config.registry.registerUtility(factory, IFactory, 'resource')
 
     config.add_directive('add_resource_manager', add_resource_manager)
-#    config.action(None, do_action)

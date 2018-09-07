@@ -6,30 +6,21 @@ import traceback
 from dataclasses import dataclass, field
 
 import db_dump.args
-import pyramid_tm
-
-import interfaces
-from sqlalchemy import inspect
-from sqlalchemy.engine.reflection import Inspector
 from webtest import TestApp
 
-import email_mgmt_app.webapp_main
 import email_mgmt_app.res
-import zope
+import email_mgmt_app.webapp_main
+import interfaces
+import pyramid.interfaces
 from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints
 from email_mgmt_app.impl import CollectorContext, IProcess
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder, AssetManager
 from email_mgmt_app.scripts.util import get_request, template_env
 from email_mgmt_app.webapp_main import on_new_request
-import pyramid.interfaces
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
-from res import IRootResource
-from interfaces import IResource
 from root import RootFactory
-from sqlalchemy_integration import get_tm_session
-from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
 

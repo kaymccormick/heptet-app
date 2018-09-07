@@ -90,7 +90,7 @@ def wsgi_app(global_config, **settings):
 
     config.include('.entrypoint')
 
-    resource = RootResource({}, '')
+    resource = RootResource()
     config.registry.registerUtility(resource, IResource, 'root_resource')
     assert config.registry.queryUtility(IResource, 'root_resource') is not None
     config.commit()
