@@ -42,15 +42,13 @@ class IEntryPointGenerator(Interface):
     pass
 
 
-
-
 @interface.implementer(IEntryPoint)
 class EntryPoint:
     """
 
     """
 
-    def __init__(self, key: AnyStr, request=None, registry=None, generator=None, js=None, view_kwargs: dict = None,
+    def __init__(selfFr, request=None, registry=None, generator=None, js=None, view_kwargs: dict = None,
                  mapper_wrapper: MapperWrapper = None, template_name=None,
                  template=None,
                  output_filename=None) -> None:

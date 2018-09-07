@@ -1,14 +1,18 @@
 import collections
+import logging
 import typing
 from collections import __init__
 from typing import MutableMapping, Iterator, AnyStr
 
+from marshmallow import Schema
+
+logger = logging.getLogger(__name__)
 T = typing.TypeVar('T')
 
 
 class TemplateVar(typing.Generic[T]):
 
-    def __init__(self, initial_value: T) -> None:
+    def __init__(self, initial_value: T = None) -> None:
         super().__init__()
         self._value = initial_value
 
@@ -31,6 +35,11 @@ class TemplateVar(typing.Generic[T]):
 
 
 class TemplateVars(MutableMapping):
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+        #for name,tvar in kwargs.items():
+        self.vars = {**kwargs}
+
     def __setitem__(self, k, v) -> None:
         if isinstance(v, TemplateVar):
             self.vars[k] = v
@@ -54,9 +63,9 @@ class TemplateVars(MutableMapping):
     def __iter__(self) -> Iterator:
         return self.vars.__iter__()
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.vars = {}
+    @property
+    def schema(self):
+        return self._schema
 
     # def __missing__(self, key):
 
@@ -65,9 +74,18 @@ class TemplateVars(MutableMapping):
             self.vars[key] = TemplateVar(key)
         return self.vars[key]
 
+    def __contains__(self, o):
+        return self.vars.__contains__(o)
+
+    def __repr__(self):
+        return self.vars.__repr__()
+
+    def __str__(self):
+        return self.vars.__str__()
+
 
 class StringTemplateVar(TemplateVar[str]):
-    def __init__(self, initial_value: AnyStr) -> None:
+    def __init__(self, initial_value: AnyStr="") -> None:
         super().__init__(initial_value)
 
     def __str__(self):
@@ -105,6 +123,9 @@ class MappingTemplateVar(TemplateVar[MutableMapping], collections.abc.MutableMap
     def __delitem__(self, v) -> None:
         self._value.__delitem__(v)
 
+    def __contains__(self, item):
+        return self._value.__contains(item)
+
 
 class MutableSequenceTemplateVar(TemplateVar[typing.MutableSequence], collections.abc.MutableSequence):
     def __init__(self, initial_value: typing.MutableSequence) -> None:
@@ -124,5 +145,3 @@ class MutableSequenceTemplateVar(TemplateVar[typing.MutableSequence], collection
 
     def insert(self, index, object):
         return self.value.insert(index, object)
-
-

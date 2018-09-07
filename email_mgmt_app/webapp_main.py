@@ -76,6 +76,7 @@ def wsgi_app(global_config, **settings):
 
     config = Configurator(package="email_mgmt_app",
                           registry=global_reg, settings=settings,root_factory=RootFactory())
+    config.include('.myapp_config')
     if use_global_reg:
         config.setup_registry(settings=settings,root_factory=RootFactory()
                               )
@@ -124,7 +125,7 @@ def wsgi_app(global_config, **settings):
 
     # now static routes only
     config.include('.routes')
-    config.include('.auth')
+#    config.include('.auth')
     config.include('.views')
     config.include('.template')
     config.include('.process')

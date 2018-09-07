@@ -5,13 +5,16 @@ import pytest
 from db_dump.info import MapperInfo
 from pyramid_tm.tests import DummyRequest
 
-from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, EntryPoint, FormRepresentationBuilder, FormContext
+from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, EntryPoint, FormRepresentationBuilder
+from context import FormContext, GeneratorContext
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper
 from email_mgmt_app.res import RootResource, Resource, ResourceManager
 from email_mgmt_app.viewderiver import entity_view
 from jinja2 import Environment
 from pyramid.config import Configurator
 from pyramid.response import Response
+
+from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 
@@ -121,8 +124,10 @@ def entry_point(mapper_wrapper, app_request, app_registry, jinja2_env):
 def entity_form_view_entry_point_generator(form_context, form_representation_builder, entry_point,
                                            entity_form_view_mock,
                                            ):
-    return EntityFormViewEntryPointGenerator(form_context, form_representation_builder, entry_point, entity_form_view_mock,
+    return EntityFormViewEntryPointGenerator(form_context, form_representation_builder, entry_point,
+                                             entity_form_view_mock,
                                              )
+
 
 @pytest.fixture
 def entity_form_view_mock():
@@ -137,8 +142,18 @@ def jinja2_env():
 
 
 @pytest.fixture
-def form_context(jinja2_env, mapper_info, root_namespace_store):
-    return FormContext(env=jinja2_env, mapper_info=mapper_info, root_namespace=root_namespace_store)
+def template_vars():
+    return TemplateVars()
+
+
+@pytest.fixture
+def generator_context(jinja2_env, mapper_info, template_vars):
+    return GeneratorContext(mapper_info, jinja2_env, template_vars)
+
+
+@pytest.fixture
+def form_context(generator_context, root_namespace_store):
+    return FormContext(generator_context, root_namespace_store)
 
 
 @pytest.fixture

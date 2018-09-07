@@ -2,6 +2,9 @@ from zope.interface.interfaces import IInterface
 
 from zope.interface import Interface, implementer
 
+class IGeneratorContext(Interface):
+    pass
+
 class IEntryPointView(Interface):
     pass
 
@@ -105,4 +108,8 @@ class ISqlAlchemySession(object):
 
 # @implementer(IInterface)
 class IResource(Interface):
+    pass
+
+
+class IFormContext(Interface):
     pass

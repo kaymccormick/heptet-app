@@ -1,47 +1,50 @@
 import json
 import re
-from dataclasses import dataclass, field
 
 import stringcase
-from db_dump.info import MapperInfo, IRelationshipInfo
+from db_dump.info import IRelationshipInfo
 
+from email_mgmt_app.context import FormContext
 from email_mgmt_app.entrypoint import *
 from email_mgmt_app.form import *
 from email_mgmt_app.model.meta import Base
 from email_mgmt_app.view import BaseView
 from pyramid.config import Configurator
-from pyramid.interfaces import IRequest
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
-from zope.interface.registry import Components
+
+from interfaces import IFormContext
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
 
 
-class IFormContext(Interface):
-    pass
+@implementer(IGeneratorContext)
+class GenerateContext:
+    def __init__(self):
+        pass
 
 
 class IFormRelationshipMapper(Interface):
     pass
 
+
 @adapter(IRelationshipInfo, IFormContext)
 @implementer(IFormRelationshipMapper)
 class FormRelationshipMapper:
-    def __init__(self, rel, context) -> None:
+    def __init__(self, rel, context: FormContext) -> None:
         self._rel = rel
         self._context = context
 
     def map_relationship(self):
         context = self._context
         rel = self._rel
-        request = context.request
 
-        js_stmts_col = request.registry.queryUtility(ICollector, 'js_stmts')
-        if js_stmts_col:
-            js_stmts_col.add_value('// %s' % rel)
+        vars = context.generator_context.template_vars
+        assert 'js_stmts' in vars
+        js_stmts_col = vars['js_stmts']
+        js_stmts_col.append('// %s' % rel)
 
         logger.debug("Encountering relationship %s", rel)
         assert rel.direction
@@ -129,19 +132,6 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
 
     def js_stmts(self):
         return []
-
-
-#@implementer(IFormContext)
-@dataclass
-class FormContext:
-    root_namespace: NamespaceStore
-    env: IJinja2Environment
-    mapper_info: MapperInfo = None
-    nest_level: int = 0
-    do_modal: bool = False
-    form: Form = None
-    extra: dict = field(default_factory=lambda: {'suppress_cols': {}})
-    namespace: NamespaceStore = None
 
 
 @implementer(IRelationshipSelect)
@@ -366,12 +356,10 @@ class FormRepresentationBuilder:
 
 
 @implementer(IEntryPointGenerator)
-@adapter(IFormContext, IBuilder, IEntryPoint, IEntryPointView, IRequest)
+@adapter(IGeneratorContext)
 class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-    def __init__(self, form_context, builder, entry_point: EntryPoint, view) -> None:
-        super().__init__(entry_point, view)
-        self._builder = builder
-        self._form_context = form_context
+    def __init__(self, generate_context) -> None:
+        self._generate_context = generate_context
 
     def generate(self):
         vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
@@ -473,10 +461,9 @@ class EntityFormView(BaseEntityRelatedView):
             if callable(namespace):
                 namespace = namespace()
 
-            context = FormContext(
-                env=env, root_namespace=namespace,
-                mapper_info=mapper_info,
-            )
+            context = FormContext(root_namespace=namespace, template_env=env,
+                                  mapper_info=mapper_info,
+                                  )
 
             wrapper = generator.render_entity_form_wrapper(context)
             _vars = {
@@ -513,7 +500,6 @@ class EntityAddView(BaseEntityRelatedView):
 
 
 def includeme(config: Configurator):
-
     # reg = config.registry.registerAdapter
     # reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
     # reg(FormRepresentationBuilder, [IFormContext], IBuilder)
