@@ -4,13 +4,14 @@ import logging
 import sys
 import traceback
 from dataclasses import dataclass, field
+from datetime import datetime
 
 import db_dump.args
 from webtest import TestApp
 
 import email_mgmt_app.res
 import email_mgmt_app.webapp_main
-import interfaces
+import email_mgmt_app.interfaces
 import pyramid.interfaces
 from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints
 from email_mgmt_app.impl import CollectorContext, IProcess
@@ -20,14 +21,18 @@ from email_mgmt_app.webapp_main import on_new_request
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
-from root import RootFactory
+from email_mgmt_app.root import RootFactory
 
 logger = logging.getLogger(__name__)
 
 
 def main():
+    now = datetime.now()
+    logger.critical("%s Startup in main", now)
+
     def do_atexit():
-        logger.critical("exiting...")
+        newnow = datetime.now()
+        logger.critical("exiting... [%s]", newnow - now)
 
     atexit.register(do_atexit)
     # deal with parsing args
@@ -67,8 +72,8 @@ def main():
     # generate a request
     request = get_request(myapp.request_factory, myapp)  # type: Request
     assert request
-    for k, v in registry._utility_registrations.items():
-        logger.warn("%s = %s", k, v)
+    # for k, v in registry._utility_registrations.items():
+    #     logger.warn("%s = %s", k, v)
     root = RootFactory()(request)
     # root = registry.queryUtility(IResource, 'root_resource')
     assert root is not None
@@ -88,33 +93,6 @@ def main():
         logger.debug("view is %s (%s)", x.factory, orig)
 
     root_res = dump_resources(root)
-    for node_name, resource in root_res.items():
-        logger.warning("%s", resource)
-
-
-        assert interfaces.IResource.providedBy(resource)
-
-        #        [IViewClassifier, IRequest, Interface], IView, 'form', EntityFormView, '')
-        # logger.warning("%s", IResource.__bases__)
-        # logger.warning("%s", IResource.__sro__)
-        # logger.warning("%s", IResource.__iro__)
-        logger.warning("%s is %s", node_name, resource)
-        # res = zope.component.createObject('resource', '', None, '', None)
-
-
-    #        adapter = registry.getMultiAdapter((resource, request), pyramid.interfaces.IView)
-    #        logger.warning("adapter is %s", adapter)
-    #        assert adapter
-
-    # we need to make this component based TODO
-    #    app_dbsession = registry.email_mgmt_app.dbsession
-
-    # this should work with sqlalchemy cookiecutter projects
-    # session_factory = registry['dbsession_factory']
-    # dbsession = get_tm_session(session_factory, pyramid_tm.explicit_manager(request))
-    # # we dont do inspection here
-    # db = inspect(dbsession.get_bind())  # type: Inspector
-    # assert db
 
     # wtf is this
     ep_cmp = EntryPoints()
@@ -149,7 +127,7 @@ def main():
         generator.generate()
         ep.set_template(entry_point_js_template)
         ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
-        subscribers = registry.subscribers([ep], IProcess)
+        subscribers = registry.subscribers((proc_context,ep), IProcess)
         for s in subscribers:
             result = s.process()
             if result:

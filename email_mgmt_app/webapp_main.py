@@ -16,7 +16,7 @@ from email_mgmt_app.interfaces import IMapperInfo
 from email_mgmt_app.interfaces import INamespaceStore
 from email_mgmt_app.predicate import EntityTypePredicate
 from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
-from interfaces import IResource
+from email_mgmt_app.interfaces import IResource
 from email_mgmt_app.root import RootFactory
 from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -98,7 +98,8 @@ def wsgi_app(global_config, **settings):
 
     # we can include viewderiver here because we haven't created all of our views yet
     config.include('.viewderiver')
-    config.add_view_predicate('entity_type', EntityTypePredicate)
+    # we no longer need a custom predicate!
+    #config.add_view_predicate('entity_type', EntityTypePredicate)
 
     # this adds all our views, and other stuff
     config_process_struct(config, process)
@@ -201,7 +202,6 @@ def on_context_found(event):
     if isinstance(context, Exception):
         return
 
-    logger.warning("type of context is %s", type(context))
     if context.entity_type:
         # sets incorrect template
         def try_template(template_name):

@@ -5,7 +5,7 @@ from abc import abstractmethod, ABCMeta
 from collections import UserDict, OrderedDict
 from typing import AnyStr, Type, Any
 
-from interfaces import IResource
+from email_mgmt_app.interfaces import IResource
 from zope.component import IFactory
 from zope.component.factory import Factory
 from zope.interface import Interface, implementer
@@ -302,14 +302,14 @@ class ResourceManager:
 
         extra = {'context': type(resource)}
 
-        if entity_type is not None:
-            # this is a predicate!
-            # sanity check this!!
-            extra['entity_type'] = entity_type
-            assert issubclass(entity_type, Base)
-            # this is not a predicate, but is predicateD on having
-            # an entity type
-            # extra['mapper_info'] = self.mapper_info
+        # if entity_type is not None:
+        #     # this is a predicate!
+        #     # sanity check this!!
+        #     extra['entity_type'] = entity_type
+        #     assert issubclass(entity_type, Base)
+        #     # this is not a predicate, but is predicateD on having
+        #     # an entity type
+        #     # extra['mapper_info'] = self.mapper_info
 
         # config.add_view(view=lambda rs,rr: rs,renderer='json')
         for op in self._ops:
@@ -334,7 +334,7 @@ class ResourceManager:
                                      mapper_wrapper=mapper_wrapper,
                                      view_kwargs=view_kwargs)
             generator = (op.view.entry_point_generator_factory())(entry_point, request)
-            logger.debug("setting generator to %s", generator)
+            #logger.debug("setting generator to %s", generator)
             entry_point.generator = generator
             config.register_entry_point(entry_point)
 
@@ -374,7 +374,7 @@ class _Resource:
 
     #
     def __new__(cls, *args, **kwargs):
-        logger.critical("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
+        #logger.critical("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
         if cls == Resource:
             count = getattr(cls, "__count__", 0)
             count = count + 1
@@ -473,9 +473,9 @@ class ResourceMeta(ABCMeta):
     count = 0
 
     def __new__(cls, *args, **kwargs):
-        logger.critical("meta in new %s %s %s", cls, args, kwargs)
+        #logger.critical("meta in new %s %s %s", cls, args, kwargs)
         x = super().__new__(cls, *args, **kwargs)
-        logger.critical("meta x = %s", x)
+        #logger.critical("meta x = %s", x)
         return x
     # if '__count__' not in cls.__dict__:
         #     setattr(cls, '__count__', 0)
@@ -513,7 +513,7 @@ class ContainerResource(Resource, UserDict):
 
     def __getitem__(self, key=None):
         if key is None:
-            logger.critical("poop")
+            logger.critical("poop") # ???
         logger.debug("querying ContainerResource for %s.%s", self, key)
         v = super().__getitem__(key)
         logger.debug("result is %s", v)

@@ -5,7 +5,7 @@ from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_fa
 from sqlalchemy.orm import relationship, configure_mappers, backref
 
 from email_mgmt_app.model.meta import Base
-from interfaces import ISqlAlchemySession, IResource
+from email_mgmt_app.interfaces import ISqlAlchemySession, IResource
 from zope.component import IFactory
 from zope.component.factory import Factory
 from zope.interface import implementer

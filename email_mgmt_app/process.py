@@ -101,12 +101,13 @@ def setup_jsonencoder():
 @adapter(IProcessContext, IEntryPoint)
 @implementer(IProcess)
 class GenerateEntryPointProcess:
-    def __init__(self, ep) -> None:
+    def __init__(self, context, ep) -> None:
         """
 
         :param ep:
         """
         self._ep = ep
+        self._context = context
 
     def process(self):
         resolver = DottedNameResolver()
