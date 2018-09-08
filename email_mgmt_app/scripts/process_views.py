@@ -7,14 +7,17 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 import db_dump.args
+from pyramid_jinja2 import IJinja2Environment
 from webtest import TestApp
 
 import email_mgmt_app.res
 import email_mgmt_app.webapp_main
 import email_mgmt_app.interfaces
 import pyramid.interfaces
-from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints
-from email_mgmt_app.impl import CollectorContext, IProcess
+
+from email_mgmt_app.context import GeneratorContext, FormContext
+from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints, EntryPoint, IEntryPointGenerator
+from email_mgmt_app.impl import CollectorContext, IProcess, NamespaceStore
 from email_mgmt_app.process import ProcessContext, setup_jsonencoder, AssetManager
 from email_mgmt_app.scripts.util import get_request, template_env
 from email_mgmt_app.webapp_main import on_new_request
@@ -22,6 +25,7 @@ from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
 from email_mgmt_app.root import RootFactory
+from email_mgmt_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 
@@ -122,9 +126,15 @@ def main():
     entry_point_js_template = \
         proc_context.template_env.get_template('entry_point.js.jinja2')
     assert entry_points
+
+    env = request.registry.getUtility(IJinja2Environment, 'app_env')
+    root_namespace = NamespaceStore('root')
+
+    ep: EntryPoint
     for ep in entry_points:
-        #generator = registry.getMultiAdapter([form_context, ])
-        generator = ep.generator
+        gctx = GeneratorContext(ep.mapper_wrapper.mapper_info,env, TemplateVars(), FormContext, root_namespace=root_namespace)
+        generator = registry.getAdapter(gctx, IEntryPointGenerator)
+        ep.generator = generator
         assert generator is not None
         generator.generate()
         ep.set_template(entry_point_js_template)

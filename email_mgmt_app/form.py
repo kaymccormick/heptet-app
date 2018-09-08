@@ -162,12 +162,12 @@ class FormVariable:
 
 
 class Form(FormElement):
-    # makes sense to have a unique namespace for each form-space for html ids
-    """
-    
-    """
-
-    def __init__(self, namespace_id, root_namespace, namespace: NamespaceStore = None, outer_form=False) -> None:
+    def __init__(
+            self,
+            namespace_id, # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
+            root_namespace,
+            namespace: NamespaceStore = None,
+            outer_form=False) -> None:
         name = 'div'
         if outer_form:
             name = 'form'

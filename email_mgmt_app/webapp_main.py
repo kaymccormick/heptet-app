@@ -1,21 +1,14 @@
-import json
 import logging
 import os
 
 from db_dump.info import ProcessStruct
-from db_dump.schema import get_process_schema
-from marshmallow import ValidationError
 from pyramid_ldap3 import groupfinder
-from sqlalchemy import String
-from sqlalchemy.exc import InvalidRequestError
 
-from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.exceptions import InvalidMode
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.interfaces import IMapperInfo
 from email_mgmt_app.interfaces import INamespaceStore
-from email_mgmt_app.predicate import EntityTypePredicate
-from email_mgmt_app.res import RootResource, ResourceManager, OperationArgument, IRootResource
+from email_mgmt_app.res import RootResource
 from email_mgmt_app.interfaces import IResource
 from email_mgmt_app.root import RootFactory
 from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
@@ -27,26 +20,9 @@ from pyramid.renderers import get_renderer
 from pyramid_jinja2 import IJinja2Environment
 from zope.component import getGlobalSiteManager
 
+from email_mgmt_app.myapp_config import config_process_struct, load_process_struct
+
 logger = logging.getLogger(__name__)
-
-
-def config_process_struct(config, process):
-    for mapper in process.mappers:
-        wrapper = MapperWrapper(mapper)
-        logger.debug("Registering mapper_wrapper %s", mapper)
-        config.registry.registerUtility(wrapper, IMapperInfo, wrapper.key)
-        node_name = mapper.local_table.key
-        manager = ResourceManager(
-            config,
-            wrapper.key,
-            node_name=node_name,
-            mapper_wrapper=wrapper
-        )
-
-        manager.operation(name='form', view=EntityFormView,
-                          args=[OperationArgument.SubpathArgument('action', String, default='create')])
-        config.add_resource_manager(manager)
-
 
 VALID_MODES = ('development', 'production')
 
@@ -94,16 +70,6 @@ def wsgi_app(global_config, **settings):
         wrapper = MapperWrapper(mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
 
-    # FIXME this needs to go away
-    # config.registry.email_mgmt_app = AppSubRegistry(process)
-
-    config.include('.entrypoint')
-
-    resource = RootResource()
-    config.registry.registerUtility(resource, IResource, 'root_resource')
-    assert config.registry.queryUtility(IResource, 'root_resource') is not None
-    config.commit()
-    config.include('.res')
 
     # we can include viewderiver here because we haven't created all of our views yet
     config.include('.viewderiver')
@@ -147,29 +113,6 @@ def wsgi_app(global_config, **settings):
     config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
     return config.make_wsgi_app()
-
-
-def load_process_struct():
-    email_db_json = ''
-    with open('email_db.json', 'r') as f:
-        email_db_json = ''.join(f.readlines())
-    process_schema = get_process_schema()
-    process = None  # type: ProcessStruct
-
-    # logger.debug("json for db is %s", email_db_json)
-    try:
-        process = process_schema.load(json.loads(email_db_json))
-        logger.debug("process = %s", repr(process))
-    except InvalidRequestError as ex:
-        logger.critical("Unable to load database json.")
-        logger.critical(ex)
-        raise ex
-    except ValidationError as ve:
-        # todo better error handling
-        for k, v in ve.messages.items():
-            logger.critical("input error in %s: %s", k, v)
-        raise ve
-    return process
 
 
 def on_new_request(event):

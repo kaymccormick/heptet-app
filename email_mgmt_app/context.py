@@ -1,19 +1,50 @@
 from __future__ import annotations
 
+import copy
 import logging
-import textwrap
+from typing import Sequence, Generic, TypeVar, Callable
 
+from db_dump.info import MapperInfo
+from jinja2 import Environment
 from zope.interface import implementer
 
-from email_mgmt_app.interfaces import IFormContext, IGeneratorContext
 from email_mgmt_app.form import Form
 from email_mgmt_app.impl import NamespaceStore
+from email_mgmt_app.interfaces import IFormContext, IGeneratorContext
+from email_mgmt_app.tvars import TemplateVars
 
+TemplateEnvironment = Environment
 logger = logging.getLogger(__name__)
 
 
-class ContextGeneratorContextMixin:
+class MixinBase:
+    def check_instance(self):
 
+        pass
+
+
+class ContextFormContextMixin(MixinBase):
+    def __init__(self):
+        super().__init__()
+        self._form_context = None  # type: FormContext
+
+    @property
+    def form_context(self) -> FormContext:
+        return self._form_context
+
+    @form_context.setter
+    def form_context(self, new: FormContext) -> None:
+        self._form_context = new
+
+    def __repr__(self):
+        return self.form_context.__repr__()
+
+    def check_instance(self):
+        super().check_instance()
+        assert self.form_context
+
+
+class ContextGeneratorContextMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
         self._generator_context = None
@@ -29,8 +60,12 @@ class ContextGeneratorContextMixin:
     def __repr__(self):
         return self._generator_context.__repr__()
 
+    def check_instance(self):
+        super().check_instance()
+        assert self.generator_context
 
-class ContextTemplateVarsMixin:
+
+class ContextTemplateVarsMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
         self._template_vars = None
@@ -46,8 +81,12 @@ class ContextTemplateVarsMixin:
     def __repr__(self):
         return self._template_vars.__repr__()
 
+    def check_instance(self):
+        super().check_instance()
+        assert self._template_vars is not None
 
-class ContextMapperInfoMixin:
+
+class ContextMapperInfoMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
         self._mapper_info = None
@@ -63,8 +102,12 @@ class ContextMapperInfoMixin:
     def __repr__(self):
         return self._mapper_info.__repr__()
 
+    def check_instance(self):
+        super().check_instance()
+        assert self.mapper_info
 
-class ContextTemplateEnvMixin:
+
+class ContextTemplateEnvMixin(MixinBase):
 
     def __init__(self) -> None:
         super().__init__()
@@ -76,19 +119,81 @@ class ContextTemplateEnvMixin:
 
     @template_env.setter
     def template_env(self, new):
-        return self._template_env
+        self._template_env = new
 
     def __repr__(self):
         return self._template_env.__repr__()
 
+    def check_instance(self):
+        super().check_instance()
+        assert self.template_env
+
+
+class ContextFormContextFactoryMixin(MixinBase):
+    def __init__(self) -> None:
+        super().__init__()
+        self._form_context_factory = None  # type: FormContextFactory
+
+    @property
+    def form_context_factory(self) -> FormContextFactory:
+        return self._form_context_factory
+
+    @form_context_factory.setter
+    def form_context_factory(self, new: FormContextFactory):
+        self._form_context_factory = new
+
+    def check_instance(self):
+        super().check_instance()
+        assert self.form_context_factory
+
+
+class ContextRootNamespaceMixin(MixinBase):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._root_namespace = None  # type: NamespaceStore
+
+    @property
+    def root_namespace(self) -> NamespaceStore:
+        return self._root_namespace
+
+    @root_namespace.setter
+    def root_namespace(self, new: NamespaceStore) -> None:
+        self._root_namespace = new
+
+    def check_instance(self):
+        super().check_instance()
+        assert self.root_namespace
+
 
 @implementer(IGeneratorContext)
-class GeneratorContext(ContextMapperInfoMixin, ContextTemplateEnvMixin, ContextTemplateVarsMixin):
-    def __init__(self, mapper_info, template_env, template_vars) -> None:
+class GeneratorContext(
+    ContextMapperInfoMixin,
+    ContextTemplateEnvMixin,
+    ContextTemplateVarsMixin,
+    ContextFormContextFactoryMixin,
+    ContextRootNamespaceMixin,
+):
+    def __init__(self, mapper_info, template_env, template_vars, form_context_factory: FormContextFactory,
+                 root_namespace: NamespaceStore) -> None:
         super().__init__()
+        assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
+
+        #        assert isinstance(template_env, Environment)
+        assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars" % template_vars
         self.mapper_info = mapper_info
         self.template_env = template_env
         self.template_vars = template_vars
+        self.form_context_factory = form_context_factory
+        self.root_namespace = root_namespace
+        assert form_context_factory
+
+    def form_context(self, **kwargs):
+        form_context = self.form_context_factory(**dict(generator_context=self, template_env=self.template_env,
+                                                 template_vars=self.template_vars, root_namespace=self.root_namespace,
+                                                 form_context_factory=self.form_context_factory, **kwargs))
+        form_context.check_instance()
+        return form_context
 
     def __repr__(self):
         x = []
@@ -96,24 +201,113 @@ class GeneratorContext(ContextMapperInfoMixin, ContextTemplateEnvMixin, ContextT
             x.append(b.__repr__(self))
 
         return self.__class__.__name__ + '/' + '/'.join(x)
+
+
+FormContextArgs = ()
+
+FormContextFactory = Callable[[GeneratorContext,
+                               TemplateEnvironment,
+                               NamespaceStore, NamespaceStore, 'FormContextFactory',
+                               Form, int, bool, Sequence, dict], 'FormContext']
+
+T = TypeVar('T')
+
+
+class ContextCurrentElementMixin(Generic[T]):
+    def __init__(self) -> None:
+        super().__init__()
+        self._current_element = None
+
+    @property
+    def current_element(self) -> T:
+        return self._current_element
+
+    @current_element.setter
+    def current_element(self, new: T) -> None:
+        self._current_element = new
+
+
+class ContextFactoryMixin:
+    def __init__(self) -> None:
+        super().__init__()
+        self._factory = None
+
+    @property
+    def factory(self):
+        return self._factory
+
+    @factory.setter
+    def factory(self, new):
+        self._factory = new
+
+
+class FieldMapper(object):
+    pass
+
+
+class RelationshipFieldMapperMixin(MixinBase):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._relationship_field_mapper = None  # type: RelationshipFieldMappper
+
+    @property
+    def relationship_field_mapper(self) -> RelationshipfieldMapper:
+        return self._relationship_field_mapper
+
+    @relationship_field_mapper.setter
+    def relationship_field_mapper(self, new: RelationshipFieldMapper):
+        self._relationship_field_mapper = new
+
+    def check_instance(self):
+        super().check_instance()
+        assert self.relationship_field_mapper, "No relationship field mapper."
 
 
 @implementer(IFormContext)
-class FormContext(ContextGeneratorContextMixin, ContextTemplateEnvMixin, ContextTemplateVarsMixin):
-    def __init__(self, generator_context: GeneratorContext, template_env, root_namespace: NamespaceStore,
-                 nest_level: int = 0,
-                 do_modal: bool = False, form: Form = None, extra: dict = None,
-                 namespace: NamespaceStore = None):
+class FormContext(
+    ContextGeneratorContextMixin,
+    ContextTemplateEnvMixin,
+    ContextTemplateVarsMixin,
+    ContextCurrentElementMixin,
+    ContextFormContextFactoryMixin,
+    RelationshipFieldMapperMixin,
+):
+    def __init__(
+            self,
+            generator_context: GeneratorContext,
+            template_env: TemplateEnvironment,
+            template_vars: TemplateVars,
+            root_namespace: NamespaceStore,
+            namespace: NamespaceStore = None,
+            form_context_factory=None,
+            relationship_field_mapper: FieldMapper = None,
+            form: Form = None,
+            nest_level: int = 0,
+            do_modal: bool = False,
+            builders: Sequence = None,
+            extra: dict = None,
+    ):
         super().__init__()
-        self.root_namespace = root_namespace
-        self.template_env = template_env
+        if extra is None:
+            extra = {}
         self.generator_context = generator_context
-        self.template_vars = generator_context.template_vars
+        self.template_env = template_env
+        self.root_namespace = root_namespace
+        self.namespace = namespace
+        if form_context_factory is None:
+            form_context_factory = FormContext
+        self.form_context_factory = form_context_factory
+        self.form = form
         self.nest_level = nest_level
         self.do_modal = do_modal
-        self.form = form
+        self.builders = builders
         self.extra = extra
-        self.namespace = namespace
+        self.template_vars = template_vars
+        self.relationship_field_mapper = relationship_field_mapper
+
+    def check_instance(self):
+        super().check_instance()
 
     def __repr__(self):
         x = []
@@ -121,3 +315,17 @@ class FormContext(ContextGeneratorContextMixin, ContextTemplateEnvMixin, Context
             x.append(b.__repr__(self))
 
         return self.__class__.__name__ + '/' + '/'.join(x)
+
+    def copy(self, nest: bool = False, dup_extra: bool = False):
+        new = self.form_context_factory(generator_context=self.generator_context,
+                                        template_env=self.template_env,
+                                        template_vars=self.template_vars,
+                                        root_namespace=self.root_namespace,
+                                        namespace=None,
+                                        form_context_factory=self.form_context_factory,
+                                        form=self.form,
+                                        nest_level=bool and self.nest_level + 1 or self.nest_level,
+                                        do_modal=self.do_modal,
+                                        builders=self.builders,
+                                        extra=nest and dict() or dup_extra and copy.deepcopy(self.extra) or self.extra)
+        return new

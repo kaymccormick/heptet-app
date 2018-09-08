@@ -3,46 +3,40 @@ import re
 
 import stringcase
 from db_dump.info import IRelationshipInfo
-
-from email_mgmt_app.context import FormContext
-from email_mgmt_app.entrypoint import *
-from email_mgmt_app.form import *
-from email_mgmt_app.model.meta import Base
-from email_mgmt_app.view import BaseView
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.response import Response
-from pyramid_jinja2 import IJinja2Environment
 
+from email_mgmt_app.context import ContextFormContextMixin
+from email_mgmt_app.entrypoint import *
+from email_mgmt_app.form import *
 from email_mgmt_app.interfaces import IFormContext
+from email_mgmt_app.model.meta import Base
+from email_mgmt_app.view import BaseView
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
 
 
-@implementer(IGeneratorContext)
-class GenerateContext:
-    def __init__(self):
-        pass
-
-
-class IFormRelationshipMapper(Interface):
+class IFormFieldMapper(Interface):
     pass
 
 
-@adapter(IRelationshipInfo, IFormContext)
-@implementer(IFormRelationshipMapper)
-class FormRelationshipMapper:
-    def __init__(self, rel, context: FormContext, *args, **kwargs) -> None:
-        self._rel = rel
-        self._context = context
-        (x,) = args
-        self._select = x
+class IFormRelationshipFieldMapper(IFormFieldMapper):
+    pass
 
+
+@adapter(IFormContext)
+@implementer(IFormRelationshipFieldMapper)
+class FormRelationshipMapper:
+    def __init__(self, context: FormContext, form_select, *args, **kwargs) -> None:
+        self._context = context
+        self._select = form_select
 
     def map_relationship(self):
         context = self._context
-        rel = self._rel
+        rel = context.current_element
+        assert rel is not None
 
         vars = context.generator_context.template_vars
         assert 'js_stmts' in vars
@@ -60,8 +54,8 @@ class FormRelationshipMapper:
         # decide here what control to use . right now we default to select.
         #
         select = self._select
-        select.set_context(context)
-        select_html = select.get_select()
+        select.context = context
+        select_html = select.gen_select_html()
         assert select_html
         return select_html
 
@@ -126,32 +120,19 @@ class EntityCollectionView(BaseEntityRelatedView):
 
 
 class FormViewEntryPointGenerator(EntryPointGenerator):
-    def __init__(self, entry_point: EntryPoint, view) -> None:
-        super().__init__(entry_point, view)
-        self._form = None
-
-    def js_imports(self):
-        return []
-
-    def js_stmts(self):
-        return []
+    pass
 
 
+@adapter(IFormContext)
 @implementer(IRelationshipSelect)
 class RelationshipSelect:
-    def __init__(self, info) -> None:
+    def __init__(self, context: FormContext) -> None:
         super().__init__()
-        self._rel_info = info
-        self._context = None
-
-    # we want this to be a property, really.
-    def set_context(self, context):
         self._context = context
 
-    def get_select(self):
+    def gen_select_html(self):
         context = self._context
-        rel = self._rel_info
-
+        rel = context.current_element
         env = context.template_env
         nest_level = context.nest_level
 
@@ -187,15 +168,11 @@ class RelationshipSelect:
         # control excessive nesting
         if nest_level < 1:
             # this is bogus??
-            #mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
+            # mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
             sub_namespace = context.form.namespace.make_namespace(stringcase.camelcase(key))
-            context2 = FormContext(context.env, context.registry,
-                                   mapper2.get_one_mapper_info(),
-                                   context.nest_level + 1,
-                                   context.do_modal,
-                                   namespace=sub_namespace,
-                                   extra=context.extra)
+            context.copy(nest=True)
+            context2 = context.copy(nest=True)
 
             builder = context.request.registry.getAdapter(context2, IBuilder)
             entity_form = builder.form_representation()
@@ -251,24 +228,27 @@ class RelationshipSelect:
         return x
 
 
-@adapter(IFormContext)
-@implementer(IBuilder)
-class FormRepresentationBuilder:
-    def __init__(self, context: FormContext) -> None:
-        """
-        Fixed by ZCA
-        :type context: FormContext
-        :param context: The object to be adapted.
-        """
-        self._context = context
+@implementer(IEntryPointGenerator)
+@adapter(IGeneratorContext)
+class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextFormContextMixin):
+
+    def __init__(self, ctx: GeneratorContext) -> None:
+        super().__init__(ctx)
+        try:
+            self.form_context = ctx.form_context(relationship_field_mapper=FormRelationshipMapper)
+        except AssertionError as ex:
+            logger.critical("Unable to create form context")
+            logger.critical(ex)
+            raise ex
 
     def form_representation(self):
         """
         Generate a logical representation of an entity form.
         :return:
         """
-        context = self._context
-        mapper = context.mapper_info
+        context = self.form_context
+        assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
+        mapper = context.generator_context.mapper_info
 
         outer_form = False
         if context.nest_level == 0:
@@ -277,7 +257,10 @@ class FormRepresentationBuilder:
         mapper_key = mapper.local_table.key  # ??
         namespace_id = stringcase.camelcase(mapper_key)
         logger.debug("in form_representation with namespace id of %s", namespace_id)
-        the_form = Form(namespace_id, context.root_namespace, context.namespace,  # can be None
+        # we should provide for initialize the form in another fashion for testability!!!
+        the_form = Form(namespace_id=namespace_id,
+                        root_namespace=context.root_namespace,
+                        namespace=context.namespace,  # can be None
                         outer_form=outer_form)
         context.form = the_form
 
@@ -302,9 +285,12 @@ class FormRepresentationBuilder:
         # where its appropriate, embed or supply a subordinate form
         # additionally, supply a form variable and mapping for the relevant column.
         for rel in mapper.relationships:
-            rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRelationshipMapper)
+            # rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRe#lationshipMapper)
+
             column_name = rel.local_remote_pairs[0].local.column
-            form_html[column_name] = rel_mapper.map_relationship()
+            context.current_element = rel
+            form_html[column_name] = context.relationship_field_mapper(context,
+                                                                       RelationshipSelect(context)).map_relationship()
 
         # process each column
         for x in mapper.columns:
@@ -359,27 +345,17 @@ class FormRepresentationBuilder:
 
         return the_form
 
-
-@implementer(IEntryPointGenerator)
-@adapter(IGeneratorContext)
-class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
-    def __init__(self, generate_context) -> None:
-        self._generate_context = generate_context
-
     def generate(self):
         vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
+        ctx = self.ctx
+        t_vars = ctx.template_vars
 
-        # I am not sure 'resetting is the proper terminology'
-        # logger.debug("Resetting template variables %s", vars_)
-
-        t_vars = self.entry_point.vars
         for var in vars_:
             t_vars[var] = []
 
-        context = self._form_context
-        builder = self._builder
-        self._form = builder.form_representation()
-        root_namespace = context.root_namespace
+        ctx = self.ctx
+        self._form = self.form_representation()
+        root_namespace = ctx.root_namespace
 
         def get_data(ns):
             d_data = ns.get_namespace_data()
@@ -407,8 +383,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator):
         )
 
     def render_entity_form(self, context: FormContext):
-        builder = FormRepresentationBuilder(context)
-        self._form = builder.form_representation()
+        self._form = self.form_representation()
 
         return self._form.as_html()
 
@@ -466,6 +441,7 @@ class EntityFormView(BaseEntityRelatedView):
             if callable(namespace):
                 namespace = namespace()
 
+            # we shouldn't need to crate this
             context = FormContext(root_namespace=namespace, template_env=env,
                                   mapper_info=mapper_info,
                                   )
@@ -505,11 +481,10 @@ class EntityAddView(BaseEntityRelatedView):
 
 
 def includeme(config: Configurator):
-    # reg = config.registry.registerAdapter
-    # reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
-    # reg(FormRepresentationBuilder, [IFormContext], IBuilder)
-    # reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipMapper)
-    # reg(EntityFormViewEntryPointGenerator, [IFormContext, IBuilder, IEntryPoint, IEntryPointView, IRequest], IEntryPointGenerator)
+    reg = config.registry.registerAdapter
+    reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
+    reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipFieldMapper)
+    reg(EntityFormViewEntryPointGenerator, [IGeneratorContext], IEntryPointGenerator)
     # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
-    #    IEntryPointView)
+    ##    IEntryPointView)
     pass

@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Mapping, AnyStr, Tuple, MutableSequence
-from unittest.mock import MagicMock
+from typing import Mapping, AnyStr, Tuple
+from unittest.mock import MagicMock, call
 
-from entity import RelationshipSelect
 from ..info.test_relationship_info import *
 
 import pytest
 from db_dump.info import RelationshipInfo
 
-from email_mgmt_app.entity import FormRelationshipMapper, TemplateVars, FormRepresentationBuilder
+from email_mgmt_app.entity import FormRelationshipMapper, TemplateVars
 from tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar
 
 import logging
@@ -26,10 +24,6 @@ _vars_mapping = dict(rando=(TemplateVars(var1=StringTemplateVar(),
                                          var2=MutableSequenceTemplateVar([]),
                                          var3=MappingTemplateVar({}))))
 
-
-@pytest.fixture
-def form_representation_builder(form_context):
-    return FormRepresentationBuilder(form_context)
 
 
 @pytest.fixture()
@@ -63,16 +57,6 @@ def mock_relationship_info():
 
 
 @pytest.fixture
-def my_template_vars(make_template_vars):
-    return make_template_vars(js_imports=[], js_stmts=[], ready_stmts=[])
-
-
-@pytest.fixture
-def my_gen_context(make_generator_context, jinja2_env, mapper_info, my_template_vars):
-    return make_generator_context(jinja2_env, mapper_info, my_template_vars)
-
-
-@pytest.fixture
 def form_relationship_mapper(relationship_info, make_form_context, my_gen_context, root_namespace_store):
     form_context = make_form_context(my_gen_context, root_namespace_store)
     return FormRelationshipMapper(relationship_info, form_context)
@@ -87,26 +71,32 @@ def make_form_relationship_mapper():
 
 
 @pytest.fixture
-def my_form_context(make_form_context, my_gen_context, root_namespace_store):
-    return make_form_context(my_gen_context, root_namespace_store)
-
-
-@pytest.fixture
-def my_relationship_select(my_relationship_info):
-    return RelationshipSelect(my_relationship_info)
-
-
-@pytest.fixture
-def my_form_relationship_mapper(make_form_relationship_mapper, my_relationship_info, my_form_context,
+def my_form_relationship_mapper(make_form_relationship_mapper,
+                                my_relationship_info,
+                                my_form_context,
                                 my_relationship_select):
     return make_form_relationship_mapper(my_relationship_info, my_form_context, my_relationship_select)
 
 
-def test_map_relationship(my_form_context, my_form_relationship_mapper):
+
+
+def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_env):
     fm = my_form_context
+    fm.extra['suppress_cols'] = {}
     logger.critical("%s", repr(fm))
-    assert 0
     t = my_form_relationship_mapper
     r = t.map_relationship()
+    input = r['input_html']
+
+    jinja2_env.assert_has_calls([call.get_template('entity/rel_select.jinja2'),
+                                 call.get_template('entity/field_relationship.jinja2'),
+                                 ])
+
+    assert input
+    select_html = input['select_html']
+    assert select_html
+
+    logger.critical("%s", r)
+    assert 0
 
     pass

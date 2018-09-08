@@ -219,6 +219,7 @@ class ResourceManager:
         :param entity_type:
         :param node_name:
         """
+        assert mapper_key, "Mapper key must be provided (%s)." % mapper_key
         self._mapper_key = mapper_key
         self._entity_type = entity_type
         self._config = config
@@ -259,6 +260,7 @@ class ResourceManager:
         """
         op: ResourceOperation
 
+        assert self._mapper_key, "No mapper key (%s)" % self._mapper_key
         reg_view = False
         node_name = self._node_name
         root_resource = self.get_root_resource(config)
@@ -281,7 +283,7 @@ class ResourceManager:
 
         mapper_wrapper = self.mapper_wrappers[self._mapper_key]
         # mapper_wrapper = request.registry.queryUtility(IMapperInfo, self._mapper_key)
-        assert mapper_wrapper
+        assert mapper_wrapper, "no mapper wrapper %s in %s" % (self._mapper_key, self.mapper_wrappers)
         entity_type = mapper_wrapper.mapper_info.entity
 
         # our factory now returns dynamic classes - you get a unique class
@@ -527,7 +529,7 @@ class LeafResource(Resource):
         raise KeyError
 
 
-class IRootResource(Interface):
+class IRootResource(IResource):
     def get_data():
         pass
 
@@ -535,7 +537,7 @@ class IRootResource(Interface):
         pass
 
 
-@implementer(IResource)
+@implementer(IRootResource)
 class RootResource(ContainerResource):
     def __new__(cls):
         x = getattr(cls, "__instance__", None)
@@ -574,6 +576,7 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
 
 
 def includeme(config: Configurator):
+    config.include('.entrypoint')
     factory = Factory(Resource, 'resource',
                       'ResourceFactory', (IResource,))
     config.registry.registerUtility(factory, IFactory, 'resource')

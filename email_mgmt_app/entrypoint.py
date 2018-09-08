@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+import abc
 import logging
 from typing import AnyStr, TypeVar, Generic
 
 from pyramid.config import Configurator
+
+from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.tvars import TemplateVars
 from zope import interface
 
@@ -160,22 +165,25 @@ class EntryPoint:
 # we get a request, which means we get a registry
 @adapter(IEntryPoint, IEntryPointView)
 @implementer(IEntryPointGenerator)
-class EntryPointGenerator:
-    def __init__(self, entry_point: EntryPoint, view) -> None:
+class EntryPointGenerator(metaclass=abc.ABCMeta):
+    def __init__(self, ctx: GeneratorContext) -> None:
         """
 
         :param entry_point:
         :param view:
         """
         super().__init__()
-
-        self._entry_point = entry_point
-        self._view = view
+        self._ctx = ctx
 
     @property
-    def entry_point(self) -> EntryPoint:
-        return self._entry_point
+    def ctx(self) -> GeneratorContext:
+        return self._ctx
 
+    @ctx.setter
+    def ctx(self, new: GeneratorContext) -> None:
+        self._ctx = new
+
+    @abc.abstractmethod
     def generate(self):
         pass
 
@@ -184,10 +192,6 @@ class EntryPointGenerator:
 
     def js_imports(self):
         return []
-
-    @property
-    def request(self):
-        return self._request
 
 
 def register_entry_point(config, entry_point: IEntryPoint):
