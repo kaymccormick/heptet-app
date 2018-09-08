@@ -1,6 +1,6 @@
 import pytest
 
-from entity import EntityFormView, EntityFormViewEntryPointGenerator
+from email_mgmt_app.entity import EntityFormView
 
 
 @pytest.fixture

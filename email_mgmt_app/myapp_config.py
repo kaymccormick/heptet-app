@@ -37,6 +37,7 @@ def config_process_struct(config, process):
 
 def load_process_struct() -> ProcessStruct:
     email_db_json = ''
+    # we need to find this?
     with open('email_db.json', 'r') as f:
         email_db_json = ''.join(f.readlines())
     process_schema = get_process_schema()

@@ -12,6 +12,7 @@ from db_dump.schema import RelationshipSchema
 from pyramid_tm.tests import DummyRequest
 from zope.interface.registry import Components
 
+import email_mgmt_app.myapp_config
 from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, EntryPoint
 from email_mgmt_app.context import FormContext, GeneratorContext
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper
@@ -24,7 +25,7 @@ from pyramid.response import Response
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.form import Form
 from email_mgmt_app.myapp_config import load_process_struct
-from entity import FormRelationshipMapper, RelationshipSelect
+from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ def entity_view_deriver(view_test, view_deriver_info):
 @pytest.fixture
 def config_fixture():
     config = Configurator(package="email_mgmt_app", root_package="email_mgmt_app")
-    config.include('myapp_config')
+    config.include(email_mgmt_app.myapp_config)
     logger.warning("config = %s", config)
 
     def _dump(v, lineprefix=None, nameprefix="", depth=0, cb: Callable = None, recurse=True):
@@ -141,7 +142,7 @@ def mapper_wrapper(mapper_info):
 
 @pytest.fixture
 def resource_manager(config_fixture, entity_type, mapper_wrapper):
-    return ResourceManager(config_fixture, mapper_wrapper.key, "", entity_type, mapper_wrapper)
+    return ResourceManager(config_fixture, mapper_wrapper.key, title="", entity_type=entity_type, mapper_wrapper=mapper_wrapper)
 
 
 @pytest.fixture
@@ -249,7 +250,8 @@ def my_form(root_namespace_store):
 
 @pytest.fixture
 def my_form_context(my_gen_context):
-    return my_gen_context.form_context()
+    mapper = FormRelationshipMapper()
+    return my_gen_context.form_context(mapper)
 
 
 @pytest.fixture
@@ -337,3 +339,14 @@ _json = """
 @pytest.fixture
 def my_json():
     return _json
+
+
+@pytest.fixture
+def webapp_settings():
+    return {
+        'sqlalchemy.url': 'sqlite:///:memory:',  # 'postgresql://flaskuser:FcQCPDM7%40RpRCsnO@localhost/email',
+        'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
+        'email_mgmt_app.authsource': 'db',
+        'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
+        'email_mgmt_app.jinja2_loader_template_path': 'email_mgmt_app/templates:email_mgmt_app',
+    }

@@ -1,9 +1,9 @@
-from tvars import TemplateVars
+from email_mgmt_app.tvars import TemplateVars
 
 import logging
 
-
 logger = logging.getLogger(__name__)
+
 
 def test_template_vars():
     template_vars = TemplateVars()
@@ -17,4 +17,3 @@ def test_template_vars():
     template_vars['zz'] = []
     template_vars['zx'] = object()
     logger.critical("%s <%s>", template_vars['zz'], type(template_vars['zz']))
-

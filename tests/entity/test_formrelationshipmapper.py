@@ -9,7 +9,7 @@ import pytest
 from db_dump.info import RelationshipInfo
 
 from email_mgmt_app.entity import FormRelationshipMapper, TemplateVars
-from tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar
+from email_mgmt_app.tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar
 
 import logging
 

@@ -27,3 +27,4 @@ class ArgumentContext:
     def subpath_index(self, new):
         logging.info("setting subpath_index to %s", new)
         self._subpath_index = new
+

@@ -1,4 +1,4 @@
-from res import Resource, ContainerResource, RootResource
+from email_mgmt_app.res import Resource, ContainerResource, RootResource
 
 
 def test_root_resource(root_resource):

@@ -31,17 +31,6 @@ def packed_assets():
             './node_modules/webpack/buildin/global.js', './src/index.prod.js')
 
 
-@pytest.fixture
-def webapp_settings():
-    return {
-        'sqlalchemy.url': 'sqlite:///:memory:',  # 'postgresql://flaskuser:FcQCPDM7%40RpRCsnO@localhost/email',
-        'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
-        'email_mgmt_app.authsource': 'db',
-        'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
-        'email_mgmt_app.jinja2_loader_template_path': 'email_mgmt_app/templates:email_mgmt_app',
-    }
-
-
 def init_database(engine, session):
     from email_mgmt_app.model.meta import Base
     Base.metadata.create_all(engine)

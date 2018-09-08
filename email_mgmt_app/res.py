@@ -400,20 +400,6 @@ class _Resource:
 
         return x
 
-    #
-    #     clsname = "%s%04X" % (cls.__name__, getattr(cls, '__count__', 0))
-    #     setattr(cls, '__count__', getattr(cls, '__count__', 0) + 1)
-    #     logger.warning("name is %s", clsname)
-    #     dict__ = sys.modules[cls.__module__].__dict__
-    #     #dict__[clsname] = _Resource
-    #     t = type(clsname, (_Resource), dict())
-    #     assert False, t
-    #
-    # new__ = type((_Resource), {})
-    #
-    # logger.warning("__new = %s", new__)
-    # return new__(name, parent, title, entity_type)
-
     def __init__(self,
                  name: AnyStr,
                  parent: "ContainerResource",

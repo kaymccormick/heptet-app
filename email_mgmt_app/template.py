@@ -120,6 +120,7 @@ def register_components(components: Components):
 
 
 def includeme(config: Configurator):
+    return
     config.add_jinja2_renderer('template-env', settings_prefix='email_mgmt_app.jinja2.')
 
     def do_action():

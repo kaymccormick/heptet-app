@@ -13,7 +13,7 @@ from pyramid.scripts.common import parse_vars
 from model.email_mgmt import Domain, ServiceEntry, Organization, Person, Role, \
     OrganizationRole
 from model.meta import Base
-from sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
+from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 
 
 def usage(argv):

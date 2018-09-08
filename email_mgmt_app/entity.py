@@ -1,13 +1,15 @@
 import json
 import re
+from typing import Mapping
 
 import stringcase
 from db_dump.info import IRelationshipInfo
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.response import Response
+from sqlalchemy.ext.declarative import DeclarativeMeta
 
-from email_mgmt_app.context import ContextFormContextMixin
+from email_mgmt_app.context import ContextFormContextMixin, EntityTypeMixin
 from email_mgmt_app.entrypoint import *
 from email_mgmt_app.form import *
 from email_mgmt_app.interfaces import IFormContext
@@ -18,6 +20,13 @@ GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
 
 
+class EntityFormConfiguration(EntityTypeMixin[DeclarativeMeta]):
+    def __init__(self, entity_type: DeclarativeMeta, field_renderers: Mapping[AnyStr, object]) -> None:
+        super().__init__()
+        self.entity_type = entity_type
+        self.field_renderers = field_renderers
+
+
 class IFormFieldMapper(Interface):
     pass
 
@@ -25,6 +34,11 @@ class IFormFieldMapper(Interface):
 class IFormRelationshipFieldMapper(IFormFieldMapper):
     pass
 
+
+# contemplate this ... what does this class fundamentally do
+# it maps a relationship field to the form HTML (currently only in 'new') mode
+# in fact, this generates some js vars also. its really just a ridiculous wrapper around
+# "gen_select_html"
 
 @adapter(IFormContext)
 @implementer(IFormRelationshipFieldMapper)
@@ -123,6 +137,24 @@ class FormViewEntryPointGenerator(EntryPointGenerator):
     pass
 
 
+class _template:
+    __slots__ = ['name']
+
+    def __init__(self, name) -> None:
+        super().__init__()
+        self.name = name
+
+
+class _templates:
+    __slots__ = ['collapse']
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.collapse = _template('entity/collapse.jinja2')
+
+template = _templates()
+
+# why do we have this clasas?
 @adapter(IFormContext)
 @implementer(IRelationshipSelect)
 class RelationshipSelect:
@@ -177,7 +209,7 @@ class RelationshipSelect:
             builder = context.request.registry.getAdapter(context2, IBuilder)
             entity_form = builder.form_representation()
 
-            collapse = env.get_template('entity/collapse.jinja2').render(
+            collapse = env.get_template(template.collapse.name).render(
                 collapse_id=collapse_id.get_id(),
                 collapse_contents=entity_form.as_html()
             )
@@ -286,6 +318,9 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
         # additionally, supply a form variable and mapping for the relevant column.
         for rel in mapper.relationships:
             # rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRe#lationshipMapper)
+
+            # we specify relationship select here. However, there are other ways we'll wish to
+            # render
 
             column_name = rel.local_remote_pairs[0].local.column
             context.current_element = rel
@@ -442,9 +477,6 @@ class EntityFormView(BaseEntityRelatedView):
                 namespace = namespace()
 
             # we shouldn't need to crate this
-            context = FormContext(root_namespace=namespace, template_env=env,
-                                  mapper_info=mapper_info,
-                                  )
 
             wrapper = generator.render_entity_form_wrapper(context)
             _vars = {

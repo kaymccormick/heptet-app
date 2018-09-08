@@ -1,6 +1,6 @@
 import sys
 
-from entity import RelationshipSelect
+
 
 
 def test_(my_relationship_select):

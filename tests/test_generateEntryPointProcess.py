@@ -1,6 +1,6 @@
 import pytest
 
-from process import GenerateEntryPointProcess, ProcessContext, AssetManager
+from email_mgmt_app.process import GenerateEntryPointProcess, ProcessContext, AssetManager
 
 
 @pytest.fixture

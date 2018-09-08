@@ -51,10 +51,10 @@ def wsgi_app(global_config, **settings):
         global_reg = getGlobalSiteManager()
 
     config = Configurator(package="email_mgmt_app",
-                          registry=global_reg, settings=settings,root_factory=RootFactory())
+                          registry=global_reg, settings=settings, root_factory=RootFactory())
     config.include('.myapp_config')
     if use_global_reg:
-        config.setup_registry(settings=settings,root_factory=RootFactory()
+        config.setup_registry(settings=settings, root_factory=RootFactory()
                               )
 
     jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
@@ -70,11 +70,10 @@ def wsgi_app(global_config, **settings):
         wrapper = MapperWrapper(mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
 
-
     # we can include viewderiver here because we haven't created all of our views yet
     config.include('.viewderiver')
     # we no longer need a custom predicate!
-    #config.add_view_predicate('entity_type', EntityTypePredicate)
+    # config.add_view_predicate('entity_type', EntityTypePredicate)
     config.include('.entity')
     # this adds all our views, and other stuff
     config_process_struct(config, process)
@@ -91,7 +90,7 @@ def wsgi_app(global_config, **settings):
 
     # now static routes only
     config.include('.routes')
-#    config.include('.auth')
+    #    config.include('.auth')
     config.include('.views')
     config.include('.template')
     config.include('.process')

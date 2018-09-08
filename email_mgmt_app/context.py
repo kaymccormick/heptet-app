@@ -6,6 +6,7 @@ from typing import Sequence, Generic, TypeVar, Callable
 
 from db_dump.info import MapperInfo
 from jinja2 import Environment
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.interface import implementer
 
 from email_mgmt_app.form import Form
@@ -19,8 +20,24 @@ logger = logging.getLogger(__name__)
 
 class MixinBase:
     def check_instance(self):
-
         pass
+
+
+T = TypeVar('T')
+
+
+class EntityTypeMixin(Generic[T], MixinBase):
+    def __init__(self) -> None:
+        super().__init__()
+        self._entity_type = None  # type: T
+
+    @property
+    def entity_type(self) -> T:
+        return self._entity_type
+
+    @entity_type.setter
+    def entity_type(self, new: T) -> None:
+        self._entity_type = new
 
 
 class ContextFormContextMixin(MixinBase):
@@ -44,7 +61,7 @@ class ContextFormContextMixin(MixinBase):
         assert self.form_context
 
 
-class ContextGeneratorContextMixin(MixinBase):
+class GeneratorContextMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
         self._generator_context = None
@@ -65,7 +82,7 @@ class ContextGeneratorContextMixin(MixinBase):
         assert self.generator_context
 
 
-class ContextTemplateVarsMixin(MixinBase):
+class TemplateVarsMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
         self._template_vars = None
@@ -107,7 +124,7 @@ class ContextMapperInfoMixin(MixinBase):
         assert self.mapper_info
 
 
-class ContextTemplateEnvMixin(MixinBase):
+class TemplateEnvMixin(MixinBase):
 
     def __init__(self) -> None:
         super().__init__()
@@ -129,7 +146,7 @@ class ContextTemplateEnvMixin(MixinBase):
         assert self.template_env
 
 
-class ContextFormContextFactoryMixin(MixinBase):
+class FormContextFactoryMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
         self._form_context_factory = None  # type: FormContextFactory
@@ -166,12 +183,14 @@ class ContextRootNamespaceMixin(MixinBase):
         assert self.root_namespace
 
 
+# our generator context shouldn't have all of this knowledge of the form stuff!
+
 @implementer(IGeneratorContext)
 class GeneratorContext(
     ContextMapperInfoMixin,
-    ContextTemplateEnvMixin,
-    ContextTemplateVarsMixin,
-    ContextFormContextFactoryMixin,
+    TemplateEnvMixin,
+    TemplateVarsMixin,
+    FormContextFactoryMixin,
     ContextRootNamespaceMixin,
 ):
     def __init__(self, mapper_info, template_env, template_vars, form_context_factory: FormContextFactory,
@@ -190,8 +209,9 @@ class GeneratorContext(
 
     def form_context(self, **kwargs):
         form_context = self.form_context_factory(**dict(generator_context=self, template_env=self.template_env,
-                                                 template_vars=self.template_vars, root_namespace=self.root_namespace,
-                                                 form_context_factory=self.form_context_factory, **kwargs))
+                                                        template_vars=self.template_vars,
+                                                        root_namespace=self.root_namespace,
+                                                        form_context_factory=self.form_context_factory, **kwargs))
         form_context.check_instance()
         return form_context
 
@@ -213,7 +233,7 @@ FormContextFactory = Callable[[GeneratorContext,
 T = TypeVar('T')
 
 
-class ContextCurrentElementMixin(Generic[T]):
+class CurrentElementMixin(Generic[T]):
     def __init__(self) -> None:
         super().__init__()
         self._current_element = None
@@ -264,13 +284,17 @@ class RelationshipFieldMapperMixin(MixinBase):
         assert self.relationship_field_mapper, "No relationship field mapper."
 
 
+# we neeed a "builder" or whatever that becomes
+# FormRepresentationBuilder - I suppose it does buil!
+# we need a "collection' of field mappers
+
 @implementer(IFormContext)
 class FormContext(
-    ContextGeneratorContextMixin,
-    ContextTemplateEnvMixin,
-    ContextTemplateVarsMixin,
-    ContextCurrentElementMixin,
-    ContextFormContextFactoryMixin,
+    GeneratorContextMixin,
+    TemplateEnvMixin,
+    TemplateVarsMixin,
+    CurrentElementMixin,
+    FormContextFactoryMixin,
     RelationshipFieldMapperMixin,
 ):
     def __init__(

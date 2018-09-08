@@ -1,13 +1,14 @@
 import logging
 
 from email_mgmt_app.root import RootFactory
-from res import RootResource
+from email_mgmt_app.res import RootResource
 
 logger = logging.getLogger(__name__)
 
 
 def test_root_factory(app_request):
-    rf = RootFactory(app_request)
+    # this fails because root factory relies on a regostered RootResource
+    rf = RootFactory()
     assert rf is not None
-    r = rf()
+    r = rf(app_request)
     assert r is RootResource()

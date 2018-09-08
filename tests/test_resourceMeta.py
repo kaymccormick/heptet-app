@@ -1,7 +1,7 @@
 import logging
 from unittest import TestCase
 
-from res import Resource, RootResource
+from email_mgmt_app.res import Resource, RootResource
 
 logger = logging.getLogger(__name__)
 
