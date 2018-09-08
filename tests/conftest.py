@@ -6,7 +6,7 @@ from db_dump.info import MapperInfo
 from pyramid_tm.tests import DummyRequest
 
 from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, EntryPoint, FormRepresentationBuilder
-from context import FormContext, GeneratorContext
+from email_mgmt_app.context import FormContext, GeneratorContext
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper
 from email_mgmt_app.res import RootResource, Resource, ResourceManager
 from email_mgmt_app.viewderiver import entity_view
@@ -14,7 +14,7 @@ from jinja2 import Environment
 from pyramid.config import Configurator
 from pyramid.response import Response
 
-from tvars import TemplateVars
+from email_mgmt_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 
@@ -142,20 +142,29 @@ def jinja2_env():
 
 
 @pytest.fixture
+def make_template_vars():
+    def _make_template_vars(**kwargs):
+        return TemplateVars(**kwargs)
+
+    return _make_template_vars
+
+
+@pytest.fixture
 def template_vars():
     return TemplateVars()
 
 
 @pytest.fixture
-def generator_context(jinja2_env, mapper_info, template_vars):
-    return GeneratorContext(mapper_info, jinja2_env, template_vars)
+def make_generator_context():
+    def _make_generator_context(jinja2_env, mapper_info, template_vars):
+        return GeneratorContext(mapper_info, jinja2_env, template_vars)
+
+    return _make_generator_context
 
 
 @pytest.fixture
-def form_context(generator_context, root_namespace_store):
-    return FormContext(generator_context, root_namespace_store)
+def make_form_context():
+    def _make_form_context(generator_context, root_namespace_store):
+        return FormContext(generator_context, generator_context.template_env, root_namespace_store)
 
-
-@pytest.fixture
-def form_representation_builder(form_context):
-    return FormRepresentationBuilder(form_context)
+    return _make_form_context

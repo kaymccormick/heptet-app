@@ -14,7 +14,7 @@ from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 
-from interfaces import IFormContext
+from email_mgmt_app.interfaces import IFormContext
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
@@ -33,9 +33,12 @@ class IFormRelationshipMapper(Interface):
 @adapter(IRelationshipInfo, IFormContext)
 @implementer(IFormRelationshipMapper)
 class FormRelationshipMapper:
-    def __init__(self, rel, context: FormContext) -> None:
+    def __init__(self, rel, context: FormContext, *args, **kwargs) -> None:
         self._rel = rel
         self._context = context
+        (x,) = args
+        self._select = x
+
 
     def map_relationship(self):
         context = self._context
@@ -56,7 +59,7 @@ class FormRelationshipMapper:
         #
         # decide here what control to use . right now we default to select.
         #
-        select = request.registry.getAdapter(rel, IRelationshipSelect)
+        select = self._select
         select.set_context(context)
         select_html = select.get_select()
         assert select_html
@@ -141,14 +144,15 @@ class RelationshipSelect:
         self._rel_info = info
         self._context = None
 
+    # we want this to be a property, really.
     def set_context(self, context):
         self._context = context
 
     def get_select(self):
         context = self._context
         rel = self._rel_info
-        request = context.request
-        env = request.registry.getUtility(IJinja2Environment, 'app_env')
+
+        env = context.template_env
         nest_level = context.nest_level
 
         argument = rel.argument
@@ -161,6 +165,7 @@ class RelationshipSelect:
 
         label_contents = stringcase.sentencecase(key)
 
+        assert context.form
         select_id = context.form.get_html_id(stringcase.camelcase('id_select_%s' % key))  # ['select', prefix, key])
         select_name = stringcase.camelcase("select_" + key)
         select_name = context.form.get_html_form_name(select_name, True)
@@ -169,7 +174,7 @@ class RelationshipSelect:
         entities = []
         if issubclass(class_, Base):
             try:
-                entities = request.dbsession.query(class_).all()
+                entities = context.dbsession.query(class_).all()
             except AttributeError as ex:
                 pass
 
@@ -182,7 +187,7 @@ class RelationshipSelect:
         # control excessive nesting
         if nest_level < 1:
             # this is bogus??
-            mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
+            #mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
             sub_namespace = context.form.namespace.make_namespace(stringcase.camelcase(key))
             context2 = FormContext(context.env, context.registry,

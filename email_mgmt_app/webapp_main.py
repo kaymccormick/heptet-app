@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 def config_process_struct(config, process):
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)
-        logger.warning("Registering mapper_wrapper %s", mapper)
+        logger.debug("Registering mapper_wrapper %s", mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, wrapper.key)
         node_name = mapper.local_table.key
         manager = ResourceManager(

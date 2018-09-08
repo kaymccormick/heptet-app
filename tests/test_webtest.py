@@ -3,28 +3,33 @@ import re
 
 import lxml.html
 import pytest
+from lxml import html
 from webtest import TestApp
 import transaction
 import lxml
 
 logger = logging.getLogger(__name__)
-import webapp_main
-from sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
-
-javascript_contenttypes = ['application/javascript', 'text/plain']
-
-packed_assets = ['./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_modules/bootstrap/dist/js/bootstrap.js',
-                 './node_modules/css-loader/index.js!./node_modules/bootstrap/dist/css/bootstrap.min.css',
-                 './node_modules/css-loader/lib/css-base.js', './node_modules/jquery/dist/jquery.js',
-                 './node_modules/popper.js/dist/esm/popper.js',
-                 './node_modules/raw-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js',
-                 './node_modules/script-loader/addScript.js',
-                 './node_modules/script-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js',
-                 './node_modules/style-loader/lib/addStyles.js', './node_modules/style-loader/lib/urls.js',
-                 './node_modules/webpack/buildin/global.js', './src/index.prod.js']
+import email_mgmt_app.webapp_main
+from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 
 
-# logging.basicConfig(level=logging.DEBUG)
+@pytest.fixture
+def javascript_contenttypes():
+    return ('application/javascript', 'text/plain')
+
+
+@pytest.fixture
+def packed_assets():
+    return ('./node_modules/bootstrap/dist/css/bootstrap.min.css', './node_modules/bootstrap/dist/js/bootstrap.js',
+            './node_modules/css-loader/index.js!./node_modules/bootstrap/dist/css/bootstrap.min.css',
+            './node_modules/css-loader/lib/css-base.js', './node_modules/jquery/dist/jquery.js',
+            './node_modules/popper.js/dist/esm/popper.js',
+            './node_modules/raw-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js',
+            './node_modules/script-loader/addScript.js',
+            './node_modules/script-loader/index.js!./node_modules/jquery/dist/jquery.slim.min.js',
+            './node_modules/style-loader/lib/addStyles.js', './node_modules/style-loader/lib/urls.js',
+            './node_modules/webpack/buildin/global.js', './src/index.prod.js')
+
 
 @pytest.fixture
 def webapp_settings():
@@ -38,13 +43,13 @@ def webapp_settings():
 
 
 def init_database(engine, session):
-    from model.meta import Base
+    from email_mgmt_app.model.meta import Base
     Base.metadata.create_all(engine)
 
 
 @pytest.fixture
 def webapp_factory():
-    return webapp_main.wsgi_app
+    return email_mgmt_app.webapp_main.wsgi_app
 
 
 @pytest.fixture
@@ -76,6 +81,7 @@ def transaction_manager():
 def tm_session(session_factory, transaction_manager):
     return get_tm_session(session_factory, transaction_manager)
 
+
 @pytest.fixture
 def app_test_get(request, app_test):
     logger.critical("%s", request)
@@ -85,7 +91,8 @@ def app_test_get(request, app_test):
 def url(request):
     return request.param
 
-def test_webtest2(sqlalchemy_engine, tm_session, app_test, url):
+
+def test_webtest(sqlalchemy_engine, tm_session, app_test, url):
     init_database(sqlalchemy_engine, tm_session)
 
     resp = app_test.get(url)
@@ -93,6 +100,17 @@ def test_webtest2(sqlalchemy_engine, tm_session, app_test, url):
     assert resp.content_type == 'text/html'
     assert resp.content_length > 0
     root = lxml.html.document_fromstring(resp.text)
+    assert root.tag == "html"
+
+    logger.critical("%s", html.tostring(root, encoding="unicode"))
+    _head = root.xpath("head")
+    assert _head, "No head element"
+    assert len(_head) == 1, "Too many head elements"
+    (head) = _head
+    _title = _head.xpath("title")
+    assert _title, "No title Element"
+    assert len(_title) == 1, "Too many title elements"
+
 
     logging.debug("type(root) = %s", type(root))
     scripts = root.xpath("//script")

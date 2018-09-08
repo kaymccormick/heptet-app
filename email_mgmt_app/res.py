@@ -320,7 +320,7 @@ class ResourceManager:
                                      # we shouldn't be calling into the "operation" for the entry point
                                      mapper_wrapper=mapper_wrapper,
                                      view_kwargs=view_kwargs)
-            logger.critical("op.view is %s", op.view)
+            #logger.critical("op.view is %s", op.view)
             x = op.view(resource, request)
             # generator = config.registry.getMultiAdapter([env, entry_point, x], IEntryPointGenerator)
             # # logger.debug("setting generator to %s", generator)
