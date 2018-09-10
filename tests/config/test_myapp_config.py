@@ -3,8 +3,8 @@ import logging
 from pyramid.config import Configurator
 
 import email_mgmt_app.myapp_config
-from email_mgmt_app.interfaces import IResource
-from email_mgmt_app.myapp_config import config_process_struct, load_process_struct
+from interfaces import IResource
+from myapp_config import config_process_struct, load_process_struct
 
 logger = logging.getLogger(__name__)
 

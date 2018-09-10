@@ -1,6 +1,6 @@
 from pyramid.config import Configurator
 
-from email_mgmt_app.templates import BaseTemplate
+from templates import BaseTemplate
 
 
 def apptemplate(template=None):

@@ -10,9 +10,9 @@ from sqlalchemy import String
 from sqlalchemy.exc import InvalidRequestError
 
 import email_mgmt_app
-from email_mgmt_app.entity import EntityFormView
-from email_mgmt_app.impl import MapperWrapper
-from email_mgmt_app.interfaces import IMapperInfo, IResource
+from entity import EntityFormView
+from impl import MapperWrapper
+from interfaces import IMapperInfo, IResource
 from res import ResourceManager, OperationArgument, RootResource
 
 logger = logging.getLogger(__name__)

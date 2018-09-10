@@ -1,4 +1,3 @@
-import builtins
 import json
 import logging
 import sys
@@ -7,24 +6,28 @@ from typing import Callable
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from db_dump.info import MapperInfo
-from pyramid_tm.tests import DummyRequest
-from zope.interface.registry import Components
-
-import email_mgmt_app.myapp_config
-from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, EntryPoint
-from email_mgmt_app.context import FormContext, GeneratorContext
-from email_mgmt_app.impl import NamespaceStore, MapperWrapper
-from res import RootResource, Resource, ResourceManager
-from email_mgmt_app.viewderiver import entity_view
 from jinja2 import Environment, Template
 from pyramid.config import Configurator
 from pyramid.response import Response
+from pyramid_tm.tests import DummyRequest
+from sqlalchemy import inspect
+from zope.interface.registry import Components
 
-from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.form import Form
-from email_mgmt_app.myapp_config import load_process_struct
-from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
+import email_mgmt_app.myapp_config
+import field_renderer
+from db_dump import RelationshipSchema
+from db_dump.info import MapperInfo
+from context import FormContext, GeneratorContext
+from entity import EntityFormViewEntryPointGenerator, EntryPoint
+from entity import FormRelationshipMapper, RelationshipSelect
+from form import Form
+from impl import NamespaceStore, MapperWrapper
+from myapp_config import load_process_struct
+from tvars import TemplateVars
+from viewderiver import entity_view
+from model import map_column, get_column_map
+from model.email_mgmt import Domain
+from res import RootResource, Resource, ResourceManager
 
 logger = logging.getLogger(__name__)
 
@@ -349,3 +352,10 @@ def webapp_settings():
         'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
         'email_mgmt_app.jinja2_loader_template_path': 'email_mgmt_app/templates:email_mgmt_app',
     }
+
+@pytest.fixture
+def form_config_test(my_gen_context, process_struct):
+    organization = inspect(Domain).relationships.organization
+    map_column(organization, field_renderer.Select)
+    logger.warning("%s", get_column_map(organization))
+

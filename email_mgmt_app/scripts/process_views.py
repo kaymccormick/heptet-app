@@ -15,17 +15,17 @@ import email_mgmt_app.webapp_main
 import email_mgmt_app.interfaces
 import pyramid.interfaces
 
-from email_mgmt_app.context import GeneratorContext, FormContext
-from email_mgmt_app.entrypoint import IEntryPoint, ICollector, EntryPoints, EntryPoint, IEntryPointGenerator
-from email_mgmt_app.impl import CollectorContext, IProcess, NamespaceStore
-from email_mgmt_app.process import ProcessContext, setup_jsonencoder, AssetManager
-from email_mgmt_app.scripts.util import get_request, template_env
-from email_mgmt_app.webapp_main import on_new_request
+from context import GeneratorContext, FormContext
+from entrypoint import IEntryPoint, ICollector, EntryPoints, EntryPoint, IEntryPointGenerator
+from impl import CollectorContext, IProcess, NamespaceStore
+from process import ProcessContext, setup_jsonencoder, AssetManager
+from scripts.util import get_request, template_env
+from webapp_main import on_new_request
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
-from email_mgmt_app.root import RootFactory
-from email_mgmt_app.tvars import TemplateVars
+from root import RootFactory
+from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 

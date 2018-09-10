@@ -6,7 +6,7 @@ import webapp_main
 from pyramid.interfaces import IRootFactory
 from pyramid.request import Request
 
-from email_mgmt_app.root import RootFactory
+from root import RootFactory
 from res import RootResource, ResourceManager
 from pyramid import testing
 
@@ -31,9 +31,9 @@ class BaseTest(unittest.TestCase):
         settings = self.config.get_settings()
         self.settings = settings
 
-        from email_mgmt_app.sqlalchemy_integration import get_tm_session
-        from email_mgmt_app.sqlalchemy_integration import get_session_factory
-        from email_mgmt_app.sqlalchemy_integration import get_engine
+        from sqlalchemy_integration import get_tm_session
+        from sqlalchemy_integration import get_session_factory
+        from sqlalchemy_integration import get_engine
 
         self.engine = get_engine(settings)
         session_factory = get_session_factory(self.engine)
@@ -107,7 +107,7 @@ class TestConfigSuccessCondition(BaseAppTest):
 class TestMyViewFailureCondition(BaseTest):
     def test_failing_view(self):
         pass
-        # from email_mgmt_app.views.default import my_view
+        # from views.default import my_view
         # info = my_view(dummy_request(self.session))
         # self.assertEqual(info.status_int, 500)
 
@@ -118,7 +118,7 @@ class TestViewSuccessCondition(BaseTest):
         super().setUp()
         self.init_database()
 
-        # from email_mgmt_app.models import MyModel
+        # from models import MyModel
         #
         # model = MyModel(name='one', value=55)
         #self.session.add(model)

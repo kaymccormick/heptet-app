@@ -9,12 +9,12 @@ from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
-from email_mgmt_app.context import ContextFormContextMixin, EntityTypeMixin
-from email_mgmt_app.entrypoint import *
-from email_mgmt_app.form import *
-from email_mgmt_app.interfaces import IFormContext
-from email_mgmt_app.model.meta import Base
-from email_mgmt_app.view import BaseView
+from context import ContextFormContextMixin, EntityTypeMixin
+from entrypoint import *
+from form import *
+from interfaces import IFormContext
+from model.meta import Base
+from view import BaseView
 from model import get_column_map
 
 GLOBAL_NAMESPACE = 'global'
@@ -161,10 +161,13 @@ class _templates:
 template = _templates()
 
 
-# why do we have this clasas?
+# we should seaprate concernts here
+# if we need to build the form representation, we should be able to do it before
+# this point.
 @adapter(IFormContext)
 @implementer(IRelationshipSelect)
 class RelationshipSelect:
+    # we need something called a "builder" here
     def __init__(self, context: FormContext) -> None:
         super().__init__()
         self._context = context

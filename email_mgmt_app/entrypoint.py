@@ -6,16 +6,16 @@ from typing import AnyStr, TypeVar, Generic
 
 from pyramid.config import Configurator
 
-from email_mgmt_app.context import GeneratorContext, FormContext
-from email_mgmt_app.tvars import TemplateVars
+from context import GeneratorContext, FormContext
+from tvars import TemplateVars
 from zope import interface
 
-from email_mgmt_app.interfaces import *
-from email_mgmt_app.impl import MyCollector
+from interfaces import *
+from impl import MyCollector
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
-from email_mgmt_app.impl import MapperWrapper
+from impl import MapperWrapper
 
 logger = logging.getLogger(__name__)
 

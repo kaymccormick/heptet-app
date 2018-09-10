@@ -5,7 +5,7 @@ from pathlib import Path
 
 from sqlalchemy import Column
 
-from email_mgmt_app.interfaces import IProcess, IEntryPoint
+from interfaces import IProcess, IEntryPoint
 from pyramid.config import Configurator
 from pyramid.path import DottedNameResolver
 from zope.component import adapter

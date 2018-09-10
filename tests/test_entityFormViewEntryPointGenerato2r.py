@@ -4,7 +4,7 @@
 # from zope.component import adapter
 # from zope.interface import implementer
 #
-# from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, ITemplateVariable
+# from entity import EntityFormViewEntryPointGenerator, ITemplateVariable
 # from interfaces import ITemplateSource, ITemplate, ICollector
 # from pyramid_jinja2 import IJinja2Environment
 #

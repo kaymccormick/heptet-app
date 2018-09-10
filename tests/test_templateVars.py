@@ -1,4 +1,4 @@
-from email_mgmt_app.tvars import TemplateVars
+from tvars import TemplateVars
 
 import logging
 

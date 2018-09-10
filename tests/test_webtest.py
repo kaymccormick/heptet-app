@@ -11,7 +11,7 @@ import lxml
 
 logger = logging.getLogger(__name__)
 import email_mgmt_app.webapp_main
-from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
+from sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ def packed_assets():
 
 
 def init_database(engine, session):
-    from email_mgmt_app.model.meta import Base
+    from model.meta import Base
     Base.metadata.create_all(engine)
 
 

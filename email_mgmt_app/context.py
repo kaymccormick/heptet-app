@@ -4,17 +4,15 @@ import copy
 import logging
 from typing import Sequence, Generic, TypeVar, Callable, Any
 
-from pyramid.path import DottedNameResolver
-
-from db_dump.info import MapperInfo
 from jinja2 import Environment
-from sqlalchemy.ext.declarative import DeclarativeMeta
+from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
-from email_mgmt_app.form import Form
-from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import IFormContext, IGeneratorContext
-from email_mgmt_app.tvars import TemplateVars
+from db_dump.info import MapperInfo
+from form import Form
+from impl import NamespaceStore
+from interfaces import IFormContext, IGeneratorContext
+from tvars import TemplateVars
 
 TemplateEnvironment = Environment
 logger = logging.getLogger(__name__)
@@ -201,7 +199,7 @@ class GeneratorContext(
         assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
 
         #        assert isinstance(template_env, Environment)
-        assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars" % template_vars
+        assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars, is %s" % (template_vars, type(template_vars))
         self.mapper_info = mapper_info
         self.template_env = template_env
         self.template_vars = template_vars

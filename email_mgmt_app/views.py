@@ -3,11 +3,11 @@ from typing import AnyStr
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 
-from email_mgmt_app.root import RootFactory
-from email_mgmt_app.view import BaseView
+from root import RootFactory
+from view import BaseView
 from pyramid.config import Configurator
 
-from email_mgmt_app.entrypoint import EntryPoint
+from entrypoint import EntryPoint
 
 
 class MainView(BaseView):

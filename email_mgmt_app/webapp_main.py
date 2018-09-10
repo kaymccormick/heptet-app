@@ -12,11 +12,11 @@ from pyramid_ldap3 import groupfinder
 from zope.component import getGlobalSiteManager
 
 from db_dump.info import ProcessStruct
-from email_mgmt_app.exceptions import InvalidMode
-from email_mgmt_app.impl import MapperWrapper, NamespaceStore
-from email_mgmt_app.interfaces import IMapperInfo
-from email_mgmt_app.interfaces import INamespaceStore
-from email_mgmt_app.myapp_config import config_process_struct, load_process_struct
+from exceptions import InvalidMode
+from impl import MapperWrapper, NamespaceStore
+from interfaces import IMapperInfo
+from interfaces import INamespaceStore
+from myapp_config import config_process_struct, load_process_struct
 
 logger = logging.getLogger(__name__)
 

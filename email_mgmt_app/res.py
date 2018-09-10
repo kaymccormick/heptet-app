@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import abc
 import logging
 import sys
@@ -6,17 +8,17 @@ from collections import UserDict, OrderedDict
 from typing import AnyStr, Type
 
 import pyramid
-from email_mgmt_app.entrypoint import EntryPoint, IEntryPointGenerator
-from email_mgmt_app.interfaces import IResource, IEntryPointView
-from email_mgmt_app.util import get_entry_point_key
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
-from pyramid_jinja2 import IJinja2Environment
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.component import IFactory
 from zope.component.factory import Factory
 from zope.interface import Interface, implementer
+
+from entrypoint import EntryPoint
+from interfaces import IResource
+from util import get_entry_point_key
 
 logger = logging.getLogger(__name__)
 
@@ -402,7 +404,7 @@ class _Resource:
 
     def __init__(self,
                  name: AnyStr,
-                 parent: "ContainerResource",
+                 parent: ContainerResource,
                  title: AnyStr = None,
                  entity_type: DeclarativeMeta = None) -> None:
         """
@@ -420,14 +422,6 @@ class _Resource:
         self.__parent__ = parent
         self._entity_type = entity_type
         self._names = []
-
-    def __conform__(self, iface, default=None):
-        if iface == IResource:
-            return self
-
-    def attach(self, parent, name):
-        self.__parent__ = parent
-        self.__name__ = name
 
     @property
     def is_container(self) -> bool:
@@ -488,7 +482,7 @@ class ContainerResource(Resource, UserDict):
     Resource containing sub-resources.
     """
 
-    def __init__(self, name: AnyStr, parent: 'ContainerResource', title: AnyStr = None,
+    def __init__(self, name: AnyStr, parent: ContainerResource, title: AnyStr = None,
                  entity_type: DeclarativeMeta = None) -> None:
         super().__init__(name, parent, title, entity_type)
         self.data = OrderedDict()

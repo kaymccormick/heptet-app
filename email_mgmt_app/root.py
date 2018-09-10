@@ -7,7 +7,7 @@ from threading import Lock
 from pyramid.request import Request
 from pyramid.security import Allow, Authenticated
 
-from email_mgmt_app.interfaces import IResource
+from interfaces import IResource
 from res import RootResource
 
 logger = logging.getLogger(__name__)

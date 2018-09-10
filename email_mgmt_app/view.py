@@ -6,10 +6,10 @@ from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 
 from email_mgmt_app import ArgumentContext
-from email_mgmt_app.exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
-from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
-from email_mgmt_app.util import get_exception_entry_point_key
-from email_mgmt_app.res import Resource, OperationArgument
+from exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
+from entrypoint import EntryPoint, EntryPointGenerator
+from util import get_exception_entry_point_key
+from res import Resource, OperationArgument
 
 logger = logging.getLogger(__name__)
 

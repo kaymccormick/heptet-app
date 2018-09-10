@@ -8,7 +8,7 @@ from zope.interface.registry import Components
 from jinja2 import FileSystemLoader, TemplateNotFound, BaseLoader
 from zope.interface import implementer
 
-from email_mgmt_app.interfaces import *
+from interfaces import *
 from pyramid.config import Configurator
 from pyramid.renderers import RendererHelper
 from pyramid_jinja2 import IJinja2Environment

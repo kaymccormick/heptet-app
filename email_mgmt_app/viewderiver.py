@@ -2,8 +2,8 @@ import logging
 
 from pyramid.tweens import INGRESS
 
-from email_mgmt_app.entity import BaseEntityRelatedView
-from email_mgmt_app.view import BaseView
+from entity import BaseEntityRelatedView
+from view import BaseView
 
 logger = logging.getLogger(__name__)
 

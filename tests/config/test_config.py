@@ -11,11 +11,11 @@ from pyramid_ldap3 import groupfinder
 from sqlalchemy.exc import InvalidRequestError
 
 import email_mgmt_app.myapp_config
-from email_mgmt_app.impl import MapperWrapper, NamespaceStore
-from email_mgmt_app.interfaces import IMapperInfo, INamespaceStore
-from email_mgmt_app.myapp_config import load_process_struct, config_process_struct
-from email_mgmt_app.webapp_main import on_context_found, on_before_render, on_new_request, on_application_created
-from email_mgmt_app.root import RootFactory
+from impl import MapperWrapper, NamespaceStore
+from interfaces import IMapperInfo, INamespaceStore
+from myapp_config import load_process_struct, config_process_struct
+from webapp_main import on_context_found, on_before_render, on_new_request, on_application_created
+from root import RootFactory
 
 
 @pytest.fixture

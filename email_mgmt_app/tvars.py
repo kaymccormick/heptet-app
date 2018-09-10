@@ -1,10 +1,7 @@
 import collections
 import logging
 import typing
-from collections import __init__
 from typing import MutableMapping, Iterator, AnyStr
-
-from marshmallow import Schema
 
 logger = logging.getLogger(__name__)
 T = typing.TypeVar('T')
