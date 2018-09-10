@@ -563,7 +563,7 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
 
 
 def includeme(config: Configurator):
-    config.include('.entrypoint')
+    config.include('..entrypoint')
     factory = Factory(Resource, 'resource',
                       'ResourceFactory', (IResource,))
     config.registry.registerUtility(factory, IFactory, 'resource')

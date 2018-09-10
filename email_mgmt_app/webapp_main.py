@@ -1,7 +1,9 @@
+import importlib
 import logging
 import os
+import sys
 
-from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
+from jinja2 import TemplateNotFound, Environment, FileSystemLoader, select_autoescape
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
@@ -18,19 +20,22 @@ from interfaces import IMapperInfo
 from interfaces import INamespaceStore
 from myapp_config import config_process_struct, load_process_struct
 
-logger = logging.getLogger(__name__)
+DEV_MODE = 'development'
+PROD_MODE = 'production'
+DEFAULT_MODE = PROD_MODE
+VALID_MODES = (DEV_MODE, PROD_MODE)
 
-VALID_MODES = ('development', 'production')
+logger = logging.getLogger(__name__)
 
 
 def wsgi_app(global_config, **settings):
     """
-    The main functionf or our pyramid application.
+    The main function or our pyramid application.
     :param global_config:
     :param settings:
     :return: A WSGI application.
     """
-    mode = 'mode' in settings and settings['mode'] or VALID_MODES[1]
+    mode = 'mode' in settings and settings['mode'] or DEFAULT_MODE
     if mode not in VALID_MODES:
         os.environ['APP_MODE'] = mode
         raise InvalidMode(mode, VALID_MODES)
@@ -46,22 +51,34 @@ def wsgi_app(global_config, **settings):
     if use_global_reg:
         global_reg = getGlobalSiteManager()
 
-    config = Configurator(package="email_mgmt_app",
-                          registry=global_reg, settings=settings, root_factory=".root:get_root")
+    config = Configurator(
+        package="email_mgmt_app",
+        registry=global_reg,
+        settings=settings,
+        root_factory=".root:get_root")
     config.include('.myapp_config')
     if use_global_reg:
         config.setup_registry(settings=settings, root_factory='root.get_root')
 
+    # we want to use the default template thingy if we can
 
     jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
     env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
                       autoescape=select_autoescape(default=False))
     config.registry.registerUtility(env, IJinja2Environment, 'app_env')
 
-    # exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
+    # include our sql alchemy model.
+    pkg = 'email_mgmt_app.model.email_mgmt'
+    model_mod = None
+    if pkg in sys.modules:
+        model_mod = sys.modules[pkg]
+    else:
+        model_mod = importlib.import_module(pkg)
 
-    config.include('.model.email_mgmt')
+    config.include(model_mod)
+    # load our pre-processed info
     process = load_process_struct()  # type: ProcessStruct
+    config.add_request_method(lambda r: process, 'process_struct')
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)
         config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
@@ -75,7 +92,7 @@ def wsgi_app(global_config, **settings):
     config_process_struct(config, process)
 
     config.include('pyramid_jinja2')
-    config.commit()
+    config.commit()  # fix me remove commits
 
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
@@ -137,7 +154,7 @@ def on_context_found(event):
     """
     request = event.request  # type: Request
     context = request.context  # type: Resource
-    logger.debug("context is %s", context)
+    logger.critical("context is %s", context)
 
     if isinstance(context, Exception):
         return

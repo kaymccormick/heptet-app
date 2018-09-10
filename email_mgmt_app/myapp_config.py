@@ -2,14 +2,14 @@ import json
 import logging
 import os
 
-from db_dump import get_process_schema
-from db_dump.info import ProcessStruct
 from marshmallow import ValidationError
 from pyramid.config import Configurator
 from sqlalchemy import String
 from sqlalchemy.exc import InvalidRequestError
 
-import email_mgmt_app
+import res
+from db_dump import get_process_schema
+from db_dump.info import ProcessStruct
 from entity import EntityFormView
 from impl import MapperWrapper
 from interfaces import IMapperInfo, IResource
@@ -68,4 +68,4 @@ def includeme(config: Configurator):
     assert resource is not None
     config.registry.registerUtility(resource, IResource, 'root_resource')
     assert config.registry.queryUtility(IResource, 'root_resource') is not None
-    config.include(email_mgmt_app.res.includeme)
+    config.include(res)

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Mapping, AnyStr, Tuple
 from unittest.mock import MagicMock, call
 
-from ..info.test_relationship_info import *
 
 import pytest
 from db_dump.info import RelationshipInfo

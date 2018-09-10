@@ -3,22 +3,25 @@ import re
 from typing import Mapping
 
 import stringcase
-from db_dump.info import IRelationshipInfo
-from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
 from context import ContextFormContextMixin, EntityTypeMixin
+from db_dump.info import IRelationshipInfo
 from entrypoint import *
 from form import *
 from interfaces import IFormContext
+from model import get_column_map
 from model.meta import Base
 from view import BaseView
-from model import get_column_map
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
+
+
+class EntityFormRepresentation:
+    pass
 
 
 class EntityFormConfiguration(EntityTypeMixin[DeclarativeMeta]):
@@ -193,7 +196,6 @@ class RelationshipSelect:
         select_name = stringcase.camelcase("select_" + key)
         select_name = context.form.get_html_form_name(select_name, True)
 
-
         class_ = argument
         entities = []
         if issubclass(class_, Base):
@@ -333,12 +335,12 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
             # we specify relationship select here. However, there are other ways we'll wish to
             # render
 
-            (local,remote) = rel.local_remote_pairs[0]
+            (local, remote) = rel.local_remote_pairs[0]
             column_name = local.column
             context.current_element = rel
-            x = get_column_map(local)
-            logger.critical("x = %s", x)
 
+            x = get_column_map(local)
+            # store the html!
             form_html[column_name] = context.relationship_field_mapper(context,
                                                                        RelationshipSelect(context)).map_relationship()
 
@@ -473,6 +475,9 @@ class EntityDesignView(BaseEntityRelatedView):
     pass
 
 
+# class needs: entry point.
+# we were passing entry point as argument to the view
+# we have no control over the view being instantiated.
 @implementer(IEntryPointView)
 class EntityFormView(BaseEntityRelatedView):
     def __init__(self, context, request: Request = None) -> None:

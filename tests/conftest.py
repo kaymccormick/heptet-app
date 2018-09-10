@@ -13,21 +13,20 @@ from pyramid_tm.tests import DummyRequest
 from sqlalchemy import inspect
 from zope.interface.registry import Components
 
-import email_mgmt_app.myapp_config
 import field_renderer
+from context import FormContext, GeneratorContext
 from db_dump import RelationshipSchema
 from db_dump.info import MapperInfo
-from context import FormContext, GeneratorContext
 from entity import EntityFormViewEntryPointGenerator, EntryPoint
 from entity import FormRelationshipMapper, RelationshipSelect
 from form import Form
 from impl import NamespaceStore, MapperWrapper
+from model import map_column, get_column_map
 from myapp_config import load_process_struct
+from res import RootResource, Resource, ResourceManager
+from root import get_root
 from tvars import TemplateVars
 from viewderiver import entity_view
-from model import map_column, get_column_map
-from model.email_mgmt import Domain
-from res import RootResource, Resource, ResourceManager
 
 logger = logging.getLogger(__name__)
 
@@ -38,12 +37,13 @@ def app_registry(app_request):
 
 
 @pytest.fixture()
-def root_resource():
-    return RootResource()
+def root_resource(app_request):
+    return get_root(app_request)
 
 
 @pytest.fixture
 def app_request():
+    # We'll use dummy request until we can't anymore
     return DummyRequest()
 
 
@@ -355,7 +355,8 @@ def webapp_settings():
 
 @pytest.fixture
 def form_config_test(my_gen_context, process_struct):
-    organization = inspect(Domain).relationships.organization
-    map_column(organization, field_renderer.Select)
-    logger.warning("%s", get_column_map(organization))
+    pass
+    # organization = inspect(Domain).relationships.organization
+    # map_column(organization, field_renderer.Select)
+    # logger.warning("%s", get_column_map(organization))
 
