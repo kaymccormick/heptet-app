@@ -1,16 +1,6 @@
 import logging
 import os
 
-from db_dump.info import ProcessStruct
-from pyramid_ldap3 import groupfinder
-
-from email_mgmt_app.exceptions import InvalidMode
-from email_mgmt_app.impl import MapperWrapper, NamespaceStore
-from email_mgmt_app.interfaces import IMapperInfo
-from email_mgmt_app.interfaces import INamespaceStore
-from email_mgmt_app.res import RootResource
-from email_mgmt_app.interfaces import IResource
-from email_mgmt_app.root import RootFactory
 from jinja2 import TemplateNotFound, Environment, select_autoescape, FileSystemLoader
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -18,8 +8,14 @@ from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid.renderers import get_renderer
 from pyramid_jinja2 import IJinja2Environment
+from pyramid_ldap3 import groupfinder
 from zope.component import getGlobalSiteManager
 
+from db_dump.info import ProcessStruct
+from email_mgmt_app.exceptions import InvalidMode
+from email_mgmt_app.impl import MapperWrapper, NamespaceStore
+from email_mgmt_app.interfaces import IMapperInfo
+from email_mgmt_app.interfaces import INamespaceStore
 from email_mgmt_app.myapp_config import config_process_struct, load_process_struct
 
 logger = logging.getLogger(__name__)
@@ -51,11 +47,11 @@ def wsgi_app(global_config, **settings):
         global_reg = getGlobalSiteManager()
 
     config = Configurator(package="email_mgmt_app",
-                          registry=global_reg, settings=settings, root_factory=RootFactory())
+                          registry=global_reg, settings=settings, root_factory=".root:get_root")
     config.include('.myapp_config')
     if use_global_reg:
-        config.setup_registry(settings=settings, root_factory=RootFactory()
-                              )
+        config.setup_registry(settings=settings, root_factory='root.get_root')
+
 
     jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
     env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
@@ -64,7 +60,7 @@ def wsgi_app(global_config, **settings):
 
     # exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
 
-    config.include('email_mgmt_app.model.email_mgmt')
+    config.include('.model.email_mgmt')
     process = load_process_struct()  # type: ProcessStruct
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)

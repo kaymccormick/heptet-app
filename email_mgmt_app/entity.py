@@ -15,6 +15,7 @@ from email_mgmt_app.form import *
 from email_mgmt_app.interfaces import IFormContext
 from email_mgmt_app.model.meta import Base
 from email_mgmt_app.view import BaseView
+from model import get_column_map
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
@@ -25,6 +26,10 @@ class EntityFormConfiguration(EntityTypeMixin[DeclarativeMeta]):
         super().__init__()
         self.entity_type = entity_type
         self.field_renderers = field_renderers
+
+    def __repr__(self):
+        return "EntityFormConfiguration(%s, field_renderers=%s)" % (
+            repr(self.entity_type), repr(self.field_renderers))
 
 
 class IFormFieldMapper(Interface):
@@ -152,7 +157,9 @@ class _templates:
         super().__init__()
         self.collapse = _template('entity/collapse.jinja2')
 
+
 template = _templates()
+
 
 # why do we have this clasas?
 @adapter(IFormContext)
@@ -182,6 +189,7 @@ class RelationshipSelect:
         select_id = context.form.get_html_id(stringcase.camelcase('id_select_%s' % key))  # ['select', prefix, key])
         select_name = stringcase.camelcase("select_" + key)
         select_name = context.form.get_html_form_name(select_name, True)
+
 
         class_ = argument
         entities = []
@@ -322,8 +330,12 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
             # we specify relationship select here. However, there are other ways we'll wish to
             # render
 
-            column_name = rel.local_remote_pairs[0].local.column
+            (local,remote) = rel.local_remote_pairs[0]
+            column_name = local.column
             context.current_element = rel
+            x = get_column_map(local)
+            logger.critical("x = %s", x)
+
             form_html[column_name] = context.relationship_field_mapper(context,
                                                                        RelationshipSelect(context)).map_relationship()
 

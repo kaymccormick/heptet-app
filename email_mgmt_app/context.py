@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import copy
 import logging
-from typing import Sequence, Generic, TypeVar, Callable
+from typing import Sequence, Generic, TypeVar, Callable, Any
+
+from pyramid.path import DottedNameResolver
 
 from db_dump.info import MapperInfo
 from jinja2 import Environment
@@ -216,6 +218,7 @@ class GeneratorContext(
         return form_context
 
     def __repr__(self):
+        return "GeneratorContext("
         x = []
         for b in self.__class__.__bases__:
             x.append(b.__repr__(self))
@@ -231,6 +234,20 @@ FormContextFactory = Callable[[GeneratorContext,
                                Form, int, bool, Sequence, dict], 'FormContext']
 
 T = TypeVar('T')
+
+
+class DottedNameResolverMixin:
+    def __init__(self) -> None:
+        super().__init__()
+        self._resolver = None  # type: DottedNameResolver
+
+    @property
+    def resolver(self) -> DottedNameResolver:
+        return self._resolver
+
+    @resolver.setter
+    def resolver(self, new: DottedNameResolver) -> None:
+        self._resolver = new
 
 
 class CurrentElementMixin(Generic[T]):
@@ -265,6 +282,9 @@ class FieldMapper(object):
     pass
 
 
+RelationshipFieldMapper = Any
+
+
 class RelationshipFieldMapperMixin(MixinBase):
 
     def __init__(self) -> None:
@@ -272,7 +292,7 @@ class RelationshipFieldMapperMixin(MixinBase):
         self._relationship_field_mapper = None  # type: RelationshipFieldMappper
 
     @property
-    def relationship_field_mapper(self) -> RelationshipfieldMapper:
+    def relationship_field_mapper(self) -> RelationshipFieldMapper:
         return self._relationship_field_mapper
 
     @relationship_field_mapper.setter
@@ -296,6 +316,7 @@ class FormContext(
     CurrentElementMixin,
     FormContextFactoryMixin,
     RelationshipFieldMapperMixin,
+    DottedNameResolverMixin,
 ):
     def __init__(
             self,
@@ -306,6 +327,7 @@ class FormContext(
             namespace: NamespaceStore = None,
             form_context_factory=None,
             relationship_field_mapper: FieldMapper = None,
+            resolver: DottedNameResolver = None,
             form: Form = None,
             nest_level: int = 0,
             do_modal: bool = False,
@@ -322,6 +344,7 @@ class FormContext(
         if form_context_factory is None:
             form_context_factory = FormContext
         self.form_context_factory = form_context_factory
+        self.resolver = resolver
         self.form = form
         self.nest_level = nest_level
         self.do_modal = do_modal

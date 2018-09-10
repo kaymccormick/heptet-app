@@ -1,8 +1,9 @@
 import json
 import logging
+import os
 
+from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
-from db_dump.schema import get_process_schema
 from marshmallow import ValidationError
 from pyramid.config import Configurator
 from sqlalchemy import String
@@ -12,7 +13,7 @@ import email_mgmt_app
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper
 from email_mgmt_app.interfaces import IMapperInfo, IResource
-from email_mgmt_app.res import ResourceManager, OperationArgument, RootResource
+from res import ResourceManager, OperationArgument, RootResource
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,11 @@ def config_process_struct(config, process):
 
 
 def load_process_struct() -> ProcessStruct:
+    relpath = os.path.join(os.path.dirname(__file__), "email_db.json")
+    logger.critical("%s", __file__)
     email_db_json = ''
     # we need to find this?
-    with open('email_db.json', 'r') as f:
+    with open(relpath, 'r') as f:
         email_db_json = ''.join(f.readlines())
     process_schema = get_process_schema()
     process = None  # type: ProcessStruct

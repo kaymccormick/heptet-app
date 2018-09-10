@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 
 import lxml.html
 import pytest
@@ -82,6 +83,7 @@ def url(request):
 
 
 def test_webtest(sqlalchemy_engine, tm_session, app_test, url):
+    logger.warning("%s", sys.path)
     init_database(sqlalchemy_engine, tm_session)
 
     resp = app_test.get(url)

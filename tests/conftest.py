@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 from db_dump.info import MapperInfo
-from db_dump.schema import RelationshipSchema
 from pyramid_tm.tests import DummyRequest
 from zope.interface.registry import Components
 
@@ -16,7 +15,7 @@ import email_mgmt_app.myapp_config
 from email_mgmt_app.entity import EntityFormViewEntryPointGenerator, EntryPoint
 from email_mgmt_app.context import FormContext, GeneratorContext
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper
-from email_mgmt_app.res import RootResource, Resource, ResourceManager
+from res import RootResource, Resource, ResourceManager
 from email_mgmt_app.viewderiver import entity_view
 from jinja2 import Environment, Template
 from pyramid.config import Configurator

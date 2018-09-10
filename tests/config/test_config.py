@@ -8,6 +8,7 @@ from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_ldap3 import groupfinder
+from sqlalchemy.exc import InvalidRequestError
 
 import email_mgmt_app.myapp_config
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
@@ -93,7 +94,9 @@ def make_wsgi_app():
     return _make_wsgi_app
 
 
+# make_wsgi_app is a fixture, not our application!!
 def test_my_config(make_wsgi_app, webapp_settings):
-    settings = copy.copy(webapp_settings)
-    settings['model_package'] = '.model.email_mgmt'
-    app = make_wsgi_app({}, **settings)
+    with pytest.raises(InvalidRequestError) as excinfo:
+        settings = copy.copy(webapp_settings)
+        settings['model_package'] = '.model.email_mgmt'
+        app = make_wsgi_app({}, **settings)

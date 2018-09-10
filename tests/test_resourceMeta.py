@@ -1,7 +1,7 @@
 import logging
-from unittest import TestCase
 
-from email_mgmt_app.res import Resource, RootResource
+from res import Resource, RootResource
+from root import get_root
 
 logger = logging.getLogger(__name__)
 
@@ -11,8 +11,8 @@ def test_resource_meta():
     b = Resource(name='b', parent=root)
     logger.warning("%s, %s", type(a), type(b))
 
-def test_root_Resource():
-    root = RootResource()
-    root2 = RootResource()
+def test_root_Resource(app_request):
+    root = get_root(app_request)
+    root2 = get_root(app_request)
     assert root is root2
     #assert type(root) == RootResource

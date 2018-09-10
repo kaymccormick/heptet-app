@@ -526,22 +526,29 @@ class IRootResource(IResource):
 @implementer(IRootResource)
 class RootResource(ContainerResource):
     def __new__(cls):
-        x = getattr(cls, "__instance__", None)
-        if x is None:
-            x = super().__new__(cls, '', None)
-            setattr(cls, "__instance__", x)
-        return x
-
+        return super().__new__(cls, '', None)
     def __init__(self) -> None:
-        if hasattr(self, "data"):
-            return
         super().__init__('', None)
 
-    def get_root_resource(self):
-        return self
 
-    def get_data(self):
-        return self.data
+# class RootResource(ContainerResource):
+#     def __new__(cls):
+#         x = getattr(cls, "__instance__", None)
+#         if x is None:
+#             x = super().__new__(cls, '', None)
+#             setattr(cls, "__instance__", x)
+#         return x
+#
+#     def __init__(self) -> None:
+#         if hasattr(self, "data"):
+#             return
+#         super().__init__('', None)
+#
+#     def get_root_resource(self):
+#         return self
+#
+#     def get_data(self):
+#         return self.data
 
 
 class EntityResource():
