@@ -412,6 +412,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
         ctx = self.ctx
         if ctx.mapper_info is None:
             # fixme - we get called here when we shouldn't and our fix is to bail out right now
+            logger.critical("no mapper! probably not gonna work.")
             return
 
         self._form = self.form_representation()

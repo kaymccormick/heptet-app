@@ -143,7 +143,7 @@ class GenerateEntryPointProcess:
 
         fname = ep.get_output_filename()
         assert fname
-        logger.info("generating output file %s", fname)
+        logger.critical("generating output file %s", fname)
 
         data = {'filename': fname,
                 'vars': dict(js_imports=js_imports,

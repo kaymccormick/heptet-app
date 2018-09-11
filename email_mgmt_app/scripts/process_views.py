@@ -19,7 +19,7 @@ from email_mgmt_app import get_root
 from entrypoint import IEntryPoint, ICollector, EntryPoints, EntryPoint, IEntryPointGenerator
 from impl import CollectorContext, IProcess, NamespaceStore
 from interfaces import IMapperInfo
-from process import ProcessContext, setup_jsonencoder, AssetManager
+from process import ProcessContext, setup_jsonencoder, AssetManager, GenerateEntryPointProcess
 from scripts.util import get_request, template_env
 from webapp_main import on_new_request
 from pyramid.paster import get_appsettings, setup_logging
@@ -143,7 +143,10 @@ def main():
         ep.set_template(entry_point_js_template)
         ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
         subscribers = registry.subscribers((proc_context,ep), IProcess)
+        subscribers = [GenerateEntryPointProcess(proc_context, ep)]
+        assert subscribers, "No subscribers for processing"
         for s in subscribers:
+
             result = s.process()
             if result:
                 logger.debug("result = %s", result)

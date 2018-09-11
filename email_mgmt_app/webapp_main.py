@@ -77,8 +77,10 @@ def wsgi_app(global_config, **settings):
         model_mod = sys.modules[pkg]
     else:
         model_mod = importlib.import_module(pkg)
-
     config.include(model_mod)
+
+    config.include('.process')
+
     # load our pre-processed info
     process = load_process_struct()  # type: ProcessStruct
     config.add_request_method(lambda r: process, 'process_struct')
@@ -109,7 +111,7 @@ def wsgi_app(global_config, **settings):
     #    config.include('.auth')
     config.include('.views')
     config.include('.template')
-    config.include('.process')
+
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
