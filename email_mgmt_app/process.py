@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sys
 from pathlib import Path
 
 from sqlalchemy import Column
@@ -63,7 +64,11 @@ class AssetManager:
             if not p.is_dir():
                 raise Exception("%s should be directory." % output_dir)
         else:
-            os.mkdir(output_dir)
+            # this is messing us up
+            try:
+                os.mkdir(output_dir)
+            except:
+                logger.critical("Unable to create directory %s: %s", output_dir, sys.exc_info()[1])
 
         self._output_dir = output_dir
 
