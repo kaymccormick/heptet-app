@@ -79,8 +79,8 @@ def _make_form_representation(context: FormContext):
 
         x = get_column_map(local)
         # store the html!
-        form_html[column_name] = context.relationship_field_mapper(context,
-                                                                   RelationshipSelect(context)).map_relationship()
+        form_html[column_name] = context.relationship_field_mapper(
+            RelationshipSelect()).map_relationship(context)
 
     # process each column
     for x in mapper.columns:
@@ -167,12 +167,10 @@ class IFormRelationshipFieldMapper(IFormFieldMapper):
 @adapter(IFormContext)
 @implementer(IFormRelationshipFieldMapper)
 class FormRelationshipMapper:
-    def __init__(self, context: FormContext, form_select, *args, **kwargs) -> None:
-        self._context = context
+    def __init__(self, form_select, *args, **kwargs) -> None:
         self._select = form_select
 
-    def map_relationship(self):
-        context = self._context
+    def map_relationship(self, context):
         rel = context.current_element
         assert rel is not None
 
@@ -202,8 +200,7 @@ class FormRelationshipMapper:
         # decide here what control to use . right now we default to select.
         #
         select = self._select
-        select.context = context
-        select_html = select.gen_select_html()
+        select_html = select.gen_select_html(context)
         assert select_html
         return select_html
 
@@ -297,12 +294,10 @@ template = _templates()
 @implementer(IRelationshipSelect)
 class RelationshipSelect:
     # we need something called a "builder" here
-    def __init__(self, context: FormContext) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self._context = context
 
-    def gen_select_html(self):
-        context = self._context
+    def gen_select_html(self, context):
         rel = context.current_element
         env = context.template_env
         nest_level = context.nest_level
@@ -527,7 +522,8 @@ class EntityFormView(BaseEntityRelatedView):
             #
             # # we shouldn't need to crate this
 
-            wrapper = generator.render_entity_form_wrapper(gctx.form_context(relationship_field_mapper=FormRelationshipMapper))
+            wrapper = generator.render_entity_form_wrapper(
+                gctx.form_context(relationship_field_mapper=FormRelationshipMapper))
             _vars = {
                 'entry_point_template':
                     'build/templates/entry_point/%s.jinja2' % entry_point.key,
@@ -564,7 +560,7 @@ class EntityAddView(BaseEntityRelatedView):
 def includeme(config: Configurator):
     reg = config.registry.registerAdapter
     reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
-    reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipFieldMapper)
+    # reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipFieldMapper)
     reg(EntityFormViewEntryPointGenerator, [IGeneratorContext], IEntryPointGenerator)
     # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
     ##    IEntryPointView)

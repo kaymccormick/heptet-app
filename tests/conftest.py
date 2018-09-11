@@ -252,9 +252,14 @@ def my_form(root_namespace_store):
 
 
 @pytest.fixture
-def my_form_context(my_gen_context):
-    mapper = FormRelationshipMapper() # fixme
-    return my_gen_context.form_context(mapper)
+def my_form_context(my_gen_context, my_relationship_select, root_namespace_store):
+    #mapper = FormRelationshipMapper(my_relationship_select) # fixme
+    the_form = Form(namespace_id="test",
+                    root_namespace=root_namespace_store,
+                    namespace=None,  # can be None
+                    outer_form=True)
+
+    return my_gen_context.form_context(relationship_field_mapper=FormRelationshipMapper, form=the_form)
 
 
 @pytest.fixture
@@ -278,10 +283,8 @@ def mappers(process_struct):
 
 
 @pytest.fixture
-def my_relationship_select(my_form_context, my_relationship_info):
-    fm = my_form_context.copy()
-    fm.current_element = my_relationship_info
-    return RelationshipSelect(fm)
+def my_relationship_select():
+    return RelationshipSelect()
 
 
 @pytest.fixture

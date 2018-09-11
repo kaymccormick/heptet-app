@@ -354,6 +354,8 @@ class FormContext(
 
     def check_instance(self):
         super().check_instance()
+        if self.form is None:
+            logger.warning("form is not set, might be a bug")
 
     def __repr__(self):
         x = []

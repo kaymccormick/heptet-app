@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Mapping, AnyStr, Tuple
 from unittest.mock import MagicMock, call
 
-
 import pytest
 from db_dump.info import RelationshipInfo
 
@@ -22,7 +21,6 @@ VarsMapping = Mapping[AnyStr, Tuple[TemplateVars, VarMapping]]
 _vars_mapping = dict(rando=(TemplateVars(var1=StringTemplateVar(),
                                          var2=MutableSequenceTemplateVar([]),
                                          var3=MappingTemplateVar({}))))
-
 
 
 @pytest.fixture()
@@ -55,35 +53,31 @@ def mock_relationship_info():
 
 
 @pytest.fixture
-def form_relationship_mapper(relationship_info, make_form_context, my_gen_context, root_namespace_store):
-    form_context = make_form_context(my_gen_context, root_namespace_store)
-    return FormRelationshipMapper(relationship_info, form_context)
+def form_relationship_mapper(my_relationship_select):
+    return FormRelationshipMapper(my_relationship_select)
 
 
 @pytest.fixture
 def make_form_relationship_mapper():
-    def _make_form_relationship_mapper(relationship_info, form_context, relationship_select):
-        return FormRelationshipMapper(relationship_info, form_context, relationship_select)
+    def _make_form_relationship_mapper(relationship_select):
+        return FormRelationshipMapper(relationship_select)
 
     return _make_form_relationship_mapper
 
 
 @pytest.fixture
 def my_form_relationship_mapper(make_form_relationship_mapper,
-                                my_relationship_info,
-                                my_form_context,
                                 my_relationship_select):
-    return make_form_relationship_mapper(my_relationship_info, my_form_context, my_relationship_select)
+    return make_form_relationship_mapper(my_relationship_select)
 
 
-
-
-def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_env):
+def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_env, my_relationship_info):
     fm = my_form_context
     fm.extra['suppress_cols'] = {}
     logger.critical("%s", repr(fm))
     t = my_form_relationship_mapper
-    r = t.map_relationship()
+    my_form_context.current_element = my_relationship_info
+    r = t.map_relationship(my_form_context)
     input = r['input_html']
 
     jinja2_env.assert_has_calls([call.get_template('entity/rel_select.jinja2'),
@@ -95,6 +89,3 @@ def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_e
     assert select_html
 
     logger.critical("%s", r)
-    assert 0
-
-    pass
