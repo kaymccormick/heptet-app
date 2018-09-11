@@ -98,7 +98,10 @@ class _Resource:
     """
 
     #
-    def __new__(cls, manager, name: AnyStr, parent, *args, **kwargs):
+    def __new__(cls, manager, name: AnyStr, parent: ContainerResource,
+                title: AnyStr = None,
+                entity_type: DeclarativeMeta = None,
+                ):
         # logger.critical("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
         if cls == Resource:
             count = getattr(cls, "__count__", 0)
@@ -107,9 +110,9 @@ class _Resource:
             setattr(cls, "__count__", count)
             meta = ResourceMeta(clsname, (cls,), {})
             # logger.critical("meta = %s", meta)
-            inst = meta(manager, name, parent, *args, **kwargs)
+            inst = meta(manager, name, parent, title, entity_type)
             try:
-                inst.__init__(manager, name, parent, *args, **kwargs)
+                inst.__init__(manager, name, parent, title, entity_type)
             except:
                 ex = sys.exc_info()[1]
                 raise ex
@@ -169,12 +172,15 @@ class _Resource:
         self.get = lambda x: self._data.get(x)
         self._manager = manager
 
-        # try:
-        #     logger.critical("%s", self.__setitem__)
-        #     self['test'] = 1
-        #     logger.critical(("%s", self['test']))
-        # except:
-        #     logger.critical(sys.exc_info()[2])
+    def __repr__(self):
+        s = ''
+        for x in dir(self):
+            if x.startswith('_') and not x.startswith('__') and not x.startswith('_abc_') and x != '_data':
+                s = s + x[1:] + '=' + repr(getattr(self, x)) + ', '
+
+        return "Resource(%s, %s, %sdata=%r)" % (self.__name__, self.__parent__, s, getattr(self, '_data', None)) #manager=%s, name=%s, parent=%s, title=%s, entity_type=%s)" % (
+            #self._manager, self.__name__, self.__parent__, self._title, self._entity_type
+            #)
 
     @property
     def is_container(self) -> bool:
@@ -196,13 +202,19 @@ class _Resource:
 
     @property
     def entity_type(self):
-        return self._entity_type
+        try:
+            return self._entity_type
+        except:
+            # fixme this may be due to new resource factoring
+            logger.critical("unable to retreive entity type property for %s", self)
+            return None
 
     def add_name(self, name):
         self._names.append(name)
 
     def sub_resource(self, name: AnyStr):
         sub = self.__class__.__new__(self.__class__, self.manager, name, self)
+        sub.__init__(self.manager, name, self)
         #        logger.critical("%s", dir(sub))
         self[name] = sub
         return sub
@@ -286,6 +298,11 @@ class ResourceManager:
         self._resource = None
         self._mapper_wrapper = mapper_wrapper
         self._mapper_wrappers = {mapper_key: mapper_wrapper}
+
+    def __repr__(self):
+        return 'ResourceManager(mapper_key=%s, title=%s, entity_type%s, node_name=%s, mapper_wrapper=%s)' % (
+            self._mapper_key, self._title, self._entity_type, self._node_name, self._mapper_wrapper
+        )
 
     def operation(self, name, view, args, renderer=None) -> None:
         """
@@ -571,6 +588,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     for op in manager._ops:
         resource.add_name(op.name)
         op_resource = resource.sub_resource(op.name)
+        logger.critical("spawing sub resource for op %s, %s", op.name, node_name)
 
         d = extra.copy()
         d['operation'] = op

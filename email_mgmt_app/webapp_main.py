@@ -2,6 +2,7 @@ import importlib
 import logging
 import os
 import sys
+import textwrap
 
 from jinja2 import TemplateNotFound, Environment, FileSystemLoader, select_autoescape
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -159,12 +160,16 @@ def on_context_found(event):
     """
     request = event.request  # type: Request
     context = request.context  # type: Resource
-    logger.critical("context is %s", context)
+    import pprint
+    pp = pprint.PrettyPrinter(width=120, stream=sys.stderr)
+    pp.pprint(context)
+    #print(textwrap.fill(repr(context), 1201), file=sys.stderr)
+    #logger.critical("context is %r", context)
 
     if isinstance(context, Exception):
         return
 
-    if context.entity_type:
+    if hasattr(context, "entity_type"):
         # sets incorrect template
         def try_template(template_name):
             try:
@@ -176,14 +181,19 @@ def on_context_found(event):
             except:
                 return True
 
-        logger.debug("Type of entity_type is %s", type(context.entity_type))
-        renderer = "templates/%s/%s.jinja2" % (context.entity_type.__name__.lower(),
-                                               request.view_name.lower())
-
-        if not try_template(renderer):
-            renderer = None
-            if request.view_name:
-                renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
+        entity_type = context.entity_type
+        renderer = None
+        # if entity_type is not None:
+        #     logger.debug("Type of entity_type is %s", type(entity_type))
+        #     renderer = "templates/%s/%s.jinja2" % (entity_type.__name__.lower(),
+        #                                            request.view_name.lower())
+        #
+        #     if not try_template(renderer):
+        #         renderer = None
+        #         if request.view_name:
+        #             renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
+        # else:
+        renderer = "templates/entity/%s.jinja2" % context.__name__
 
         if renderer:
             logger.debug("selecting %s for %s", renderer, request.path_info)
