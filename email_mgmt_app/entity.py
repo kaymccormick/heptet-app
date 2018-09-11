@@ -87,7 +87,7 @@ def _make_form_representation(context: FormContext):
         key = x.key
         if key in form_html:
             # we already have the html, append it and continue
-            form_contents = form_contents + form_html[key]
+            form_contents = form_contents + str(form_html[key])
             continue
 
         if key in suppress and suppress[key]:
@@ -128,7 +128,7 @@ def _make_form_representation(context: FormContext):
         tmpl_name = 'entity/field.jinja2'
         x = context.template_env.get_template(tmpl_name).render(**e)
         assert x
-        form_contents = form_contents + x
+        form_contents = form_contents + str(x)
 
     form_contents = form_contents + '</div>'
     the_form.element.append(html.fromstring(form_contents))
@@ -187,9 +187,9 @@ class FormRelationshipMapper:
             print(ex, file=sys.stderr)
 
         if 'js_stmts' not in _vars:
-            _vars['js_stmts'] = []
-        js_stmts_col = _vars['js_stmts']
-        js_stmts_col.append('// %s' % rel)
+            _vars['js_stmts'] = ['// test']
+        # js_stmts_col = _vars['js_stmts']
+        # js_stmts_col.append('// %s' % rel)
 
         logger.debug("Encountering relationship %s", rel)
         assert rel.direction
