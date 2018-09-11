@@ -20,7 +20,7 @@ def map_column(column: Column, map_target):
 
 
 def get_column_map(column):
-
+    x = None
     if isinstance(column, TableColumnSpecInfo):
         x = _column_map.get(column.table, { }).get(column.column, None)
 

@@ -97,5 +97,5 @@ def make_wsgi_app():
 # make_wsgi_app is a fixture, not our application!!
 def test_my_config(make_wsgi_app, webapp_settings):
     settings = copy.copy(webapp_settings)
-    settings['model_package'] = '.model.email_mgmt'
+    settings['model_package'] = 'email_mgmt_app.model.email_mgmt:includeme'
     app = make_wsgi_app({}, **settings)

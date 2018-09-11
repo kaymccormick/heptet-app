@@ -77,7 +77,7 @@ def app_test_get(request, app_test):
     logger.critical("%s", request)
 
 
-@pytest.fixture(params=['/domain/form'])
+@pytest.fixture(params=['/', '/domain/form'])
 def url(request):
     return request.param
 

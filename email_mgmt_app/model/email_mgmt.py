@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, LargeBinary
 from sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
@@ -13,6 +14,7 @@ from zope.interface import implementer
 logger = logging.getLogger(__name__)
 mappers = {}
 
+print("In model.email_mgmt", file=sys.stderr)
 
 # marker class for objects which are "association tables"
 class AssociationTableMixin(object):

@@ -87,6 +87,7 @@ def entity_view_deriver(view_test, view_deriver_info):
 def config_fixture():
     config = Configurator(package="email_mgmt_app", root_package="email_mgmt_app")
     config.include(email_mgmt_app.myapp_config)
+    config.include(email_mgmt_app)
     logger.warning("config = %s", config)
 
     def _dump(v, lineprefix=None, nameprefix="", depth=0, cb: Callable = None, recurse=True):

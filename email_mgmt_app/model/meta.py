@@ -1,6 +1,10 @@
+import sys
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
+import logging
 
+logger = logging.getLogger(__name__)
 # Recommended naming convention used by Alembic, as various different database
 # providers will autogenerate vastly different names making migrations more
 # difficult. See: http://alembic.zzzcomputing.com/en/latest/naming.html
@@ -12,5 +16,6 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s"
 }
 
+print("In model.meta", file=sys.stderr)
 metadata = MetaData(naming_convention=NAMING_CONVENTION)
 Base = declarative_base(metadata=metadata)
