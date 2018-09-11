@@ -25,6 +25,7 @@ from form import Form
 from impl import NamespaceStore, MapperWrapper
 from model import map_column, get_column_map
 from myapp_config import load_process_struct
+import email_mgmt_app.myapp_config
 from tvars import TemplateVars
 from viewderiver import entity_view
 
@@ -167,7 +168,7 @@ def make_resource(root_resource, entity_type):
 
 @pytest.fixture
 def entry_point(mapper_wrapper, app_request, app_registry, jinja2_env):
-    return EntryPoint("", app_request, app_registry, mapper_wrapper=mapper_wrapper, output_filename="tmp.out",
+    return EntryPoint(None, "", app_request, app_registry, mapper_wrapper=mapper_wrapper, output_filename="tmp.out",
                       template=jinja2_env.get_template('entry_point.js.jinja2'))
 
 

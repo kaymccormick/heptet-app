@@ -137,15 +137,17 @@ class _Resource:
         return self._data.__contains__(item)
 
     def __init__(self,
+                 manager: ResourceManager,
                  name: AnyStr,
                  parent: ContainerResource,
-                 manager: ResourceManager,
                  title: AnyStr = None,
                  entity_type: DeclarativeMeta = None,
                  ) -> None:
         """
 
+        :type manager: ResourceManager
         :type parent: ContainerResource
+        :param manager: Manager
         :param name: The name as appropriate for a resource key. (confusing)
         :param parent: Parent resources.
         :param title: Defaults to name if not given.

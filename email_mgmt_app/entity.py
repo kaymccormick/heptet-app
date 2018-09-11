@@ -495,7 +495,7 @@ class EntityFormView(BaseEntityRelatedView):
 
     def __call__(self, *args, **kwargs):
         resource = self.context
-        entry_point = resource.entry_point
+        entry_point = resource.manager.entry_point
         assert entry_point
         generator = entry_point.generator
         assert generator
