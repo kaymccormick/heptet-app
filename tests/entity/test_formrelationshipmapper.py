@@ -32,7 +32,6 @@ def vars_mapping():
 
 def test_vars_mapping(vars_mapping):
     logger.critical("%s", vars_mapping)
-    assert 0
 
 
 @pytest.fixture

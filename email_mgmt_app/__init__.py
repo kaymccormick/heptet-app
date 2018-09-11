@@ -98,7 +98,7 @@ class _Resource:
     """
 
     #
-    def __new__(cls, name: AnyStr, parent, *args, **kwargs):
+    def __new__(cls, manager, name: AnyStr, parent, *args, **kwargs):
         # logger.critical("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
         if cls == Resource:
             count = getattr(cls, "__count__", 0)
@@ -107,9 +107,9 @@ class _Resource:
             setattr(cls, "__count__", count)
             meta = ResourceMeta(clsname, (cls,), {})
             # logger.critical("meta = %s", meta)
-            inst = meta(name, parent, *args, **kwargs)
+            inst = meta(manager, name, parent, *args, **kwargs)
             try:
-                inst.__init__(name, parent, *args, **kwargs)
+                inst.__init__(manager, name, parent, *args, **kwargs)
             except:
                 ex = sys.exc_info()[1]
                 raise ex

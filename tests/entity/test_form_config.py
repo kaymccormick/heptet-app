@@ -30,5 +30,3 @@ def test_form_config(my_gen_context, process_struct):
     organization = inspect(Domain).relationships.organization
     map_column(organization, field_renderer.Select)
     logger.warning("%s", get_column_map(organization))
-
-    assert 0

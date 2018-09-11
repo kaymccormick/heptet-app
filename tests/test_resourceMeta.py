@@ -6,8 +6,8 @@ logger = logging.getLogger(__name__)
 
 def test_resource_meta():
     root = RootResource()
-    a = Resource(name='a', parent=root)
-    b = Resource(name='b', parent=root)
+    a = Resource(None, name='a', parent=root)
+    b = Resource(None, name='b', parent=root)
     logger.warning("%s, %s", type(a), type(b))
 
 def test_root_Resource(app_request):

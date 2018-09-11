@@ -49,7 +49,7 @@ def app_request():
 
 @pytest.fixture(params=["test"])
 def app_context(request, root_resource):
-    return Resource(request.param, request)
+    return Resource(None, request.param, request)
 
 
 @pytest.fixture
@@ -144,7 +144,7 @@ def mapper_wrapper(mapper_info):
 
 @pytest.fixture
 def resource_manager(config_fixture, entity_type, mapper_wrapper):
-    return ResourceManager(config_fixture, mapper_wrapper.key, title="", entity_type=entity_type, mapper_wrapper=mapper_wrapper)
+    return ResourceManager(mapper_wrapper.key, title="", entity_type=entity_type, mapper_wrapper=mapper_wrapper)
 
 
 @pytest.fixture
