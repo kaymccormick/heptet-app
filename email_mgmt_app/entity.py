@@ -1,8 +1,10 @@
 import json
 import re
+import sys
 from typing import Mapping
 
 import stringcase
+from marshmallow import ValidationError
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
@@ -15,6 +17,7 @@ from form import *
 from interfaces import IFormContext
 from model import get_column_map
 from model.meta import Base
+from tvars import TemplateVarsSchema
 from view import BaseView
 
 GLOBAL_NAMESPACE = 'global'
@@ -174,7 +177,15 @@ class FormRelationshipMapper:
         assert rel is not None
 
         _vars = context.generator_context.template_vars
-        logger.critical("vars = %s", _vars)
+        schema = TemplateVarsSchema()
+        try:
+            dump = schema.dump(_vars)
+            json.dump(dump, fp=sys.stderr, indent=4, sort_keys=True)
+        except ValidationError as ex:
+            import traceback
+            traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
+            print(ex, file=sys.stderr)
+
         if 'js_stmts' not in _vars:
             _vars['js_stmts'] = []
         js_stmts_col = _vars['js_stmts']

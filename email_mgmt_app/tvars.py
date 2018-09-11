@@ -3,8 +3,18 @@ import logging
 import typing
 from typing import MutableMapping, Iterator, AnyStr
 
+from marshmallow import Schema, fields
+
 logger = logging.getLogger(__name__)
 T = typing.TypeVar('T')
+
+
+class TemplateVarSchema(Schema):
+    value = fields.String(attribute='_value')
+
+
+class TemplateVarsSchema(Schema):
+    vars = fields.Dict(values=fields.Nested(TemplateVarSchema), keys=fields.String())
 
 
 class TemplateVar(typing.Generic[T]):
@@ -34,10 +44,13 @@ class TemplateVar(typing.Generic[T]):
 class TemplateVars(MutableMapping):
     def __init__(self, **kwargs) -> None:
         super().__init__()
-        #for name,tvar in kwargs.items():
+        # for name,tvar in kwargs.items():
         self.vars = {**kwargs}
 
     def __setitem__(self, k, v) -> None:
+        if k in ('vars',):
+            raise TypeError
+
         if isinstance(v, TemplateVar):
             self.vars[k] = v
         else:
@@ -67,6 +80,10 @@ class TemplateVars(MutableMapping):
     # def __missing__(self, key):
 
     def __getitem__(self, key):
+        # dont create a variable "vars" because it messes with serialziation
+        if key in ('vars,'):
+            raise TypeError
+
         if key not in self.vars:
             self.vars[key] = TemplateVar(key)
         return self.vars[key]
@@ -82,7 +99,7 @@ class TemplateVars(MutableMapping):
 
 
 class StringTemplateVar(TemplateVar[str]):
-    def __init__(self, initial_value: AnyStr="") -> None:
+    def __init__(self, initial_value: AnyStr = "") -> None:
         super().__init__(initial_value)
 
     def __str__(self):
