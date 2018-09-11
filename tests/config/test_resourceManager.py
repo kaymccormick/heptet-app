@@ -1,4 +1,4 @@
-from res import RootResource
+from email_mgmt_app import RootResource
 import logging
 
 logger = logging.getLogger(__name__)

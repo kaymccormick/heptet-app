@@ -9,6 +9,7 @@ from pyramid_ldap3 import groupfinder
 from sqlalchemy.exc import InvalidRequestError
 
 import email_mgmt_app.myapp_config
+import myapp_config
 from impl import MapperWrapper, NamespaceStore
 from interfaces import IMapperInfo, INamespaceStore
 from myapp_config import load_process_struct, config_process_struct
@@ -29,7 +30,8 @@ def make_wsgi_app():
             settings=settings, root_factory=RootFactory(),
             package=email_mgmt_app.myapp_config
         )
-        config.include('.myapp_config')
+        config.include(email_mgmt_app)
+        config.include(myapp_config)
 
         # # I wish we could do away this is
         # jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
@@ -94,7 +96,6 @@ def make_wsgi_app():
 
 # make_wsgi_app is a fixture, not our application!!
 def test_my_config(make_wsgi_app, webapp_settings):
-    with pytest.raises(InvalidRequestError) as excinfo:
-        settings = copy.copy(webapp_settings)
-        settings['model_package'] = '.model.email_mgmt'
-        app = make_wsgi_app({}, **settings)
+    settings = copy.copy(webapp_settings)
+    settings['model_package'] = '.model.email_mgmt'
+    app = make_wsgi_app({}, **settings)

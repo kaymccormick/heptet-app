@@ -10,21 +10,21 @@ import db_dump.args
 from pyramid_jinja2 import IJinja2Environment
 from webtest import TestApp
 
-import email_mgmt_app.res
 import email_mgmt_app.webapp_main
 import email_mgmt_app.interfaces
 import pyramid.interfaces
 
 from context import GeneratorContext, FormContext
+from email_mgmt_app import get_root
 from entrypoint import IEntryPoint, ICollector, EntryPoints, EntryPoint, IEntryPointGenerator
 from impl import CollectorContext, IProcess, NamespaceStore
+from interfaces import IMapperInfo
 from process import ProcessContext, setup_jsonencoder, AssetManager
 from scripts.util import get_request, template_env
 from webapp_main import on_new_request
 from pyramid.paster import get_appsettings, setup_logging
 from pyramid.registry import Registry
 from pyramid.request import Request
-from root import RootFactory
 from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
@@ -76,25 +76,22 @@ def main():
     # generate a request
     request = get_request(myapp.request_factory, myapp)  # type: Request
     assert request
-    # for k, v in registry._utility_registrations.items():
-    #     logger.warn("%s = %s", k, v)
-    root = RootFactory()(request)
-    # root = registry.queryUtility(IResource, 'root_resource')
+    root = get_root(request)
     assert root is not None
 
-    for x in registry.registeredAdapters():
-        if len(x.required) != 3:
-            continue
-
-        (ivc, rq, rs) = x.required
-        if ivc != pyramid.interfaces.IViewClassifier:
-            continue
-
-        logger.debug("%s", rq)
-        logger.debug("%s", rs)
-        #logger.debug("view is %s", x.factory)
-        orig = getattr(x.factory, "__original_view__", None)
-        logger.debug("view is %s (%s)", x.factory, orig)
+    # for x in registry.registeredAdapters():
+    #     if len(x.required) != 3:
+    #         continue
+    #
+    #     (ivc, rq, rs) = x.required
+    #     if ivc != pyramid.interfaces.IViewClassifier:
+    #         continue
+    #
+    #     logger.debug("%s", rq)
+    #     logger.debug("%s", rs)
+    #     #logger.debug("view is %s", x.factory)
+    #     orig = getattr(x.factory, "__original_view__", None)
+    #     logger.debug("view is %s (%s)", x.factory, orig)
 
     root_res = dump_resources(root)
 
@@ -132,7 +129,13 @@ def main():
 
     ep: EntryPoint
     for ep in entry_points:
-        gctx = GeneratorContext(ep.mapper_wrapper.mapper_info,env, TemplateVars(), FormContext, root_namespace=root_namespace)
+        x = repr(ep)
+        print(x, file=sys.stderr)
+        mi = None
+        if ep.mapper_wrapper:
+            mi = ep.mapper_wrapper.get_one_mapper_info()
+
+        gctx = GeneratorContext(mi, env, TemplateVars(), form_context_factory=FormContext, root_namespace=root_namespace)
         generator = registry.getAdapter(gctx, IEntryPointGenerator)
         ep.generator = generator
         assert generator is not None

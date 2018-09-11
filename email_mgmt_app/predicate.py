@@ -1,4 +1,4 @@
-from res import EntityResource, Resource
+from email_mgmt_app import Resource, EntityResource
 
 
 class EntityNamePredicate():

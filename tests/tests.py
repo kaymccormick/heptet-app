@@ -7,7 +7,7 @@ from pyramid.interfaces import IRootFactory
 from pyramid.request import Request
 
 from root import RootFactory
-from res import RootResource, ResourceManager
+from email_mgmt_app import RootResource, ResourceManager
 from pyramid import testing
 
 

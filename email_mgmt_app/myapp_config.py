@@ -7,13 +7,12 @@ from pyramid.config import Configurator
 from sqlalchemy import String
 from sqlalchemy.exc import InvalidRequestError
 
-import res
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
 from entity import EntityFormView
 from impl import MapperWrapper
 from interfaces import IMapperInfo, IResource
-from res import ResourceManager, OperationArgument, RootResource
+from email_mgmt_app import RootResource, ResourceManager, OperationArgument
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +24,7 @@ def config_process_struct(config, process):
         config.registry.registerUtility(wrapper, IMapperInfo, wrapper.key)
         node_name = mapper.local_table.key
         manager = ResourceManager(
-            config,
-            wrapper.key,
+            mapper_key=wrapper.key,
             node_name=node_name,
             mapper_wrapper=wrapper
         )
@@ -68,4 +66,4 @@ def includeme(config: Configurator):
     assert resource is not None
     config.registry.registerUtility(resource, IResource, 'root_resource')
     assert config.registry.queryUtility(IResource, 'root_resource') is not None
-    config.include(res)
+    # config.include(res)

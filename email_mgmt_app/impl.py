@@ -120,6 +120,7 @@ class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
         self._namespace = {}
         self._name = name
         self._parent = parent
+        self._element = None
 
     def set_element(self, element):
         self._element = element

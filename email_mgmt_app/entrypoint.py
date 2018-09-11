@@ -53,21 +53,21 @@ class EntryPoint:
 
     """
 
-    def __init__(self, key: AnyStr, request=None, registry=None, generator=None, js=None, view_kwargs: dict = None,
-                 mapper_wrapper: MapperWrapper = None, template_name=None,
-                 template=None,
-                 output_filename=None) -> None:
-        """
-
-        :param key:
-        :param request:
-        :param registry:
-        :param generator:
-        :param js:
-        :param view_kwargs:
-        :param mapper_wrapper:
-        :param template_name:
-        """
+    def __init__(
+            self,
+            manager: 'ResourceManager',
+            key: AnyStr,
+            request=None,
+            registry=None,
+            generator=None,
+            js=None,
+            view_kwargs: dict = None,
+            mapper_wrapper: MapperWrapper = None,
+            template_name=None,
+            template=None,
+            output_filename=None
+    ) -> None:
+        # just to make sure we're sane
         assert isinstance(key, str)
         self._key = key
         self._request = request
@@ -76,13 +76,31 @@ class EntryPoint:
         self._registry = registry
         self._generator = generator
         self._js = js
-        self._view_kwargs = view_kwargs
+        self._view_kwargs = view_kwargs  # view coupling !!! FIXME
         self._view = None
         self._mapper_wrapper = mapper_wrapper
         self._template_name = template_name
         self._output_filename = output_filename
         self._template = template
         self._vars = TemplateVars()
+        self._manager = manager
+
+    def __repr__(self):
+        return "EntryPoint(manager=%r, key=%r, request=%r, registry=%r, generator=%r, \
+js=%r, view_kwargs=%r, mapper_wrapper=%r, template_name=%r, template=%r, output_filename=%r)" % (
+
+            self._manager,
+            self._key,
+            self._request.__class__,
+            self._registry.__class__,
+            self._generator,
+            self._js,
+            self._view_kwargs,
+            self._mapper_wrapper,
+            self._template_name,
+            self._template,
+            self._output_filename
+        )
 
     def get_template_name(self):
         return self._template_name
@@ -141,7 +159,7 @@ class EntryPoint:
         self._view = new
 
     @property
-    def mapper_wrapper(self):
+    def mapper_wrapper(self) -> MapperWrapper:
         return self._mapper_wrapper
 
     @property
@@ -158,6 +176,10 @@ class EntryPoint:
     @property
     def vars(self):
         return self._vars
+
+    @property
+    def manager(self) -> 'ResourceManager':
+        return self._manager
     # @property
     # def vars(self):
 

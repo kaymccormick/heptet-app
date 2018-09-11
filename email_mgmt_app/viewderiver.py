@@ -1,5 +1,7 @@
 import logging
 
+from jinja2 import TemplateNotFound
+from pyramid.httpexceptions import HTTPException
 from pyramid.tweens import INGRESS
 
 from entity import BaseEntityRelatedView
@@ -55,7 +57,14 @@ def test_view_deriver(view_callable, info):
     def derive_view(context, request):
         logger.debug("calling view")
         #request.override_renderer = "poop.htnk"
-        result = view_callable(context, request)
+        try:
+            result = view_callable(context, request)
+        except (AssertionError, TypeError, AttributeError, TemplateNotFound) as ex:
+            logger.critical("Got exception from view callable.")
+            logger.critical(ex)
+            result = HTTPException("Got exception from view callable.", comment=str(ex), body_template=str(ex))
+
+
         logger.debug("view result is %s", result.status)
         return result
 

@@ -24,6 +24,6 @@ def get_column_map(column):
     if isinstance(column, TableColumnSpecInfo):
         x = _column_map.get(column.table, { }).get(column.column, None)
 
-    logger.critical("x is %s", getattr(column, "type"))
+
     return x
 

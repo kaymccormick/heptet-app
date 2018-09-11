@@ -13,7 +13,9 @@ from pyramid_jinja2 import IJinja2Environment
 from pyramid_ldap3 import groupfinder
 from zope.component import getGlobalSiteManager
 
+import email_mgmt_app
 from db_dump.info import ProcessStruct
+from email_mgmt_app import get_root
 from exceptions import InvalidMode
 from impl import MapperWrapper, NamespaceStore
 from interfaces import IMapperInfo
@@ -55,10 +57,10 @@ def wsgi_app(global_config, **settings):
         package="email_mgmt_app",
         registry=global_reg,
         settings=settings,
-        root_factory=".root:get_root")
+        root_factory=get_root)
     config.include('.myapp_config')
     if use_global_reg:
-        config.setup_registry(settings=settings, root_factory='root.get_root')
+        config.setup_registry(settings=settings, root_factory=get_root)
 
     # we want to use the default template thingy if we can
 
@@ -67,6 +69,7 @@ def wsgi_app(global_config, **settings):
                       autoescape=select_autoescape(default=False))
     config.registry.registerUtility(env, IJinja2Environment, 'app_env')
 
+    config.include(email_mgmt_app)
     # include our sql alchemy model.
     pkg = 'email_mgmt_app.model.email_mgmt'
     model_mod = None

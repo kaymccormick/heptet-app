@@ -20,6 +20,118 @@ GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
 
 
+def _make_form_representation(context: FormContext):
+    """
+    Generate a logical representation of an entity form.
+    :return:
+    """
+
+    assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
+    mapper = context.generator_context.mapper_info
+
+    outer_form = False
+    if context.nest_level == 0:
+        outer_form = True
+
+    mapper_key = mapper.local_table.key  # ??
+    namespace_id = stringcase.camelcase(mapper_key)
+    logger.debug("in form_representation with namespace id of %s", namespace_id)
+    # we should provide for initialize the form in another fashion for testability!!!
+    the_form = Form(namespace_id=namespace_id,
+                    root_namespace=context.root_namespace,
+                    namespace=context.namespace,  # can be None
+                    outer_form=outer_form)
+    context.form = the_form
+
+    form_contents = '<div>'
+    #        the_form.set_mapper_info(mapper.local_table.key, mapper)
+
+    # we want a script tag containing stuff we like
+    #         script = html.Element('script')
+    # #        script.text = "mapper = %s;" % json.dumps(mapper)
+    #         the_form.element.append(script)
+    logger.debug("Generating form representation for %s" % mapper_key)
+
+    # suppress primary keys
+    suppress = context.extra['suppress_cols'] = {}
+    for akey in mapper.primary_key:
+        assert akey.table == mapper.local_table.key
+        suppress[akey.column] = True
+
+    form_html = {}
+    # PROCESS RELATIONSHIP
+    # for each relationship
+    # where its appropriate, embed or supply a subordinate form
+    # additionally, supply a form variable and mapping for the relevant column.
+    for rel in mapper.relationships:
+        # rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRe#lationshipMapper)
+
+        # we specify relationship select here. However, there are other ways we'll wish to
+        # render
+
+        (local, remote) = rel.local_remote_pairs[0]
+        column_name = local.column
+        context.current_element = rel
+
+        x = get_column_map(local)
+        # store the html!
+        form_html[column_name] = context.relationship_field_mapper(context,
+                                                                   RelationshipSelect(context)).map_relationship()
+
+    # process each column
+    for x in mapper.columns:
+        key = x.key
+        if key in form_html:
+            # we already have the html, append it and continue
+            form_contents = form_contents + form_html[key]
+            continue
+
+        if key in suppress and suppress[key]:
+            logger.debug("skipping suppressed column %s", key)
+            continue
+
+        logger.debug("Mapping column %s", key)
+
+        # FIXME we default to text because we're lazy
+        kind = 'text'
+        camel_key = stringcase.camelcase("input_%s" % key).replace('_', '')
+        # FIXME figure this out ?not much of a key with the replacements.
+        assert '_' not in camel_key, "Bad key %s" % camel_key
+        input_id = context.form.get_html_id(camel_key, True)
+        input_name = stringcase.camelcase(key).replace('_', '')
+        input_name = context.form.get_html_form_name(input_name, True)
+
+        div_col_sm_8 = DivElement('div', {'class': 'col-sm-8'})
+
+        input_control = FormTextInputElement({'id': input_id.get_id(),
+                                              'value': '',
+                                              'name': input_name.get_id(),
+                                              'class': 'form-control'})
+        input_id.element = input_control
+        input_name.element = input_control
+        div_col_sm_8.element.append(input_control.element)
+
+        label_contents = stringcase.sentencecase(key)
+        label = FormLabel(form_control=input_control, label_contents=label_contents,
+                          attr={"class": "col-sm-4 col-form-label"})
+
+        e = {'id': input_id,
+             'input_html': div_col_sm_8.as_html(),
+             'label_html': label.as_html(),
+             'help': x.doc,
+             }
+
+        tmpl_name = 'entity/field.jinja2'
+        x = context.template_env.get_template(tmpl_name).render(**e)
+        assert x
+        form_contents = form_contents + x
+
+    form_contents = form_contents + '</div>'
+    the_form.element.append(html.fromstring(form_contents))
+
+    return the_form
+
+
 class EntityFormRepresentation:
     pass
 
@@ -216,18 +328,18 @@ class RelationshipSelect:
             # mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
             sub_namespace = context.form.namespace.make_namespace(stringcase.camelcase(key))
-            context.copy(nest=True)
             context2 = context.copy(nest=True)
+            context2.namespace = sub_namespace
 
-            builder = context.request.registry.getAdapter(context2, IBuilder)
-            entity_form = builder.form_representation()
+            entity_form = _make_form_representation(context2)
 
             collapse = env.get_template(template.collapse.name).render(
                 collapse_id=collapse_id.get_id(),
                 collapse_contents=entity_form.as_html()
             )
 
-            ready_stmts = request.registry.queryUtility(ICollector, 'ready_stmts')
+
+            ready_stmts = None#request.registry.queryUtility(ICollector, 'ready_stmts')
             if ready_stmts:
                 ready_stmts.add_value(env.get_template('entity/button_create_new_js.jinja2').render(
                     button_id=button_id.get_id(),
@@ -287,115 +399,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
             raise ex
 
     def form_representation(self):
-        """
-        Generate a logical representation of an entity form.
-        :return:
-        """
-        context = self.form_context
-        assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
-        mapper = context.generator_context.mapper_info
-
-        outer_form = False
-        if context.nest_level == 0:
-            outer_form = True
-
-        mapper_key = mapper.local_table.key  # ??
-        namespace_id = stringcase.camelcase(mapper_key)
-        logger.debug("in form_representation with namespace id of %s", namespace_id)
-        # we should provide for initialize the form in another fashion for testability!!!
-        the_form = Form(namespace_id=namespace_id,
-                        root_namespace=context.root_namespace,
-                        namespace=context.namespace,  # can be None
-                        outer_form=outer_form)
-        context.form = the_form
-
-        form_contents = '<div>'
-        #        the_form.set_mapper_info(mapper.local_table.key, mapper)
-
-        # we want a script tag containing stuff we like
-        #         script = html.Element('script')
-        # #        script.text = "mapper = %s;" % json.dumps(mapper)
-        #         the_form.element.append(script)
-        logger.debug("Generating form representation for %s" % mapper_key)
-
-        # suppress primary keys
-        suppress = context.extra['suppress_cols'] = {}
-        for akey in mapper.primary_key:
-            assert akey.table == mapper.local_table.key
-            suppress[akey.column] = True
-
-        form_html = {}
-        # PROCESS RELATIONSHIP
-        # for each relationship
-        # where its appropriate, embed or supply a subordinate form
-        # additionally, supply a form variable and mapping for the relevant column.
-        for rel in mapper.relationships:
-            # rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRe#lationshipMapper)
-
-            # we specify relationship select here. However, there are other ways we'll wish to
-            # render
-
-            (local, remote) = rel.local_remote_pairs[0]
-            column_name = local.column
-            context.current_element = rel
-
-            x = get_column_map(local)
-            # store the html!
-            form_html[column_name] = context.relationship_field_mapper(context,
-                                                                       RelationshipSelect(context)).map_relationship()
-
-        # process each column
-        for x in mapper.columns:
-            key = x.key
-            if key in form_html:
-                # we already have the html, append it and continue
-                form_contents = form_contents + form_html[key]
-                continue
-
-            if key in suppress and suppress[key]:
-                logger.debug("skipping suppressed column %s", key)
-                continue
-
-            logger.debug("Mapping column %s", key)
-
-            # FIXME we default to text because we're lazy
-            kind = 'text'
-            camel_key = stringcase.camelcase("input_%s" % key).replace('_', '')
-            # FIXME figure this out ?not much of a key with the replacements.
-            assert '_' not in camel_key, "Bad key %s" % camel_key
-            input_id = context.form.get_html_id(camel_key, True)
-            input_name = stringcase.camelcase(key).replace('_', '')
-            input_name = context.form.get_html_form_name(input_name, True)
-
-            div_col_sm_8 = DivElement('div', {'class': 'col-sm-8'})
-
-            input_control = FormTextInputElement({'id': input_id.get_id(),
-                                                  'value': '',
-                                                  'name': input_name.get_id(),
-                                                  'class': 'form-control'})
-            input_id.element = input_control
-            input_name.element = input_control
-            div_col_sm_8.element.append(input_control.element)
-
-            label_contents = stringcase.sentencecase(key)
-            label = FormLabel(form_control=input_control, label_contents=label_contents,
-                              attr={"class": "col-sm-4 col-form-label"})
-
-            e = {'id': input_id,
-                 'input_html': div_col_sm_8.as_html(),
-                 'label_html': label.as_html(),
-                 'help': x.doc,
-                 }
-
-            tmpl_name = 'entity/field.jinja2'
-            x = context.env.get_template(tmpl_name).render(**e)
-            assert x
-            form_contents = form_contents + x
-
-        form_contents = form_contents + '</div>'
-        the_form.element.append(html.fromstring(form_contents))
-
-        return the_form
+        return _make_form_representation(self.form_context)
 
     def generate(self):
         vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
@@ -406,7 +410,12 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
             t_vars[var] = []
 
         ctx = self.ctx
+        if ctx.mapper_info is None:
+            # fixme - we get called here when we shouldn't and our fix is to bail out right now
+            return
+
         self._form = self.form_representation()
+
         root_namespace = ctx.root_namespace
 
         def get_data(ns):
@@ -484,15 +493,16 @@ class EntityFormView(BaseEntityRelatedView):
         super().__init__(context, request)
 
     def __call__(self, *args, **kwargs):
-        context = self.context
-        assert self.entry_point
-        generator = self.entry_point.generator
+        resource = self.context
+        entry_point = resource.entry_point
+        assert entry_point
+        generator = entry_point.generator
         assert generator
-        mapper_info = self.entry_point.mapper_wrapper.get_one_mapper_info()
+        mapper_info = entry_point.mapper_wrapper.get_one_mapper_info()
         assert mapper_info
         if self.request.method == "GET":
-            env = self.template_env
-            namespace = EntityFormView.root_namespace
+            env = resource.template_env
+            namespace = resource.root_namespace
             if callable(namespace):
                 namespace = namespace()
 

@@ -196,7 +196,8 @@ class GeneratorContext(
     def __init__(self, mapper_info, template_env, template_vars, form_context_factory: FormContextFactory,
                  root_namespace: NamespaceStore) -> None:
         super().__init__()
-        assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
+        if mapper_info is not None:
+            assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
 
         #        assert isinstance(template_env, Environment)
         assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars, is %s" % (template_vars, type(template_vars))
@@ -372,5 +373,6 @@ class FormContext(
                                         nest_level=bool and self.nest_level + 1 or self.nest_level,
                                         do_modal=self.do_modal,
                                         builders=self.builders,
+                                        relationship_field_mapper=self.relationship_field_mapper,
                                         extra=nest and dict() or dup_extra and copy.deepcopy(self.extra) or self.extra)
         return new

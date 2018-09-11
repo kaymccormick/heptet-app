@@ -183,6 +183,7 @@ class Form(FormElement):
         self._root_namespace = root_namespace
         self._form_namespace = self._root_namespace.get_namespace('form', True)
         if namespace is None:
+            logger.warning("making namespace in form namepsace %s", namespace_id)
             self._namespace = self._form_namespace.make_namespace(namespace_id)
         else:
             self._namespace = namespace

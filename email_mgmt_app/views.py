@@ -3,7 +3,6 @@ from typing import AnyStr
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 
-from root import RootFactory
 from view import BaseView
 from pyramid.config import Configurator
 
@@ -16,7 +15,8 @@ class MainView(BaseView):
 
 class MainEntryPoint(EntryPoint):
     def __init__(self, key: AnyStr='_main', registry=None) -> None:
-        super().__init__(key=key, registry=registry)
+        super().__init__(None, key=key, registry=registry)
+
 
 
 def includeme(config: Configurator):
@@ -26,4 +26,4 @@ def includeme(config: Configurator):
     #generator = MainView.entry_point_generator_factory()(main, request)
     #main.generator = generator
     config.register_entry_point(main)
-    config.add_view(MainView, name='', renderer='templates/main_child.jinja2', context=RootFactory, entry_point=MainEntryPoint)
+    config.add_view(MainView, name='', renderer='templates/main_child.jinja2', entry_point=MainEntryPoint)

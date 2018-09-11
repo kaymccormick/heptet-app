@@ -1,10 +1,8 @@
-from res import Resource, ContainerResource, RootResource
-from root import get_root
+from email_mgmt_app import get_root, ContainerResource, Resource
 
 
 def test_root_resource(root_resource):
     assert isinstance(root_resource, Resource)
-    assert isinstance(root_resource, ContainerResource)
     assert root_resource.is_container
 
 

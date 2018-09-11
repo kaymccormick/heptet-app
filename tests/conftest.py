@@ -13,18 +13,18 @@ from pyramid_tm.tests import DummyRequest
 from sqlalchemy import inspect
 from zope.interface.registry import Components
 
+import email_mgmt_app
 import field_renderer
 from context import FormContext, GeneratorContext
 from db_dump import RelationshipSchema
 from db_dump.info import MapperInfo
+from email_mgmt_app import get_root, Resource, ResourceManager
 from entity import EntityFormViewEntryPointGenerator, EntryPoint
 from entity import FormRelationshipMapper, RelationshipSelect
 from form import Form
 from impl import NamespaceStore, MapperWrapper
 from model import map_column, get_column_map
 from myapp_config import load_process_struct
-from res import RootResource, Resource, ResourceManager
-from root import get_root
 from tvars import TemplateVars
 from viewderiver import entity_view
 

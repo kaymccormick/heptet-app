@@ -17,7 +17,8 @@ def render_template(request, template_name, d, nestlevel=0):
 
 
 def get_exception_entry_point_key(exception):
-    return 'exception_' + exception.__name__
+    x = getattr(exception, "__name__", None) or exception.__class__.__name__
+    return 'exception_' + x
 
 
 def get_entry_point_key(request, resource, op_name):

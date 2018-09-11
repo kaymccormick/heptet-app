@@ -113,3 +113,11 @@ class IResource(Interface):
 
 class IFormContext(Interface):
     pass
+
+
+class IRootResource(IResource):
+    def get_data():
+        pass
+
+    def get_root_resource():
+        pass

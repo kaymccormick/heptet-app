@@ -1,7 +1,6 @@
 import logging
 
-from res import Resource, RootResource
-from root import get_root
+from email_mgmt_app import get_root, RootResource, Resource
 
 logger = logging.getLogger(__name__)
 
