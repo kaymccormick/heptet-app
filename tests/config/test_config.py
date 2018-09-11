@@ -13,10 +13,12 @@ import myapp_config
 from email_mgmt_app import get_root
 from impl import MapperWrapper, NamespaceStore
 from interfaces import IMapperInfo, INamespaceStore
+from model import email_mgmt
 from myapp_config import load_process_struct, config_process_struct
 from webapp_main import on_context_found, on_before_render, on_new_request, on_application_created
 
 
+# we need to keep this somewhat synchronized!
 @pytest.fixture
 def make_wsgi_app():
     def _make_wsgi_app(global_config, model_package=None, **settings):
@@ -97,5 +99,5 @@ def make_wsgi_app():
 # make_wsgi_app is a fixture, not our application!!
 def test_my_config(make_wsgi_app, webapp_settings):
     settings = copy.copy(webapp_settings)
-    settings['model_package'] = 'email_mgmt_app.model.email_mgmt:includeme'
+    settings['model_package'] = email_mgmt
     app = make_wsgi_app({}, **settings)
