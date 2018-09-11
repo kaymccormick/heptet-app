@@ -69,6 +69,7 @@ def wsgi_app(global_config, **settings):
     env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
                       autoescape=select_autoescape(default=False))
     config.registry.registerUtility(env, IJinja2Environment, 'app_env')
+    config.add_request_method(lambda x: env, 'template_env')
 
     config.include(email_mgmt_app)
     # include our sql alchemy model.

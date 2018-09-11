@@ -123,11 +123,15 @@ js=%r, view_kwargs=%r, mapper_wrapper=%r, template_name=%r, template=%r, output_
     def set_template(self, template):
         self._template = template
 
-    def init_generator(self, registry, root_namespace, template_env):
+    def init_generator(self, registry, root_namespace, template_env, cb=None):
         w = self.mapper_wrapper and self.mapper_wrapper.get_one_mapper_info() or None
         gctx = GeneratorContext(w, template_env, TemplateVars(),
                                 form_context_factory=FormContext, root_namespace=root_namespace)
-        generator = registry.getAdapter(gctx, IEntryPointGenerator)
+        if cb:
+            generator = cb(registry, gctx)
+        else:
+            generator = registry.getAdapter(gctx, IEntryPointGenerator)
+
         self.generator = generator
 
     def __str__(self):

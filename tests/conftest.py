@@ -168,7 +168,7 @@ def make_resource(root_resource, entity_type):
 
 @pytest.fixture
 def entry_point(mapper_wrapper, app_request, app_registry, jinja2_env):
-    return EntryPoint(None, "", app_request, app_registry, mapper_wrapper=mapper_wrapper, output_filename="tmp.out",
+    return EntryPoint(None, "domain_form", app_request, app_registry, mapper_wrapper=mapper_wrapper, output_filename="tmp.out",
                       template=jinja2_env.get_template('entry_point.js.jinja2'))
 
 

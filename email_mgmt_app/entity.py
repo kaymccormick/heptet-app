@@ -511,7 +511,7 @@ class EntityFormView(BaseEntityRelatedView):
         entry_point = resource.entry_point  # type: EntryPoint
         assert entry_point
 
-        env = self.request.registry.getUtility(IJinja2Environment, 'app_env')
+        env = self.request.template_env()
         root_namespace = NamespaceStore('root')
         entry_point.init_generator(self.request.registry, root_namespace, env)
         generator = entry_point.generator
@@ -530,7 +530,7 @@ class EntityFormView(BaseEntityRelatedView):
             wrapper = generator.render_entity_form_wrapper(gctx.form_context(relationship_field_mapper=FormRelationshipMapper))
             _vars = {
                 'entry_point_template':
-                    'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
+                    'build/templates/entry_point/%s.jinja2' % entry_point.key,
                 'form_content': wrapper,
             }
             return Response(env.get_template('entity/form.jinja2').render(**_vars))

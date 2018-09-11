@@ -196,8 +196,8 @@ class GeneratorContext(
     def __init__(self, mapper_info, template_env, template_vars, form_context_factory: FormContextFactory,
                  root_namespace: NamespaceStore) -> None:
         super().__init__()
-        if mapper_info is not None:
-            assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
+        # if mapper_info is not None:
+        #     assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
 
         #        assert isinstance(template_env, Environment)
         assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars, is %s" % (template_vars, type(template_vars))
