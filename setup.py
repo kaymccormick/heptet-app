@@ -30,7 +30,7 @@ tests_require = [
 
 setup(
     name='email_mgmt_app',
-    version='0.0',
+    version='0.4',
     description='Pyramid Scaffold',
     classifiers=[
         'Programming Language :: Python',
@@ -38,8 +38,8 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
     ],
-    author='',
-    author_email='',
+    author='Kay McCormick',
+    author_email='kay@kaymccormick.com',
     url='',
     keywords='web pyramid pylons',
     packages=find_packages(),
