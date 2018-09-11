@@ -581,16 +581,17 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     request.subpath = ()
     request.traversed = (node_name,)
 
-    extra = {'context': type(resource)}
-
     # this makes a direct mapping between operations, entry points, and views.
+    extra = {}
 
     for op in manager._ops:
         resource.add_name(op.name)
         op_resource = resource.sub_resource(op.name)
+
         logger.critical("spawing sub resource for op %s, %s", op.name, node_name)
 
         d = extra.copy()
+        d['context'] = type(op_resource)
         d['operation'] = op
         if op.renderer is not None:
             d['renderer'] = op.renderer
@@ -611,8 +612,10 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
                                  view_kwargs=view_kwargs)
         op_resource.entry_point = entry_point
         # logger.critical("op.view is %s", op.view)
-        resource.entry_point = entry_point
-        x = op.view(resource, request)
+        op_resource.entry_point = entry_point
+
+        #x = op.view(resource, request)
+
         # generator = config.registry.getMultiAdapter([env, entry_point, x], IEntryPointGenerator)
         # # logger.debug("setting generator to %s", generator)
         # entry_point.generator = generator

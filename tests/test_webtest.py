@@ -82,7 +82,7 @@ def url(request):
     return request.param
 
 
-def test_webtest(sqlalchemy_engine, tm_session, app_test, url):
+def test_webtest(sqlalchemy_engine, tm_session, app_test, url, javascript_contenttypes, packed_assets):
     logger.warning("%s", sys.path)
     init_database(sqlalchemy_engine, tm_session)
 
@@ -97,8 +97,8 @@ def test_webtest(sqlalchemy_engine, tm_session, app_test, url):
     _head = root.xpath("head")
     assert _head, "No head element"
     assert len(_head) == 1, "Too many head elements"
-    (head) = _head
-    _title = _head.xpath("title")
+    (head,) = _head
+    _title = head.xpath("title")
     assert _title, "No title Element"
     assert len(_title) == 1, "Too many title elements"
 

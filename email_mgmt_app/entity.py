@@ -515,7 +515,7 @@ class EntityFormView(BaseEntityRelatedView):
                     'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
                 'form_content': wrapper,
             }
-            return Response(env.get_template('entity/form_enclosure.jinja2').render(**_vars))
+            return Response(env.get_template('entity/form.jinja2').render(**_vars))
 
         # this is for post!
         r = self.entity_type.__new__(self.entity_type)

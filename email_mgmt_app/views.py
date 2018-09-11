@@ -3,6 +3,7 @@ from typing import AnyStr
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 
+from email_mgmt_app import get_root
 from view import BaseView
 from pyramid.config import Configurator
 
@@ -26,4 +27,5 @@ def includeme(config: Configurator):
     #generator = MainView.entry_point_generator_factory()(main, request)
     #main.generator = generator
     config.register_entry_point(main)
-    config.add_view(MainView, name='', renderer='templates/main_child.jinja2', entry_point=MainEntryPoint)
+    get_root(request).entry_point = main
+    config.add_view(MainView, name='', renderer='templates/main_child.jinja2', context='email_mgmt_app.RootResource', entry_point=MainEntryPoint)

@@ -39,7 +39,7 @@ class BaseView:
             if isinstance(self.context, Exception):
                 entry_point = EntryPoint(None, get_exception_entry_point_key(self.context), self.request)
 
-        assert entry_point, "Entry point for view should not be None"
+        assert entry_point is not None, "Entry point for view should not be None"
         key = entry_point.key
         assert key, "Entry point key for view should be truthy"
 
