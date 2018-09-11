@@ -10,6 +10,7 @@ from sqlalchemy.exc import InvalidRequestError
 
 import email_mgmt_app.myapp_config
 import myapp_config
+from email_mgmt_app import get_root
 from impl import MapperWrapper, NamespaceStore
 from interfaces import IMapperInfo, INamespaceStore
 from myapp_config import load_process_struct, config_process_struct
@@ -26,7 +27,7 @@ def make_wsgi_app():
         :return: A WSGI application.
         """
         config = Configurator(
-            settings=settings, root_factory=RootFactory(),
+            settings=settings, root_factory=get_root,
             package=email_mgmt_app.myapp_config
         )
         config.include(email_mgmt_app)
