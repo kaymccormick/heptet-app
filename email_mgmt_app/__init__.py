@@ -171,6 +171,7 @@ class _Resource:
         self.values = lambda: self._data.values()
         self.get = lambda x: self._data.get(x)
         self._manager = manager
+        self._entry_point = None
 
     def __repr__(self):
         s = ''
@@ -222,6 +223,14 @@ class _Resource:
     @property
     def manager(self) -> ResourceManager:
         return self._manager
+
+    @property
+    def entry_point(self) -> EntryPoint:
+        return self._entry_point
+
+    @entry_point.setter
+    def entry_point(self, new: EntryPoint):
+        self._entry_point = new
 
 
 class Resource(_Resource, metaclass=ResourceMeta):
@@ -600,8 +609,8 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
         entry_point_key = get_entry_point_key(request, root_resource[node_name], op.name)
         view_kwargs = {'view': op.view,
-                       'name': op.name,
-                       'node_name': node_name,
+#                       'name': op.name,
+#                       'node_name': node_name,
                        **d}
         entry_point = EntryPoint(manager, entry_point_key,
                                  request,

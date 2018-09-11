@@ -135,11 +135,10 @@ def main():
         if ep.mapper_wrapper:
             mi = ep.mapper_wrapper.get_one_mapper_info()
 
-        gctx = GeneratorContext(mi, env, TemplateVars(), form_context_factory=FormContext, root_namespace=root_namespace)
-        generator = registry.getAdapter(gctx, IEntryPointGenerator)
-        ep.generator = generator
-        assert generator is not None
-        generator.generate()
+        # fixme this does not belong here!!
+        ep.init_generator(registry, root_namespace, env)
+        assert ep.generator is not None
+        ep.generator.generate()
         ep.set_template(entry_point_js_template)
         ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
         subscribers = registry.subscribers((proc_context,ep), IProcess)

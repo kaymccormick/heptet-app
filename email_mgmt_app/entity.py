@@ -5,6 +5,7 @@ from typing import Mapping
 import stringcase
 from pyramid.request import Request
 from pyramid.response import Response
+from pyramid_jinja2 import IJinja2Environment
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
 from context import ContextFormContextMixin, EntityTypeMixin
@@ -172,9 +173,11 @@ class FormRelationshipMapper:
         rel = context.current_element
         assert rel is not None
 
-        vars = context.generator_context.template_vars
-        assert 'js_stmts' in vars
-        js_stmts_col = vars['js_stmts']
+        _vars = context.generator_context.template_vars
+        logger.critical("vars = %s", _vars)
+        if 'js_stmts' not in _vars:
+            _vars['js_stmts'] = []
+        js_stmts_col = _vars['js_stmts']
         js_stmts_col.append('// %s' % rel)
 
         logger.debug("Encountering relationship %s", rel)
@@ -338,8 +341,7 @@ class RelationshipSelect:
                 collapse_contents=entity_form.as_html()
             )
 
-
-            ready_stmts = None#request.registry.queryUtility(ICollector, 'ready_stmts')
+            ready_stmts = None  # request.registry.queryUtility(ICollector, 'ready_stmts')
             if ready_stmts:
                 ready_stmts.add_value(env.get_template('entity/button_create_new_js.jinja2').render(
                     button_id=button_id.get_id(),
@@ -440,7 +442,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
 
     def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)
-        return context.env.get_template('entity/form_wrapper.jinja2').render(
+        return context.template_env.get_template('entity/form_wrapper.jinja2').render(
             form=form
         )
 
@@ -495,21 +497,26 @@ class EntityFormView(BaseEntityRelatedView):
 
     def __call__(self, *args, **kwargs):
         resource = self.context
-        entry_point = resource.manager.entry_point
+        entry_point = resource.entry_point  # type: EntryPoint
         assert entry_point
+
+        env = self.request.registry.getUtility(IJinja2Environment, 'app_env')
+        root_namespace = NamespaceStore('root')
+        entry_point.init_generator(self.request.registry, root_namespace, env)
         generator = entry_point.generator
-        assert generator
-        mapper_info = entry_point.mapper_wrapper.get_one_mapper_info()
-        assert mapper_info
+        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), env, TemplateVars(), FormContext,
+                                root_namespace)
+        assert generator, "Need generator to function"
+        mapper_info = gctx.mapper_info
+        assert mapper_info is not None
         if self.request.method == "GET":
-            env = resource.template_env
-            namespace = resource.root_namespace
-            if callable(namespace):
-                namespace = namespace()
+            # namespace = resource.root_namespace
+            # if callable(namespace):
+            #     namespace = namespace()
+            #
+            # # we shouldn't need to crate this
 
-            # we shouldn't need to crate this
-
-            wrapper = generator.render_entity_form_wrapper(context)
+            wrapper = generator.render_entity_form_wrapper(gctx.form_context(relationship_field_mapper=FormRelationshipMapper))
             _vars = {
                 'entry_point_template':
                     'build/templates/entry_point/%s.jinja2' % self.entry_point.key,
