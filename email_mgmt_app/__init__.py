@@ -200,7 +200,7 @@ class _Resource:
         self._names.append(name)
 
     def sub_resource(self, name: AnyStr):
-        sub = self.__class__.__new__(self.__class__, name, self)
+        sub = self.__class__.__new__(self.__class__, self.manager, name, self)
         #        logger.critical("%s", dir(sub))
         self[name] = sub
         return sub
