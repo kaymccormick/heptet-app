@@ -123,7 +123,7 @@ def config_fixture():
 
 
 @pytest.fixture
-def entity_type():
+def entity_type_mock():
     return MagicMock('entity_type')
 
 
@@ -135,18 +135,23 @@ def mapper_info_mock():
 
 
 @pytest.fixture
-def mapper_info(mappers):
-    return mappers[0]
+def mapper_info_real(mappers_real):
+    return mappers_real[0]
 
 
 @pytest.fixture
-def mapper_wrapper(mapper_info):
-    return MapperWrapper(mapper_info)
+def mapper_wrapper_real(mapper_info_real):
+    return MapperWrapper(mapper_info_real)
 
 
 @pytest.fixture
-def resource_manager(config_fixture, entity_type, mapper_wrapper):
-    return ResourceManager(mapper_wrapper.key, title="", entity_type=entity_type, mapper_wrapper=mapper_wrapper)
+def resource_manager(config_fixture, entity_type_mock, mapper_wrapper_real):
+    return ResourceManager(
+        mapper_wrapper_real.key,
+        title="",
+        entity_type=entity_type_mock,
+        mapper_wrapper=mapper_wrapper_real
+    )
 
 
 @pytest.fixture
@@ -160,17 +165,18 @@ def namespace_store(request):
 
 
 @pytest.fixture
-def make_resource(root_resource, entity_type):
+def make_resource(root_resource, entity_type_mock):
     def _make_resource(name):
-        return Resource(name, root_resource, name, entity_type)
+        return Resource(name, root_resource, name, entity_type_mock)
 
     return _make_resource
 
 
 @pytest.fixture
-def entry_point(mapper_wrapper, app_request, app_registry, jinja2_env):
-    return EntryPoint(None, "domain_form", app_request, app_registry, mapper_wrapper=mapper_wrapper, output_filename="tmp.out",
-                      template=jinja2_env.get_template('entry_point.js.jinja2'))
+def entry_point(mapper_wrapper_real, app_request, app_registry, jinja2_env_mock):
+    return EntryPoint(None, "domain_form", app_request, app_registry, mapper_wrapper=mapper_wrapper_real,
+                      output_filename="tmp.out",
+                      template=jinja2_env_mock.get_template('entry_point.js.jinja2'))
 
 
 @pytest.fixture
@@ -184,7 +190,7 @@ def entity_form_view_mock():
 
 
 @pytest.fixture
-def jinja2_env():
+def jinja2_env_mock():
     mock = MagicMock(Environment)
     # mock.mock_add_spec(Environment.__class__)
     # mock.mock_add_spec(['get_template'])
@@ -217,8 +223,8 @@ def template_vars():
 
 
 @pytest.fixture
-def make_generator_context(jinja2_env, mapper_info, template_vars, root_namespace_store):
-    def _make_generator_context(mapper=mapper_info, env=jinja2_env, tvars=template_vars, root=root_namespace_store):
+def make_generator_context(jinja2_env_mock, mapper_info_real, template_vars, root_namespace_store):
+    def _make_generator_context(mapper=mapper_info_real, env=jinja2_env_mock, tvars=template_vars, root=root_namespace_store):
         return GeneratorContext(mapper, env, tvars, FormContext, root)
 
     return _make_generator_context
@@ -254,18 +260,19 @@ def my_form(root_namespace_store):
 
 @pytest.fixture
 def my_form_context(my_gen_context, my_relationship_select, root_namespace_store):
-    #mapper = FormRelationshipMapper(my_relationship_select) # fixme
+    # mapper = FormRelationshipMapper(my_relationship_select) # fixme
+    # we need to factor this thing away with a partial
     the_form = Form(namespace_id="test",
                     root_namespace=root_namespace_store,
                     namespace=None,  # can be None
-                    outer_form=True)
+                    outer_form=True, form_action="./")
 
     return my_gen_context.form_context(relationship_field_mapper=FormRelationshipMapper, form=the_form)
 
 
 @pytest.fixture
-def my_gen_context(make_generator_context, jinja2_env, mapper_info, my_template_vars):
-    return make_generator_context(mapper_info, jinja2_env, my_template_vars)
+def my_gen_context(make_generator_context, jinja2_env_mock, mapper_info_real, my_template_vars):
+    return make_generator_context(mapper_info_real, jinja2_env_mock, my_template_vars)
 
 
 @pytest.fixture
@@ -274,13 +281,13 @@ def my_template_vars(make_template_vars):
 
 
 @pytest.fixture
-def process_struct():
+def process_struct_real():
     return load_process_struct()
 
 
 @pytest.fixture
-def mappers(process_struct):
-    return process_struct.mappers
+def mappers_real(process_struct_real):
+    return process_struct_real.mappers
 
 
 @pytest.fixture
@@ -358,10 +365,10 @@ def webapp_settings():
         'email_mgmt_app.jinja2_loader_template_path': 'email_mgmt_app/templates:email_mgmt_app',
     }
 
+
 @pytest.fixture
-def form_config_test(my_gen_context, process_struct):
+def form_config_test(my_gen_context, process_struct_real):
     pass
     # organization = inspect(Domain).relationships.organization
     # map_column(organization, field_renderer.Select)
     # logger.warning("%s", get_column_map(organization))
-

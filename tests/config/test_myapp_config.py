@@ -9,8 +9,8 @@ from myapp_config import config_process_struct, load_process_struct
 logger = logging.getLogger(__name__)
 
 
-def test_config_process_struct(process_struct, config_fixture):
-    config_process_struct(config_fixture, process_struct)
+def test_config_process_struct(process_struct_real, config_fixture):
+    config_process_struct(config_fixture, process_struct_real)
 
 
 def test_load_process_struct():

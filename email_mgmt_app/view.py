@@ -68,6 +68,7 @@ class BaseView:
 
     def collect_args(self, request):
         if self.operation is None:
+            logger.critical("operation is none! this could be bad.")
             return
         assert self.operation is not None
         args = self.operation.args

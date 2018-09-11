@@ -111,21 +111,10 @@ class _Resource:
             meta = ResourceMeta(clsname, (cls,), {})
             # logger.critical("meta = %s", meta)
             inst = meta(manager, name, parent, title, entity_type)
-            try:
-                inst.__init__(manager, name, parent, title, entity_type)
-            except:
-                ex = sys.exc_info()[1]
-                raise ex
+            inst.__init__(manager, name, parent, title, entity_type)
             return inst
-        try:
-            x = super().__new__(cls)
-        except:
-            ex = sys.exc_info()[1]
-            logger.critical(ex)
-            # logger.critical("%s", )
-            raise ex
 
-        return x
+        return super().__new__(cls)
 
     def __setitem__(self, key, value):
         self._data.__setitem__(key, value)
@@ -174,14 +163,15 @@ class _Resource:
         self._entry_point = None
 
     def __repr__(self):
-        s = ''
-        for x in dir(self):
-            if x.startswith('_') and not x.startswith('__') and not x.startswith('_abc_') and x != '_data':
-                s = s + x[1:] + '=' + repr(getattr(self, x)) + ', '
-
-        return "Resource(%s, %s, %sdata=%r)" % (self.__name__, self.__parent__, s, getattr(self, '_data', None)) #manager=%s, name=%s, parent=%s, title=%s, entity_type=%s)" % (
-            #self._manager, self.__name__, self.__parent__, self._title, self._entity_type
-            #)
+        return "%s(%r, %r, %s, %r, %r)" % (self.__class__.__name__, self._manager, self.__name__, self.__parent__ and "%s()" % self.__parent__.__class__.__name__ or None, self._title, self._entity_type)
+        # s = ''
+        # for x in dir(self):
+        #     if x.startswith('_') and not x.startswith('__') and not x.startswith('_abc_') and x != '_data':
+        #         s = s + x[1:] + '=' + repr(getattr(self, x)) + ', '
+        #
+        # return "Resource(%s, %s, %sdata=%r)" % (self.__name__, self.__parent__, s, getattr(self, '_data', None)) #manager=%s, name=%s, parent=%s, title=%s, entity_type=%s)" % (
+        #     #self._manager, self.__name__, self.__parent__, self._title, self._entity_type
+        #     #)
 
     @property
     def is_container(self) -> bool:

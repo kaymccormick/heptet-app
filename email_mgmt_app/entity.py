@@ -41,10 +41,13 @@ def _make_form_representation(context: FormContext):
     namespace_id = stringcase.camelcase(mapper_key)
     logger.debug("in form_representation with namespace id of %s", namespace_id)
     # we should provide for initialize the form in another fashion for testability!!!
+    action = context.form_action
+    assert action
     the_form = Form(namespace_id=namespace_id,
                     root_namespace=context.root_namespace,
                     namespace=context.namespace,  # can be None
-                    outer_form=outer_form)
+                    outer_form=outer_form, attr=dict(action=context.form_action,
+                                                method='POST'))
     context.form = the_form
 
     form_contents = '<div>'
@@ -400,7 +403,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
     def __init__(self, ctx: GeneratorContext) -> None:
         super().__init__(ctx)
         try:
-            self.form_context = ctx.form_context(relationship_field_mapper=FormRelationshipMapper)
+            self.form_context = ctx.form_context(relationship_field_mapper=FormRelationshipMapper, form_action="./")
         except AssertionError as ex:
             logger.critical("Unable to create form context")
             logger.critical(ex)

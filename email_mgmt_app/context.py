@@ -331,6 +331,7 @@ class FormContext(
             nest_level: int = 0,
             do_modal: bool = False,
             builders: Sequence = None,
+            form_action: AnyStr = None,
             extra: dict = None,
     ):
         super().__init__()
@@ -351,6 +352,7 @@ class FormContext(
         self.extra = extra
         self.template_vars = template_vars
         self.relationship_field_mapper = relationship_field_mapper
+        self.form_action = form_action
 
     def check_instance(self):
         super().check_instance()
@@ -365,16 +367,27 @@ class FormContext(
         return self.__class__.__name__ + '/' + '/'.join(x)
 
     def copy(self, nest: bool = False, dup_extra: bool = False):
-        new = self.form_context_factory(generator_context=self.generator_context,
-                                        template_env=self.template_env,
-                                        template_vars=self.template_vars,
-                                        root_namespace=self.root_namespace,
-                                        namespace=None,
-                                        form_context_factory=self.form_context_factory,
-                                        form=self.form,
-                                        nest_level=bool and self.nest_level + 1 or self.nest_level,
-                                        do_modal=self.do_modal,
-                                        builders=self.builders,
-                                        relationship_field_mapper=self.relationship_field_mapper,
-                                        extra=nest and dict() or dup_extra and copy.deepcopy(self.extra) or self.extra)
+        # this is crappy because we keep having to update this ....
+        new = copy.copy(self)
+        new.namespace = None
+        if nest:
+            new.nest_level = new.nest_level + 1
+            new.extra = dict()
+        elif dup_extra:
+            new.extra = copy.deepcopy(self.extra)
+
         return new
+
+        # new = self.form_context_factory(generator_context=self.generator_context,
+        #                                 template_env=self.template_env,
+        #                                 template_vars=self.template_vars,
+        #                                 root_namespace=self.root_namespace,
+        #                                 namespace=None,
+        #                                 form_context_factory=self.form_context_factory,
+        #                                 form=self.form,
+        #                                 nest_level=bool and self.nest_level + 1 or self.nest_level,
+        #                                 do_modal=self.do_modal,
+        #                                 builders=self.builders,
+        #                                 relationship_field_mapper=self.relationship_field_mapper,
+        #                                 extra=nest and dict() or dup_extra and copy.deepcopy(self.extra) or self.extra)
+        # return new

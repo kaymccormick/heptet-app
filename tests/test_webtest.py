@@ -82,50 +82,80 @@ def url(request):
     return request.param
 
 
-def test_webtest(sqlalchemy_engine, tm_session, app_test, url, javascript_contenttypes, packed_assets):
-    logger.warning("%s", sys.path)
-    init_database(sqlalchemy_engine, tm_session)
+@pytest.fixture
+def make_webtest(sqlalchemy_engine, tm_session, app_test, javascript_contenttypes, packed_assets):
+    def _webtest(url, debug=True):
+        logger.warning("%s", sys.path)
+        init_database(sqlalchemy_engine, tm_session)
 
-    resp = app_test.get(url)
-    assert resp.status_int == 200
-    assert resp.content_type == 'text/html'
-    assert resp.content_length > 0
-    root = lxml.html.document_fromstring(resp.text)
-    assert root.tag == "html"
+        resp = app_test.get(url, expect_errors=True)
+        if resp.status_int == 520:
+            print(resp.text, file=sys.stderr)
 
-    logger.critical("%s", html.tostring(root, encoding="unicode"))
-    _head = root.xpath("head")
-    assert _head, "No head element"
-    assert len(_head) == 1, "Too many head elements"
-    (head,) = _head
-    _title = head.xpath("title")
-    assert _title, "No title Element"
-    assert len(_title) == 1, "Too many title elements"
+        assert 200 == resp.status_int
+        assert 'text/html' == resp.content_type
+        assert 0 < resp.content_length
+        root = lxml.html.document_fromstring(resp.text)
+        assert root.tag == "html"
+
+        if debug:
+            print(html.tostring(root, encoding="unicode"), file=sys.stderr)
+
+        _head = root.xpath("head")
+        assert _head, "No head element"
+        assert len(_head) == 1, "Too many head elements"
+        (head,) = _head
+        _title = head.xpath("title")
+        assert _title, "No title Element"
+        assert len(_title) == 1, "Too many title elements"
+
+        logging.debug("type(root) = %s", type(root))
+        scripts = root.xpath("//script")
+        srcs = []
+        for script in scripts:
+            if 'src' in script.attrib:
+                script_src = script.get('src')
+                srcs.append(script_src)
+
+        for src in srcs:
+            print(src)
+            srcresp = app_test.request(src)
+            assert srcresp.content_type in javascript_contenttypes, ("%s" % srcresp.content_type)
+            text = srcresp.text
+            all = re.findall(r'^/\*\*\*/ "(.*)":$', text, re.MULTILINE)
+            # print(*all, sep='\n')
+
+        logging.debug("response text = %s", repr(resp.text))
+        debug_dict = {}
+        matches = re.findall(r'<!-- ([^ \t]*) = ([^ ]*) -->', resp.text)
+        for (k, v) in matches:
+            debug_dict[k] = v
+            logging.debug("debug_dict[%s] = %s", k, v)
+
+        for link in root.iterlinks():
+            print(link[2])
+
+        return (resp, root)
+
+    return _webtest
 
 
-    logging.debug("type(root) = %s", type(root))
-    scripts = root.xpath("//script")
-    srcs = []
-    for script in scripts:
-        print(script.keys())
-        if 'src' in script.attrib:
-            srcript_src = script.get('src')
-            srcs.append(srcript_src)
+def test_webtest_urls(url, make_webtest):
+    make_webtest(url)
 
-    for src in srcs:
-        print(src)
-        srcresp = app_test.request(src)
-        assert srcresp.content_type in javascript_contenttypes, ("%s" % srcresp.content_type)
-        text = srcresp.text
-        all = re.findall(r'^/\*\*\*/ "(.*)":$', text, re.MULTILINE)
-        # print(*all, sep='\n')
 
-    logging.debug("response text = %s", repr(resp.text))
-    debug_dict = {}
-    matches = re.findall(r'<!-- ([^ \t]*) = ([^ ]*) -->', resp.text)
-    for (k, v) in matches:
-        debug_dict[k] = v
-        logging.debug("debug_dict[%s] = %s", k, v)
-
-    for link in root.iterlinks():
-        print(link[2])
+def test_webtest_domain_form(make_webtest):
+    (resp, html) = make_webtest('/domain/form')
+    form_ = html.xpath("//form[@data-pyclass='Form']")
+    assert form_ and 1 == len(form_)
+    (form,) = form_
+    assert form
+    action = form.get('action')
+    assert action, "Form should have action attribute."
+    method = form.get('method')
+    assert method, "Form shoud have method attribute."
+    assert method.upper() == 'POST'
+    inputs = form.xpath("descendant::[input || select]")
+    print([nput.get('name') for nput in inputs], sep="\n", file=sys.stderr)
+    assert 2 == len(inputs)
+    assert 0

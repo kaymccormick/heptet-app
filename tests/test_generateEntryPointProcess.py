@@ -14,8 +14,8 @@ def asset_manager():
 
 
 @pytest.fixture
-def process_context(jinja2_env, asset_manager):
-    return ProcessContext({}, jinja2_env, asset_manager)
+def process_context(jinja2_env_mock, asset_manager):
+    return ProcessContext({}, jinja2_env_mock, asset_manager)
 
 
 def test_(generate_entry_point_process):

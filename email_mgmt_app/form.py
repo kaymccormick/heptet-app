@@ -20,6 +20,7 @@ class IMappingTarget(metaclass=abc.ABCMeta):
 
 class MyHtmlElement:
     def __init__(self, name: AnyStr, attr: dict = {}, template=None):
+        assert isinstance(name, str)
         self._element = html.Element(name, attr)
         self._prepared = False
         self._template = template
@@ -167,12 +168,15 @@ class Form(FormElement):
             namespace_id, # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
             root_namespace,
             namespace: NamespaceStore = None,
-            outer_form=False) -> None:
+            outer_form=False, attr={}) -> None:
         name = 'div'
         if outer_form:
             name = 'form'
 
-        super().__init__(name)
+        if not 'data-pyclass' in attr:
+            attr['data-pyclass'] = self.__class__.__qualname__
+
+        super().__init__(name, attr)
         # assert '.' not in namespace_id, "namespace_id %s should not contain ." % namespace_id
         self._outer_form = outer_form
         self._variables = {}

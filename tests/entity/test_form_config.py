@@ -16,7 +16,7 @@ def _map(what, *args, **kwargs):
     logger.critical("%s %s %s", what, args, kwargs)
 
 
-def test_form_config(my_gen_context, process_struct):
+def test_form_config(my_gen_context, process_struct_real):
     # for x in process_struct.mappers:
     #     c = EntityFormConfiguration(x.entity,
     #                                 field_renderers=[{column.key:  field_renderer.__dict__[column.type.] for column in x.columns}

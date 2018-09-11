@@ -1,12 +1,11 @@
 import abc
 import logging
 
-from tvars import TemplateVars
 from zope.component import adapter
-from zope.interface import implementer
 
-from interfaces import *
 from exceptions import NamespaceCollision
+from interfaces import *
+from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 
