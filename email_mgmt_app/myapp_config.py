@@ -9,7 +9,7 @@ from pyramid.renderers import get_renderer
 from zope.component import IFactory
 from zope.component.factory import Factory
 
-from email_mgmt_app import Resource
+from email_mgmt_app import Resource, RootResource
 from impl import NamespaceStore
 from interfaces import IResource, INamespaceStore
 from util import _dump
@@ -40,9 +40,10 @@ def on_application_created(event):
 
 
 def on_before_render(event):
-    logger.debug("on_before_render: event=%s", event)
+    logger.critical("on_before_render: event=%s", event)
     val = event.rendering_val
     val['request'] = event['request']
+    val['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % event['context'].entry_point.key
     logger.debug("VAL=%s", val)
 
 
@@ -108,6 +109,7 @@ def includeme(config: Configurator):
     config.add_request_method(lambda request: request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME),
                               'template_env')
 
+    config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
     #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
 
     config.include('..entrypoint')
