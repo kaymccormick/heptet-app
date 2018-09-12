@@ -1,3 +1,4 @@
+import importlib
 import json
 import logging
 import sys
@@ -431,7 +432,7 @@ def my_form_context(my_gen_context, my_relationship_select, root_namespace_store
     the_form = Form(namespace_id="test",
                     root_namespace=root_namespace_store,
                     namespace=None,  # can be None
-                    outer_form=True, form_action="./")
+                    outer_form=True)#, form_action="./")
 
     return my_gen_context.form_context(relationship_field_mapper=FormRelationshipMapper, form=the_form)
 
@@ -444,3 +445,11 @@ def entity_form_view_entry_point_generator(my_gen_context):
 @pytest.fixture
 def entity_form_view_mock():
     return MagicMock('entity_form_view')
+
+@pytest.fixture
+def model_module():
+    pkg = 'model.email_mgmt'
+    if pkg in sys.modules:
+        return sys.modules[pkg]
+
+    return importlib.import_module(pkg)

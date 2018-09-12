@@ -101,7 +101,7 @@ class _Resource:
 
     #
     def __new__(cls, manager, name: AnyStr, parent: ContainerResource,
-                entry_point: EntryPoint = None,
+                entry_point: EntryPoint,
                 title: AnyStr = None,
 
                 ):
@@ -248,7 +248,6 @@ class _Resource:
 
     @entry_point.setter
     def entry_point(self, new: EntryPoint):
-        assert 0
         self._entry_point = new
 
 

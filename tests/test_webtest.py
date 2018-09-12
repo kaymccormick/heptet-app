@@ -155,7 +155,7 @@ def test_webtest_domain_form(make_webtest):
     method = form.get('method')
     assert method, "Form shoud have method attribute."
     assert method.upper() == 'POST'
-    inputs = form.xpath("descendant::[input || select]")
+    inputs = form.xpath("descendant::input")
     print([nput.get('name') for nput in inputs], sep="\n", file=sys.stderr)
     assert 2 == len(inputs)
-    assert 0
+

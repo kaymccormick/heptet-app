@@ -156,6 +156,7 @@ def on_before_render(event):
     logger.debug("VAL=%s", val)
 
 
+# fixme this is not great!
 def on_context_found(event):
     """
     Routine for overriding the renderer, called by pyramid event subscription
@@ -187,7 +188,14 @@ def on_context_found(event):
 
         entity_type = context.entity_type
         renderer = None
-        # if entity_type is not None:
+
+        if entity_type is not None:
+            renderer = "templates/entity/%s.jinja2" % context.__name__
+
+            if renderer:
+                logger.debug("selecting %s for %s", renderer, request.path_info)
+                request.override_renderer = renderer
+
         #     logger.debug("Type of entity_type is %s", type(entity_type))
         #     renderer = "templates/%s/%s.jinja2" % (entity_type.__name__.lower(),
         #                                            request.view_name.lower())
@@ -197,11 +205,6 @@ def on_context_found(event):
         #         if request.view_name:
         #             renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
         # else:
-        renderer = "templates/entity/%s.jinja2" % context.__name__
-
-        if renderer:
-            logger.debug("selecting %s for %s", renderer, request.path_info)
-            request.override_renderer = renderer
         return True
 
 
