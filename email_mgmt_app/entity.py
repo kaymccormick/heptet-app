@@ -83,63 +83,63 @@ def _make_form_representation(context: FormContext):
         column_name = local.column
         context.current_element = rel
 
-        x = get_column_map(local)
+        column = get_column_map(local)
         # store the html!
         form_html[column_name] = context.relationship_field_mapper(
             RelationshipSelect()).map_relationship(context)
 
     # process each column
-    for x in mapper.columns:
-        key = x.key
+    for column in mapper.columns:
+        key = column.key
         if key in form_html:
             # we already have the html, append it and continue
             form_contents = form_contents + str(form_html[key])
             continue
-
         if key in suppress and suppress[key]:
             logger.debug("skipping suppressed column %s", key)
             continue
 
-        logger.debug("Mapping column %s", key)
-
-        # FIXME we default to text because we're lazy
-        kind = 'text'
-        camel_key = stringcase.camelcase("input_%s" % key).replace('_', '')
-        # FIXME figure this out ?not much of a key with the replacements.
-        assert '_' not in camel_key, "Bad key %s" % camel_key
-        input_id = context.form.get_html_id(camel_key, True)
-        input_name = stringcase.camelcase(key).replace('_', '')
-        input_name = context.form.get_html_form_name(input_name, True)
-
-        div_col_sm_8 = DivElement('div', {'class': 'col-sm-8'})
-
-        input_control = FormTextInputElement({'id': input_id.get_id(),
-                                              'value': '',
-                                              'name': input_name.get_id(),
-                                              'class': 'form-control'})
-        input_id.element = input_control
-        input_name.element = input_control
-        div_col_sm_8.element.append(input_control.element)
-
-        label_contents = stringcase.sentencecase(key)
-        label = FormLabel(form_control=input_control, label_contents=label_contents,
-                          attr={"class": "col-sm-4 col-form-label"})
-
-        e = {'id': input_id,
-             'input_html': div_col_sm_8.as_html(),
-             'label_html': label.as_html(),
-             'help': x.doc,
-             }
-
-        tmpl_name = 'entity/field.jinja2'
-        x = context.template_env.get_template(tmpl_name).render(**e)
-        assert x
-        form_contents = form_contents + str(x)
+        form_contents = form_contents + _map_column(context, column)
 
     form_contents = form_contents + '</div>'
     the_form.element.append(html.fromstring(form_contents))
 
     return the_form
+
+
+def _map_column(context, column):
+    key = column.key
+    logger.debug("Mapping column %s", key)
+    # FIXME we default to text because we're lazy
+    form_contents = ''
+    kind = 'text'
+    camel_key = stringcase.camelcase("input_%s" % key).replace('_', '')
+    # FIXME figure this out ?not much of a key with the replacements.
+    assert '_' not in camel_key, "Bad key %s" % camel_key
+    input_id = context.form.get_html_id(camel_key, True)
+    input_name = stringcase.camelcase(key).replace('_', '')
+    input_name = context.form.get_html_form_name(input_name, True)
+    div_col_sm_8 = DivElement('div', {'class': 'col-sm-8'})
+    input_control = FormTextInputElement({'id': input_id.get_id(),
+                                          'value': '',
+                                          'name': input_name.get_id(),
+                                          'class': 'form-control'})
+    input_id.element = input_control
+    input_name.element = input_control
+    div_col_sm_8.element.append(input_control.element)
+    label_contents = stringcase.sentencecase(key)
+    label = FormLabel(form_control=input_control, label_contents=label_contents,
+                      attr={"class": "col-sm-4 col-form-label"})
+    e = {'id': input_id,
+         'input_html': div_col_sm_8.as_html(),
+         'label_html': label.as_html(),
+         #'help': x.doc,
+         }
+    tmpl_name = 'entity/field.jinja2'
+    x = context.template_env.get_template(tmpl_name).render(**e)
+    assert x
+    form_contents = form_contents + str(x)
+    return form_contents
 
 
 class EntityFormRepresentation:

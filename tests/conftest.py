@@ -17,8 +17,8 @@ from zope.interface.registry import Components
 import email_mgmt_app
 import email_mgmt_app.myapp_config
 from context import FormContext, GeneratorContext
-from db_dump import RelationshipSchema
-from db_dump.info import MapperInfo
+from db_dump import RelationshipSchema, ColumnInfo
+from db_dump.info import MapperInfo, TypeInfo
 from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation
 from entity import EntityFormViewEntryPointGenerator, EntryPoint
 from entity import FormRelationshipMapper, RelationshipSelect
@@ -453,3 +453,7 @@ def model_module():
         return sys.modules[pkg]
 
     return importlib.import_module(pkg)
+
+@pytest.fixture
+def my_column_info():
+    return ColumnInfo(TypeInfo(), 'test1', 'test2')
