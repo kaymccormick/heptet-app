@@ -123,7 +123,7 @@ def app_registry():
 @pytest.fixture
 def entry_point_mock(entry_point):
     mock = Mock(entry_point, )
-    p = PropertyMock(return_value='_mock')
+    p = PropertyMock(return_value='_default')
     type(mock).key = p
     return mock
 
