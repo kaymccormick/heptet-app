@@ -17,6 +17,7 @@ from email_mgmt_app import get_root, util
 import model.email_mgmt
 from entrypoint import IEntryPoint, EntryPoints, EntryPoint
 from impl import NamespaceStore
+from interfaces import IProcess
 from myapp_config import on_new_request
 from process import ProcessContext, setup_jsonencoder, AssetManager, GenerateEntryPointProcess
 from scripts.util import get_request, template_env
@@ -63,7 +64,10 @@ def main(input_args=None):
     config.include(model.email_mgmt)
     config.include('.process')
 
-    #config.commit()
+    renderer_pkg = 'pyramid_jinja2.renderer_factory'
+    config.add_renderer(None, renderer_pkg)
+
+    config.commit()
 
     registry = config.registry
 
