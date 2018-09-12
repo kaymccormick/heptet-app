@@ -89,15 +89,6 @@ def on_context_found(event):
                 logger.debug("selecting %s for %s", renderer, request.path_info)
                 request.override_renderer = renderer
 
-        #     logger.debug("Type of entity_type is %s", type(entity_type))
-        #     renderer = "templates/%s/%s.jinja2" % (entity_type.__name__.lower(),
-        #                                            request.view_name.lower())
-        #
-        #     if not try_template(renderer):
-        #         renderer = None
-        #         if request.view_name:
-        #             renderer = "templates/entity/%s.jinja2" % request.view_name.lower()
-        # else:
         return True
 
 
