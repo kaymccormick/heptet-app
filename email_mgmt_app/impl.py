@@ -1,5 +1,7 @@
 import abc
 import logging
+from dataclasses import dataclass
+from typing import AnyStr
 
 from zope.component import adapter
 from zope.interface import implementer
@@ -211,3 +213,53 @@ class MyCollector:
         if var:
             return var.get_value()
         return self._value
+
+class MixinBase:
+    def check_instance(self):
+        pass
+
+class TemplateEnvMixin(MixinBase):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._template_env = None
+
+    @property
+    def template_env(self):
+        return self._template_env
+
+    @template_env.setter
+    def template_env(self, new):
+        self._template_env = new
+
+    def __repr__(self):
+        return self._template_env.__repr__()
+
+    def check_instance(self):
+        super().check_instance()
+        assert self.template_env
+
+
+class GetTemplateMixin(TemplateEnvMixin):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def get_template(self, name):
+        @dataclass
+        class _info:
+            name: AnyStr
+            package: AnyStr = None
+
+        class _template:
+            def __init__(self, template_env, info):
+                self.template_env = template_env
+                self.info = info
+
+            def render(self, **kwargs):
+                x = self.template_env(self.info)
+                logger.critical("x = %r", x)
+                return x(dict(**kwargs), {})
+
+        return _template(self.template_env, _info(name))
+
+

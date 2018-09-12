@@ -26,12 +26,7 @@ def entity_form_view(
     return EntityFormView(app_context, app_request)
 
 
-def test_entity_form_view(app_request, app_context, entity_form_view, webapp_settings):
-    jinja2_loader_template_path = webapp_settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
-    env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
-                      autoescape=select_autoescape(default=False))
-
-    #app_context.entry_point = MagicMock(EntryPoint)
-    app_request.template_env = lambda: env;
+def test_entity_form_view(app_request, app_context, entity_form_view, webapp_settings, jinja2_env):
+    app_request.template_env = lambda: jinja2_env;
     view = entity_form_view()
     assert view

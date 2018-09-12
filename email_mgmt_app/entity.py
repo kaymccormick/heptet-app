@@ -458,7 +458,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
 
     def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)
-        return context.template_env.get_template('entity/form_wrapper.jinja2').render(
+        return context.get_template('entity/form_wrapper.jinja2').render(
             form=form
         )
 
@@ -543,7 +543,7 @@ class EntityFormView(BaseEntityRelatedView[T]):
                     'build/templates/entry_point/%s.jinja2' % entry_point.key,
                 'form_content': wrapper,
             }
-            return Response(env.get_template('entity/form.jinja2').render(**_vars))
+            return Response(self.context.get_template('entity/form.jinja2').render(**_vars))
 
         # this is for post!
 

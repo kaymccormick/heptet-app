@@ -101,19 +101,21 @@ def my_data(my_json):
 # Primary application related fixtures
 #
 @pytest.fixture
-def app_request():
+def app_request(app_registry):
     # We'll use dummy request until we can't anymore
-    return DummyRequest()
+    request = DummyRequest()
+    request.registry = app_registry
+    return request
 
 
 @pytest.fixture
-def app_registry(app_request):
-    return app_request.registry
+def app_registry(config_fixture):
+    return config_fixture.registry
 
 
 @pytest.fixture(params=["test"])
-def app_context(request, root_resource, resource_manager, entry_point):
-    return Resource(resource_manager, 'app_context-%s' % request.param, root_resource, entry_point)
+def app_context(request, root_resource, resource_manager, entry_point, jinja2_env):
+    return Resource(resource_manager, 'app_context-%s' % request.param, root_resource, entry_point, None, jinja2_env)
 
 
 #
@@ -147,7 +149,7 @@ def config_fixture():
 #
 @pytest.fixture
 def jinja2_env(webapp_settings, make_config):
-    config = make_config({'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\ntemplates"})
+    config = make_config({'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\ntemplates\nemail_mgmt_apps\n."})
 
     from pyramid_jinja2 import add_jinja2_renderer
     add_jinja2_renderer(config, 'template-env', settings_prefix='email_mgmt_app.jinja2.', package=email_mgmt_app)

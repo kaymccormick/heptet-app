@@ -9,18 +9,12 @@ from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
 from form import Form
-from impl import NamespaceStore
+from impl import NamespaceStore, TemplateEnvMixin, MixinBase, GetTemplateMixin
 from interfaces import IFormContext, IGeneratorContext
 from tvars import TemplateVars
 
 TemplateEnvironment = Environment
 logger = logging.getLogger(__name__)
-
-
-class MixinBase:
-    def check_instance(self):
-        pass
-
 
 T = TypeVar('T')
 
@@ -123,28 +117,6 @@ class ContextMapperInfoMixin(MixinBase):
         assert self.mapper_info
 
 
-class TemplateEnvMixin(MixinBase):
-
-    def __init__(self) -> None:
-        super().__init__()
-        self._template_env = None
-
-    @property
-    def template_env(self):
-        return self._template_env
-
-    @template_env.setter
-    def template_env(self, new):
-        self._template_env = new
-
-    def __repr__(self):
-        return self._template_env.__repr__()
-
-    def check_instance(self):
-        super().check_instance()
-        assert self.template_env
-
-
 class FormContextFactoryMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
@@ -200,7 +172,7 @@ class GeneratorContext(
 
         #        assert isinstance(template_env, Environment)
         assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars, is %s" % (
-        template_vars, type(template_vars))
+            template_vars, type(template_vars))
         self.mapper_info = mapper_info
         self.template_env = template_env
         self.template_vars = template_vars
@@ -217,7 +189,8 @@ class GeneratorContext(
         return form_context
 
     def __repr__(self):
-        return 'GeneratorContext(%r, %r, %r, %r, %r)' % (self._mapper_info, self._template_env, self._template_vars, self.form_context_factory, self.root_namespace)
+        return 'GeneratorContext(%r, %r, %r, %r, %r)' % (
+            self._mapper_info, self._template_env, self._template_vars, self.form_context_factory, self.root_namespace)
 
 
 FormContextArgs = ()
@@ -291,12 +264,12 @@ class RelationshipFieldMapperMixin(MixinBase):
 @implementer(IFormContext)
 class FormContext(
     GeneratorContextMixin,
-    TemplateEnvMixin,
     TemplateVarsMixin,
     CurrentElementMixin,
     FormContextFactoryMixin,
     RelationshipFieldMapperMixin,
     DottedNameResolverMixin,
+    GetTemplateMixin,
 ):
     def __init__(
             self,

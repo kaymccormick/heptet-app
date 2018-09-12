@@ -9,7 +9,7 @@ from typing import AnyStr, Generic, TypeVar
 import pyramid
 import stringcase
 from pyramid.config import Configurator
-from pyramid.interfaces import IRequestFactory
+from pyramid.interfaces import IRequestFactory, IRendererFactory
 from pyramid.request import Request
 from zope.interface import implementer
 
@@ -17,6 +17,7 @@ from context import EntityTypeMixin
 from entrypoint import EntryPoint, ResourceManager, default_manager, \
     default_entry_point
 from exceptions import MissingArgumentException
+from impl import GetTemplateMixin
 from interfaces import IResource
 from manager import ResourceOperation
 from util import get_entry_point_key, get_exception_entry_point_key
@@ -46,7 +47,7 @@ def get_root(request: Request):
         lock.release()
         return root
 
-    root = RootResource()
+    root = RootResource(template_env=request.registry.getUtility(IRendererFactory, 'template-env'))
     assert root.entry_point
     setattr(sys.modules[__name__], "_root", root)
     lock.release()
@@ -91,17 +92,18 @@ class ResourceMeta(ABCMeta):
 
 
 @implementer(IResource)
-class _Resource(EntityTypeMixin):
+class _Resource(EntityTypeMixin, GetTemplateMixin):
     """
     Base resource type. Implements functionality common to all resource types.
     """
 
     #
     logger = logger.getChild('_Resource')
+
     def __new__(cls, manager, name: AnyStr, parent: Resource,
                 entry_point: EntryPoint,
                 title: AnyStr = None,
-
+                template_env=None,
                 ):
         # logger.debug("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
         if cls == Resource:
@@ -111,7 +113,7 @@ class _Resource(EntityTypeMixin):
             setattr(cls, "__count__", count)
             meta = ResourceMeta(clsname, (cls,), {})
             # logger.debug("meta = %s", meta)
-            inst = meta(manager, name, parent, entry_point, title)
+            inst = meta(manager, name, parent, entry_point, title, template_env)
             assert inst.manager is manager
             # inst.__init__(manager, name, parent, entry_point, title)
             return inst
@@ -122,7 +124,7 @@ class _Resource(EntityTypeMixin):
             title = stringcase.sentencecase(name)
         else:
             title = title
-        x.__init__(manager, name, parent, entry_point, title)
+        x.__init__(manager, name, parent, entry_point, title, template_env)
         logger.debug("%r", x)
         return x
 
@@ -138,8 +140,8 @@ class _Resource(EntityTypeMixin):
     def __contains__(self, item):
         return self._data.__contains__(item)
 
-    def __init__(self, manager: ResourceManager, name: AnyStr, parent: ContainerResource, entry_point: EntryPoint,
-                 title: AnyStr = None) -> None:
+    def __init__(self, manager: ResourceManager, name: AnyStr, parent: Resource, entry_point: EntryPoint,
+                 title: AnyStr = None, template_env=None) -> None:
         """
 
         :type manager: ResourceManager
@@ -159,6 +161,8 @@ class _Resource(EntityTypeMixin):
             self._title = stringcase.sentencecase(name)
         else:
             self._title = title
+
+        self._template_env = template_env
         self.__name__ = name
         self.__parent__ = parent
         self._entry_point = entry_point
@@ -267,12 +271,13 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
     reg_view = False
     node_name = manager.node_name
-    root_resource = get_root(None)
+    request = config.registry.queryUtility(IRequestFactory, default=Request)({})
+    request.registry = config.registry
+    root_resource = get_root(request)
     # assert root_resource is not None and isinstance(root_resource, RootResource), root_resource
     my_parent = root_resource
     assert my_parent is not None
-    request = config.registry.queryUtility(IRequestFactory, default=Request)({})
-    request.registry = config.registry
+
 
     #        env = request.registry.getUtility(IJinja2Environment, 'app_env')
 
@@ -337,7 +342,6 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
         op_resource = resource.sub_resource(op.name, entry_point)
         d['context'] = type(op_resource)
 
-
         config.register_entry_point(entry_point)
 
         d['entry_point'] = entry_point
@@ -362,21 +366,21 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
 class RootResource(Resource):
     def __new__(cls, manager=None, name: AnyStr = '', parent: Resource = None,
                 entry_point: EntryPoint = None,
-                title: AnyStr = None, ):
+                title: AnyStr = None, template_env=None):
         if not manager:
             manager = default_manager()
         if not entry_point:
             entry_point = default_entry_point()
-        return super().__new__(cls, manager, name, parent, entry_point, title)
+        return super().__new__(cls, manager, name, parent, entry_point, title, template_env)
 
-    def __init__(self=None, manager=None, name: AnyStr = '', parent: ContainerResource = None,
+    def __init__(self=None, manager=None, name: AnyStr = '', parent: Resource = None,
                  entry_point: EntryPoint = None,
-                 title: AnyStr = None, ) -> None:
+                 title: AnyStr = None, template_env=None) -> None:
         if not manager:
             manager = default_manager()
         if not entry_point:
             entry_point = default_entry_point()
-        super().__init__(manager, name, parent, entry_point, title)
+        super().__init__(manager, name, parent, entry_point, title, template_env)
         assert self._entry_point is entry_point
         self._subresource_type = Resource
 
