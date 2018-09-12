@@ -42,12 +42,15 @@ def _make_form_representation(context: FormContext):
     logger.debug("in form_representation with namespace id of %s", namespace_id)
     # we should provide for initialize the form in another fashion for testability!!!
     action = context.form_action
-    assert action
+    #assert action
     the_form = Form(namespace_id=namespace_id,
                     root_namespace=context.root_namespace,
                     namespace=context.namespace,  # can be None
-                    outer_form=outer_form, attr=dict(action=context.form_action,
-                                                method='POST'))
+                    outer_form=outer_form,
+                    # attr=dict(action=context.form_action,
+                    #           method='POST')
+
+                    )
     context.form = the_form
 
     form_contents = '<div>'
@@ -537,7 +540,10 @@ class EntityFormView(BaseEntityRelatedView):
             return Response(env.get_template('entity/form.jinja2').render(**_vars))
 
         # this is for post!
-        r = self.entity_type.__new__(self.entity_type)
+
+        entity_type = self.context.manager.entity_type
+        assert entity_type
+        r = entity_type.__new__(entity_type)
         r.__init__()
 
         cols = list(self.inspect.columns)

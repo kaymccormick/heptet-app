@@ -10,7 +10,7 @@ from sqlalchemy.exc import InvalidRequestError
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
-from email_mgmt_app import ResourceManager
+from email_mgmt_app import ResourceManager, EntryPoint
 from entity import EntityFormView
 from impl import MapperWrapper
 
@@ -178,6 +178,7 @@ def includeme(config: Configurator):
     config.action(None, do_action)
 
 
+# how do we split the repsonsibility between this function and "config.add_resource_manager"!?!?!
 def config_process_struct(config, process):
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)
@@ -189,6 +190,8 @@ def config_process_struct(config, process):
             node_name=node_name,
             mapper_wrapper=wrapper
         )
+        entry_point = EntryPoint(manager, wrapper.key, None, None, None, None, None, wrapper,
+                                 )
 
         manager.operation(name='form', view=EntityFormView,
                           args=[OperationArgument.SubpathArgument('action', String, default='create')])

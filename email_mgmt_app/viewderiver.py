@@ -61,7 +61,6 @@ def entity_view(view, info):
 def test_view_deriver(view_callable, info):
     def derive_view(context, request):
         logger.debug("calling view")
-        # request.override_renderer = "poop.htnk"
         try:
             result = view_callable(context, request)
         except (AssertionError, TypeError, AttributeError, TemplateNotFound) as ex:

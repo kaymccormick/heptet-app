@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 import logging
-from typing import Sequence, Generic, TypeVar, Callable, Any
+from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr
 
 from jinja2 import Environment
 from pyramid.path import DottedNameResolver
@@ -336,7 +336,7 @@ class FormContext(
     ):
         super().__init__()
         if extra is None:
-            extra = {}
+            extra = {'suppress_cols': {}}
         self.generator_context = generator_context
         self.template_env = template_env
         self.root_namespace = root_namespace
