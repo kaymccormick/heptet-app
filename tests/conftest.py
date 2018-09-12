@@ -45,7 +45,7 @@ def webapp_settings():
         'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
         'email_mgmt_app.authsource': 'db',
         'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
-        'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\nemail_mgmt_app\ntemplates\n.",
+        'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\\\nemail_mgmt_app\\\ntemplates\\\n.",
         'email_mgmt_app.jinja2.autoescape': "false",
 
     }
