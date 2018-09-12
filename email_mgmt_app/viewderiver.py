@@ -10,6 +10,7 @@ from view import BaseView
 
 logger = logging.getLogger(__name__)
 
+
 def munge_view(view, info):
     def wrapper_view(context, request):
         original_view = info.original_view
@@ -20,7 +21,9 @@ def munge_view(view, info):
         #     response = response
 
         return response
+
     return wrapper_view
+
 
 # entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
 # this function needs major help! TODO
@@ -29,7 +32,7 @@ def entity_view(view, info):
     operation = info.options.get('operation')
 
     def wrapper_view(context, request):
-        logger.debug("original view = %s", repr(info.original_view))
+        logger.warning("original view = %s", repr(info.original_view))
         original_view = info.original_view
 
         # renderer = None
@@ -51,13 +54,14 @@ def entity_view(view, info):
         response = view(context, request)
         return response
 
-    #logger.info("returning wrapper_view = %s", wrapper_view)
+    # logger.info("returning wrapper_view = %s", wrapper_view)
     return wrapper_view
+
 
 def test_view_deriver(view_callable, info):
     def derive_view(context, request):
         logger.debug("calling view")
-        #request.override_renderer = "poop.htnk"
+        # request.override_renderer = "poop.htnk"
         try:
             result = view_callable(context, request)
         except (AssertionError, TypeError, AttributeError, TemplateNotFound) as ex:
@@ -67,7 +71,6 @@ def test_view_deriver(view_callable, info):
             traceback.print_tb(sys.exc_info()[2])
             result = HTTPException("Got exception from view callable.", comment=str(ex), body_template=str(ex))
 
-
         logger.debug("view result is %s", result.status)
         return result
 
@@ -75,7 +78,7 @@ def test_view_deriver(view_callable, info):
 
 
 def includeme(config):
-    entity_view.options = ('operation','mapper_info','node_name','entry_point')
-    config.add_view_deriver(entity_view,under=INGRESS)
-    #config.add_view_deriver(munge_view, under='owrapped_view')
-    config.add_view_deriver(test_view_deriver,over='mapped_view')
+    entity_view.options = ('operation', 'mapper_info', 'node_name', 'entry_point')
+    config.add_view_deriver(entity_view, under=INGRESS)
+    # config.add_view_deriver(munge_view, under='owrapped_view')
+    config.add_view_deriver(test_view_deriver, over='mapped_view')

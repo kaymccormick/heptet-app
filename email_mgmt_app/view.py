@@ -5,7 +5,8 @@ from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 
-from email_mgmt_app import ArgumentContext, OperationArgument
+from email_mgmt_app import ArgumentContext
+from manager import OperationArgument
 from exceptions import MissingArgumentException, BaseAppException, OperationArgumentException
 from entrypoint import EntryPoint, EntryPointGenerator
 from util import get_exception_entry_point_key
@@ -28,18 +29,17 @@ class BaseView:
                                'context': context}  # give it a nice default?
         self._template_env = None
 
-
     def __call__(self, *args, **kwargs):
         self.collect_args(self.request)
         entry_point = None
-        if hasattr(self.context, 'entry_point'):
+        if isinstance(self.context, Exception):
+            entry_point = EntryPoint(None, get_exception_entry_point_key(self.context), self.request)
+        elif hasattr(self.context, 'entry_point'):
+            logger.critical("%s", self.context)
             entry_point = self.context.entry_point
 
         if entry_point is None:
-            if isinstance(self.context, Exception):
-                entry_point = EntryPoint(None, get_exception_entry_point_key(self.context), self.request)
-
-        assert entry_point is not None, "Entry point for view should not be None"
+            assert entry_point is not None, "Entry point for view should not be None (context=%r)" % self.context
         key = entry_point.key
         assert key, "Entry point key for view should be truthy"
 
@@ -134,9 +134,9 @@ def includeme(config: Configurator):
 
         entry_point_key = get_exception_entry_point_key(Exception)
         entry_point = EntryPoint(None, entry_point_key, request)
-        #x = ExceptionView.entry_point_generator_factory()
-        #generator = x(entry_point, request)
-        #entry_point.generator = generator
+        # x = ExceptionView.entry_point_generator_factory()
+        # generator = x(entry_point, request)
+        # entry_point.generator = generator
         config.register_entry_point(entry_point)
         config.add_exception_view(view=ExceptionView, context=Exception,
                                   renderer="templates/exception/exception.jinja2",
@@ -148,8 +148,8 @@ def includeme(config: Configurator):
         entry_point_key = get_exception_entry_point_key(OperationArgumentException)
         entry_point = EntryPoint(None, entry_point_key, request)
         OperationArgumentException.entry_point = entry_point
-        #generator = OperationArgumentExceptionView.entry_point_generator_factory()(entry_point, request)
-        #entry_point.generator = generator
+        # generator = OperationArgumentExceptionView.entry_point_generator_factory()(entry_point, request)
+        # entry_point.generator = generator
         config.register_entry_point(entry_point)
         config.add_exception_view(view=OperationArgumentExceptionView, context=OperationArgumentException,
                                   renderer="templates/exceptions/OperationArgumentException.jinja2",

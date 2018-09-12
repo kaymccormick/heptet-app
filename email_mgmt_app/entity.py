@@ -504,7 +504,8 @@ class EntityFormView(BaseEntityRelatedView):
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self):
+        rd = super().__call__()
         resource = self.context
         entry_point = resource.entry_point  # type: EntryPoint
         assert entry_point
@@ -528,6 +529,7 @@ class EntityFormView(BaseEntityRelatedView):
             wrapper = generator.render_entity_form_wrapper(
                 gctx.form_context(relationship_field_mapper=FormRelationshipMapper))
             _vars = {
+                **rd,
                 'entry_point_template':
                     'build/templates/entry_point/%s.jinja2' % entry_point.key,
                 'form_content': wrapper,

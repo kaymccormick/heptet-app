@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import AnyStr, TypeVar, Generic
+from typing import AnyStr, Type
 
 from pyramid.config import Configurator
+from sqlalchemy.ext.declarative import DeclarativeMeta
 
 from context import GeneratorContext, FormContext
+from manager import OperationArgument, ResourceOperation
 from tvars import TemplateVars
 from zope import interface
 
@@ -20,12 +22,16 @@ from impl import MapperWrapper
 logger = logging.getLogger(__name__)
 
 
-class IEntryPoints(Interface):
-    def get_entry_points():
-        pass
+def default_entry_point():
+    return _default_entry_point
 
-    def add_entry_point(entry_point):
-        pass
+
+def default_manager():
+    return _default_manager
+
+
+class IEntryPoints(Interface):
+    pass
 
 
 @implementer(IEntryPoints)
@@ -227,6 +233,131 @@ class EntryPointGenerator(metaclass=abc.ABCMeta):
         return []
 
 
+@implementer(IResourceManager)
+class ResourceManager:
+    """
+    ResourceManager class. Provides access to res operations.
+    """
+
+    # templates = [ResourceOperationTemplate('view'),
+    #              ResourceOperationTemplate('list'),
+    #              ResourceOperationTemplate('form'),
+    #              ]
+
+    def __init__(
+            self,
+            mapper_key: AnyStr = None,
+            title: AnyStr = None,
+            entity_type: DeclarativeMeta = None,
+            node_name: AnyStr = None,
+            mapper_wrapper: 'MapperWrapper' = None,
+            operation_factory=None,
+    ):
+        """
+
+        :param mapper_key:
+        :param title:
+        :param entity_type:
+        :param node_name:
+        :param mapper_wrapper:
+        :param operation_factory:
+        """
+        assert mapper_key, "Mapper key must be provided (%s)." % mapper_key
+        self._operation_factory = operation_factory
+        self._mapper_key = mapper_key
+        self._entity_type = entity_type
+        self._ops = []
+        self._ops_dict = {}
+        self._node_name = node_name
+        self._title = title
+        self._resource = None
+        self._mapper_wrapper = mapper_wrapper
+        self._mapper_wrappers = {mapper_key: mapper_wrapper}
+
+    def __repr__(self):
+        return 'ResourceManager(mapper_key=%s, title=%s, entity_type%s, node_name=%s, mapper_wrapper=%s)' % (
+            self._mapper_key, self._title, self._entity_type, self._node_name, self._mapper_wrapper
+        )
+
+    def operation(self, name, view, args, renderer=None) -> None:
+        """
+        Add operation to res manager.
+        :param name:
+        :param view:
+        :param renderer:
+        :return:
+        """
+        args[0:0] = self.implicit_args()
+        op = ResourceOperation(name=name, view=view, args=args, renderer=renderer)
+        self._ops.append(op)
+        self._ops_dict[op.name] = op
+
+    def implicit_args(self):
+        args = []
+        if self._entity_type is not None:
+            args.append(OperationArgument('entity_view', Type, default=self._entity_type,
+                                          label='Entity Type', implicit_arg=True))
+        return args
+
+    @property
+    def ops(self) -> dict:
+        return self._ops_dict
+
+    @property
+    def entity_type(self):
+        return self._entity_type
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def resource(self) -> 'Resource':
+        return self._resource
+
+    @property
+    def mapper_wrappers(self):
+        return self._mapper_wrappers
+
+    @property
+    def mapper_wrapper(self):
+        return self._mapper_wrapper
+
+    @property
+    def node_name(self) -> AnyStr:
+        return self._node_name
+
+    @property
+    def mapper_key(self) -> AnyStr:
+        return self._mapper_key
+
+
+class DefaultResourceManager(ResourceManager):
+    def __init__(self):
+        super().__init__('_default', '_default', None, '_default', None)
+
+
+class DefaultEntryPoint(EntryPoint):
+
+    def __init__(self, manager):
+        key = "_default"
+        registry = None
+        generator = None
+        js = None
+        view_kwargs = {}
+        mapper_wrapper = None
+        template_name = None
+        template = None
+        output_filename = None
+        request = None
+        super().__init__(manager, key, request, registry, generator, js, view_kwargs, mapper_wrapper, template_name,
+                         template, output_filename)
+
+
+_default_manager = DefaultResourceManager()
+_default_entry_point = DefaultEntryPoint(_default_manager)
+
+
 def register_entry_point(config, entry_point: IEntryPoint):
     config.registry.registerUtility(entry_point, IEntryPoint, entry_point.key)
 
@@ -236,4 +367,5 @@ def includeme(config: 'Configurator'):
         config.registry.registerAdapter(MyCollector, [ICollectorContext], ICollector)
 
     config.add_directive('register_entry_point', register_entry_point)
+    register_entry_point(config, default_entry_point())
     config.action(None, do_action)

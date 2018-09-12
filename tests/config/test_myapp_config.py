@@ -4,7 +4,7 @@ from pyramid.config import Configurator
 
 import email_mgmt_app.myapp_config
 from interfaces import IResource
-from myapp_config import config_process_struct, load_process_struct
+from process import config_process_struct, load_process_struct
 
 logger = logging.getLogger(__name__)
 

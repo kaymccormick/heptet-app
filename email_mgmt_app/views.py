@@ -27,5 +27,6 @@ def includeme(config: Configurator):
     #generator = MainView.entry_point_generator_factory()(main, request)
     #main.generator = generator
     config.register_entry_point(main)
-    get_root(request).entry_point = main
+    # fixme
+#    get_root(request).entry_point = main
     config.add_view(MainView, name='', renderer='templates/main_child.jinja2', context='email_mgmt_app.RootResource', entry_point=MainEntryPoint)

@@ -14,7 +14,7 @@ from email_mgmt_app import get_root
 from impl import MapperWrapper, NamespaceStore
 from interfaces import IMapperInfo, INamespaceStore
 from model import email_mgmt
-from myapp_config import load_process_struct, config_process_struct
+from process import config_process_struct, load_process_struct
 from webapp_main import on_context_found, on_before_render, on_new_request, on_application_created
 
 

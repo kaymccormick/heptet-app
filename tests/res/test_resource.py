@@ -11,7 +11,7 @@ def test_resource(root_resource, resource_manager):
     assert resource.__name__ is name
     assert resource.__parent__ is root_resource
     logger.critical("resource = %r", resource)
-    r2 = resource.sub_resource('test2')
+    r2 = resource.sub_resource('test2', )
     logger.critical("r2 = %r", r2)
 
     assert not resource.is_container

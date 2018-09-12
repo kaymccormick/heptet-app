@@ -21,7 +21,7 @@ from exceptions import InvalidMode
 from impl import MapperWrapper, NamespaceStore
 from interfaces import IMapperInfo
 from interfaces import INamespaceStore
-from myapp_config import config_process_struct, load_process_struct
+from process import config_process_struct, load_process_struct
 
 DEV_MODE = 'development'
 PROD_MODE = 'production'

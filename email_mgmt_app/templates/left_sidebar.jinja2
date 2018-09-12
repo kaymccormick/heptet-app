@@ -4,13 +4,13 @@
             {% if not request or not request.root %}
                 <span>Request is false!</span>
             {% else %}
-                {% for x in request.root.data %}
-                    {% if not request.root[x].entity_type.info %}
-                        <li class="list-group-item tk-trajan-sans-pro">{{ request.root[x].title }}</li>
-{#                        {% for y in request.root[x].resource_manager._ops %}#}
-{#                            <li class="list-group-item" style="padding-left: 3.25rem"><a#}
-{#                                    href="{{ request.root[x].url() }}{{ y._name }}">{{ y._name }}</a></li>#}
-{#                        {% endfor %}#}
+                {% for k, v in request.root.items() %}
+                    {% if not v.entity_type.info %}
+                        <li class="list-group-item tk-trajan-sans-pro">{{ v.title }}</li>
+                        {% for k2, v2 in v.items() %}
+                            <li class="list-group-item" style="padding-left: 3.25rem"><a
+                                    href="{{ v2.url() }}">{{ v2.title }}</a></li>
+                        {% endfor %}
                     {% endif %}
                 {% endfor %}
             {% endif %}

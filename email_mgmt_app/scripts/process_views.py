@@ -30,7 +30,10 @@ from tvars import TemplateVars
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main(input_args=None):
+    if not input_args:
+        input_args = sys.argv[1:]
+
     now = datetime.now()
     logger.critical("%s Startup in main", now)
 
@@ -42,7 +45,7 @@ def main():
     # deal with parsing args
     parser = db_dump.args.argument_parser()
     parser.add_argument('--test-app', '-t', help="Test the application", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(input_args)
 
     config_uri = args.config_uri
 
@@ -52,6 +55,8 @@ def main():
     # get_appsettings
     settings = get_appsettings(config_uri)
     # this sets up the json.JSONENcoder.default
+
+
     setup = setup_jsonencoder()
     setup()
 

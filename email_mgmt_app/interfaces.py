@@ -121,3 +121,7 @@ class IRootResource(IResource):
 
     def get_root_resource():
         pass
+
+
+class IResourceManager(Interface):
+    pass
