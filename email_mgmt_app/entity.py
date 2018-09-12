@@ -6,7 +6,6 @@ from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
 from lxml import html
-from marshmallow import ValidationError
 from pyramid.config import Configurator
 from pyramid.renderers import RendererHelper
 from pyramid.request import Request
@@ -15,17 +14,18 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.component import adapter
 from zope.interface import Interface, implementer
 
-from context import ContextFormContextMixin, EntityTypeMixin, FormContext, GeneratorContext
+from context import ContextFormContextMixin, FormContext, GeneratorContext
 from db_dump.info import IRelationshipInfo
+from email_mgmt_app import BaseView, EntityTypeMixin
 from entrypoint import EntryPointGenerator
 from form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, FormOptionElement
 from impl import NamespaceStore
 from interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView, \
     IEntryPointGenerator
+from marshmallow import ValidationError
 from model import get_column_map
 from model.meta import Base
 from tvars import TemplateVarsSchema, TemplateVars
-from email_mgmt_app import BaseView
 from util import get_template
 
 GLOBAL_NAMESPACE = 'global'
@@ -145,7 +145,7 @@ def _map_column(context, column):
          # 'help': x.doc,
          }
     tmpl_name = 'entity/field.jinja2'
-    return get_template(context.template_env, 'entity/field_relationship.jinja2')(e, {})
+    return context.get_template('entity/field_relationship.jinja2').render(**e)
 
 
 class EntityFormRepresentation:
@@ -305,10 +305,9 @@ class RelationshipSelect:
     def __init__(self) -> None:
         super().__init__()
 
-
     def gen_select_html(self, context):
         rel = context.current_element
-        env = context.template_env # type: RendererHelper
+        env: RendererHelper = context.template_env
         nest_level = context.nest_level
 
         argument = rel.argument
@@ -350,10 +349,11 @@ class RelationshipSelect:
             context2.namespace = sub_namespace
 
             entity_form = _make_form_representation(context2)
+            logger.critical("%r", entity_form)
 
-            collapse = get_template(context.template_env, template.collapse.name)({
+            collapse = context.get_template(template.collapse.name).render(**{
                 'collapse_id': collapse_id.get_id(),
-                'collapse_contents': entity_form.as_html()}, {})
+                'collapse_contents': entity_form.as_html()})
 
             ready_stmts = None  # request.registry.queryUtility(ICollector, 'ready_stmts')
             if ready_stmts:
@@ -383,10 +383,9 @@ class RelationshipSelect:
                           attr={"class": "col-sm-4 col-form-label"})
 
         select_html = select.as_html()
-        rel_select = get_template(env, 'entity/rel_select.jinja2')(dict(
+        rel_select = context.get_template('entity/rel_select.jinja2').render(
             select_html=select_html,
-            buttons="\n".join(buttons)), {})
-
+            buttons="\n".join(buttons))
 
         logger.debug("suppressing column %s", local.column)
         context.extra['suppress_cols'][local.column] = True
@@ -396,7 +395,7 @@ class RelationshipSelect:
                  'collapse': collapse,
                  'help': rel.doc}
 
-        return get_template(env, 'entity/field_relationship.jinja2')(_vars, {})
+        return context.get_template('entity/field_relationship.jinja2').render(**_vars)
 
 
 @implementer(IEntryPointGenerator)
@@ -519,22 +518,15 @@ class EntityFormView(BaseEntityRelatedView[T]):
         entry_point = resource.entry_point  # type: EntryPoint
         assert entry_point
 
-        env = self.request.template_env()
         root_namespace = NamespaceStore('root')
-        entry_point.init_generator(self.request.registry, root_namespace, env)
+        entry_point.init_generator(self.request.registry, root_namespace)
         generator = entry_point.generator
-        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), env, TemplateVars(), FormContext,
-                                root_namespace)
+        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), template_vars=TemplateVars(),
+                                form_context_factory=FormContext, root_namespace=root_namespace)
         assert generator, "Need generator to function"
         mapper_info = gctx.mapper_info
         assert mapper_info is not None
         if self.request.method == "GET":
-            # namespace = resource.root_namespace
-            # if callable(namespace):
-            #     namespace = namespace()
-            #
-            # # we shouldn't need to crate this
-
             wrapper = generator.render_entity_form_wrapper(
                 gctx.form_context(relationship_field_mapper=FormRelationshipMapper))
             _vars = {
@@ -582,4 +574,5 @@ def includeme(config: Configurator):
         reg(EntityFormViewEntryPointGenerator, [IGeneratorContext], IEntryPointGenerator)
         # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
         ##    IEntryPointView)
+
     config.action(None, do_action)

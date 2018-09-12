@@ -76,7 +76,6 @@ def wsgi_app(global_config, **settings):
     #    config.add_view_predicate('entity_name', EntityNamePredicate)
 
     config.include('.routes')
-    config.include('.template')
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],

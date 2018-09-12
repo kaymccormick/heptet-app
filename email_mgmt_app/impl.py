@@ -1,16 +1,18 @@
 import abc
 import logging
 from dataclasses import dataclass
-from typing import AnyStr
+from typing import AnyStr, Generic, TypeVar
 
 from zope.component import adapter
 from zope.interface import implementer
 
 from exceptions import NamespaceCollision
-from interfaces import *
+from interfaces import ICollectorContext, ITemplateVariable, ICollector, IMapperInfo, INamespaceStore
 from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar('T')
 
 
 @implementer(ICollectorContext)
@@ -61,53 +63,6 @@ class MapperWrapper:
     def key(self):
         return self.mapper_info.local_table.key
 
-
-
-
-# @implementer(INamespaceStore)
-# class NamespaceStore(NamespaceEntry):
-#     def __init__(self, name) -> None:
-#         super().__init__(name)
-#         self._namespace = {}
-#         self._name = name
-#
-#     def make_namespace(self, key, namespace):
-#         logger.debug("in get_namespace(%s, %s)", key, namespace)
-#         if key in self._namespace:
-#             raise NamespaceCollision(key, namespace, self._namespace[key])
-#
-#         self._namespace[key] = { 'key': key, 'namespace': namespace, 'items': {} }
-#         return NamespaceStore(key)
-#
-#     def get_id(self, preferred, bits):
-#         assert bits
-#         assert self._cur_namespace and self._cur_namespace in self._namespace
-#
-#         items = self._namespace[self._cur_namespace]['items']
-#         o = preferred
-#         i = 1
-#         while preferred in items:
-#             i = i + 1
-#             preferred = "%s%d" % (o, i)
-#             logger.debug("OMG trying %s", preferred)
-#
-#         items[preferred] = bits
-#         return self.make_global_id(self._cur_namespace, preferred)
-#
-#     def get_namespace(self, key):
-#         return self._namespace[key]
-#
-#     def has_namespace(self, key):
-#         return key in self._namespace
-#
-#     def make_global_id(self, namespace, id):
-#         global_id = "0.%s.%s" % (namespace, id)
-#
-#         global_.make_namespace(namespace, namespace)
-#
-#
-#         return NamespaceEntry(id)
-#
 
 class NamespaceMeta(abc.ABCMeta):
     def __new__(cls, clsname, superclasses, attr_dict):
@@ -171,29 +126,6 @@ class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
         return self._namespace
 
 
-# @implementer(IHtmlIdStore)
-# class HtmlIdStore:
-#     def __init__(self):
-#         self._ids = {}
-#         self._namespace = {}
-#
-#     def get_id(self, preferred, bits):
-#         assert bits
-#         if preferred not in self._ids:
-#             self._ids[preferred] = bits
-#             return preferred
-#
-#         raise IdTaken(preferred, self._ids)
-#         # else:
-#         #     assert False
-#         #     logger.debug("uh oh! preferred id %s taken", preferred)
-#         #     test = '.'.join(bits)
-#         #     import re
-#         #     test = re.sub('[^A-Za-z\._]', '_', test)
-#         #     logger.debug("going to use %s", test)
-#         #     return test
-#
-
 @adapter(ICollectorContext)
 @implementer(ICollector)
 class MyCollector:
@@ -214,9 +146,11 @@ class MyCollector:
             return var.get_value()
         return self._value
 
+
 class MixinBase:
     def check_instance(self):
         pass
+
 
 class TemplateEnvMixin(MixinBase):
 
@@ -237,7 +171,7 @@ class TemplateEnvMixin(MixinBase):
 
     def check_instance(self):
         super().check_instance()
-        assert self.template_env
+        #assert self.template_env
 
 
 class GetTemplateMixin(TemplateEnvMixin):
@@ -245,21 +179,38 @@ class GetTemplateMixin(TemplateEnvMixin):
         super().__init__()
 
     def get_template(self, name):
-        @dataclass
-        class _info:
-            name: AnyStr
-            package: AnyStr = None
+        return self.template_env.get_template(name)
+        # assert self.template_env
+        #
+        # @dataclass
+        # class _info:
+        #     name: AnyStr
+        #     package: AnyStr = None
+        #
+        # class _template:
+        #     def __init__(self, template_env, info):
+        #         assert template_env
+        #         self.template_env = template_env
+        #         self.info = info
+        #
+        #     def render(self, **kwargs):
+        #         assert self.template_env, "%r" % self
+        #         x = self.template_env(self.info)
+        #         logger.critical("x = %r", x)
+        #         return x(dict(**kwargs), {})
+        #
+        # return _template(self.template_env, _info(name))
 
-        class _template:
-            def __init__(self, template_env, info):
-                self.template_env = template_env
-                self.info = info
 
-            def render(self, **kwargs):
-                x = self.template_env(self.info)
-                logger.critical("x = %r", x)
-                return x(dict(**kwargs), {})
+class EntityTypeMixin(Generic[T], MixinBase):
+    def __init__(self) -> None:
+        super().__init__()
+        self._entity_type = None  # type: T
 
-        return _template(self.template_env, _info(name))
+    @property
+    def entity_type(self) -> T:
+        return self._entity_type
 
-
+    @entity_type.setter
+    def entity_type(self, new: T) -> None:
+        self._entity_type = new

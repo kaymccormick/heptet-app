@@ -19,18 +19,14 @@ class IMappingTarget(metaclass=abc.ABCMeta):
 
 
 class MyHtmlElement:
-    def __init__(self, name: AnyStr, attr: dict = {}, template=None):
+    def __init__(self, name: AnyStr, attr: dict = {}):
         assert isinstance(name, str)
         self._element = html.Element(name, attr)
         self._prepared = False
-        self._template = template
 
     def as_html(self):
-        if self._template:
-            pass
-        else:
-            self.prepare_element()
-            return html.tostring(self.element, encoding='unicode')
+        self.prepare_element()
+        return html.tostring(self.element, encoding='unicode')
 
     def prepare_element(self):
         pass

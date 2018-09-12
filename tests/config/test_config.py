@@ -36,11 +36,9 @@ def make_wsgi_app():
         config.include(model_package)
         config.include('.process')
         config.include('.routes')
-        config.include('.template')
         renderer_pkg = 'pyramid_jinja2.renderer_factory'
         config.add_renderer(None, renderer_pkg)
         config.include('.viewderiver')
-        config.commit()
 
         config.set_authentication_policy(
             AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
@@ -54,7 +52,6 @@ def make_wsgi_app():
         config.add_subscriber(on_before_render, BeforeRender)
         config.add_subscriber(on_new_request, NewRequest)
         config.add_subscriber(on_application_created, ApplicationCreated)
-        config.commit()
 
         config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
         config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')

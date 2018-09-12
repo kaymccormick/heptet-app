@@ -9,7 +9,7 @@ from jinja2 import FileSystemLoader, TemplateNotFound, BaseLoader
 from zope.interface import implementer
 
 from interfaces import *
-from pyramid.config import Configurator
+from pyramid.config import Configurator, PHASE2_CONFIG, PHASE1_CONFIG, PHASE0_CONFIG
 from pyramid.renderers import RendererHelper
 from pyramid_jinja2 import IJinja2Environment
 
@@ -121,17 +121,12 @@ def register_components(components: Components):
 
 def includeme(config: Configurator):
     config.include('pyramid_jinja2')
-    intr = config.introspectable('app template config',
-                                 'app template config',
-                                 'app template config',
-                                 'app template config')
+    intr = config.introspectable('email_mgmt_app',
+                                 'template-env',
+                                 'template-env renderer',
+                                 'template renderer')
+
     config.add_jinja2_renderer('template-env', settings_prefix='email_mgmt_app.jinja2.')
 
-    def do_action():
-        pass
-        # #        renderer = config.get_renderer('template-env')
-        # env = config.registry.getUtility(IJinja2Environment, 'app_env')
-        # register_components(config.registry)
-        # _templates(config, env)
+    #config.action(('email_mgmt_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)
 
-    config.action('app template config', do_action, introspectables=(intr,))

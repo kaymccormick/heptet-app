@@ -13,11 +13,10 @@ from pyramid.interfaces import IRequestFactory, IRendererFactory
 from pyramid.request import Request
 from zope.interface import implementer
 
-from context import EntityTypeMixin
 from entrypoint import EntryPoint, ResourceManager, default_manager, \
     default_entry_point
 from exceptions import MissingArgumentException
-from impl import GetTemplateMixin
+from impl import GetTemplateMixin, EntityTypeMixin
 from interfaces import IResource
 from manager import ResourceOperation
 from util import get_entry_point_key, get_exception_entry_point_key
@@ -47,7 +46,7 @@ def get_root(request: Request):
         lock.release()
         return root
 
-    root = RootResource(template_env=request.registry.getUtility(IRendererFactory, 'template-env'))
+    root = RootResource()
     assert root.entry_point
     setattr(sys.modules[__name__], "_root", root)
     lock.release()
@@ -221,7 +220,7 @@ class _Resource(EntityTypeMixin, GetTemplateMixin):
         if not title:
             title = stringcase.sentencecase(name)
         logger.debug("%s", title)
-        sub = self._subresource_type.__new__(self._subresource_type, self.manager, name, self, entry_point, title)
+        sub = self._subresource_type.__new__(self._subresource_type, self.manager, name, self, entry_point, title, self.template_env)
         assert sub.manager is self.manager
         # sub.__init__(self.manager, name, self, )
         #        logger.debug("%s", dir(sub))
@@ -355,12 +354,6 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     if not reg_view:
         logger.warning("No view registered!")
     manager._resource = resource
-
-
-def add_resource_manager(config: Configurator, mgr: ResourceManager):
-    logger.debug("in add_resource_manager directive.")
-    logger.debug("registering mgr.add_action as action for %s", mgr)
-    config.action(None, _add_resmgr_action(config, mgr))
 
 
 class RootResource(Resource):

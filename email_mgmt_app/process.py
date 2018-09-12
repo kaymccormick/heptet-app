@@ -4,8 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-from marshmallow import ValidationError
-from pyramid.config import Configurator
+from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
 from sqlalchemy import Column, String
 from sqlalchemy.exc import InvalidRequestError
@@ -14,11 +13,12 @@ from zope.interface import implementer, Interface
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
-from email_mgmt_app import ResourceManager, EntryPoint
+from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action
 from entity import EntityFormView
 from impl import MapperWrapper
 from interfaces import IProcess, IEntryPoint, IMapperInfo
 from manager import OperationArgument
+from marshmallow import ValidationError
 from myapp_config import logger
 
 logger = logging.getLogger(__name__)
@@ -166,8 +166,8 @@ class GenerateEntryPointProcess:
             f.close()
 
 
-# how do we split the repsonsibility between this function and "config.add_resource_manager"!?!?!
-def config_process_struct(config, process):
+# how do we split the responsibility between this function and "config.add_resource_manager"!?!?!
+def config_process_struct(config: Configurator, process):
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)
         logger.debug("Registering mapper_wrapper %s", mapper)
@@ -184,7 +184,10 @@ def config_process_struct(config, process):
         manager.operation(name='form', view=EntityFormView,
                           args=[OperationArgument.SubpathArgument('action', String, default='create')])
 
-        config.add_resource_manager(manager)
+        intr = config.introspectable('resource manager', manager.mapper_key, 'resource manager %s' % manager.mapper_key,
+                                     'resource manager')
+        config.action(('resource manager', manager.mapper_key), _add_resmgr_action, introspectables=(intr,),
+                      args=(config, manager), order=PHASE3_CONFIG)
 
 
 def load_process_struct() -> ProcessStruct:

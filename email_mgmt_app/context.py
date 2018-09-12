@@ -19,20 +19,6 @@ logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
 
-class EntityTypeMixin(Generic[T], MixinBase):
-    def __init__(self) -> None:
-        super().__init__()
-        self._entity_type = None  # type: T
-
-    @property
-    def entity_type(self) -> T:
-        return self._entity_type
-
-    @entity_type.setter
-    def entity_type(self, new: T) -> None:
-        self._entity_type = new
-
-
 class ContextFormContextMixin(MixinBase):
     def __init__(self):
         super().__init__()
@@ -164,8 +150,8 @@ class GeneratorContext(
     FormContextFactoryMixin,
     ContextRootNamespaceMixin,
 ):
-    def __init__(self, mapper_info, template_env, template_vars, form_context_factory: FormContextFactory,
-                 root_namespace: NamespaceStore) -> None:
+    def __init__(self, mapper_info, template_vars, form_context_factory: FormContextFactory,
+                 root_namespace: NamespaceStore, template_env=None) -> None:
         super().__init__()
         # if mapper_info is not None:
         #     assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info

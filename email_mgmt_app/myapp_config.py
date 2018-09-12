@@ -2,10 +2,11 @@ import logging
 import sys
 
 from jinja2 import TemplateNotFound
-from pyramid.config import Configurator
+from pyramid.config import Configurator, PHASE2_CONFIG
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
-from pyramid.interfaces import IRendererFactory
+from pyramid.interfaces import IRendererFactory, PHASE3_CONFIG
 from pyramid.renderers import get_renderer
+from pyramid_jinja2 import IJinja2Environment
 from zope.component import IFactory
 from zope.component.factory import Factory
 
@@ -24,27 +25,6 @@ logger = logging.getLogger(__name__)
 # config.registry.registerUtility(env, IJinja2Environment, 'app_env')
 # config.add_request_method(lambda x: env, 'template_env')
 
-
-def includeme(config: Configurator):
-    config.include('..template')
-    # FIXME should not need this
-    config.commit()
-
-    env = config.registry.getUtility(IRendererFactory, 'template-env')
-    config.add_request_method(lambda x: env, 'template_env')
-
-    config.include('..entrypoint')
-    factory = Factory(Resource, 'resource',
-                      'ResourceFactory', (IResource,))
-    config.registry.registerUtility(factory, IFactory, 'resource')
-
-    config.add_subscriber(on_context_found, ContextFound)
-    config.add_subscriber(on_before_render, BeforeRender)
-    config.add_subscriber(on_new_request, NewRequest)
-    config.add_subscriber(on_application_created, ApplicationCreated)
-
-
-    config.add_directive('add_resource_manager', email_mgmt_app.add_resource_manager)
 
 
 def on_new_request(event):
@@ -74,6 +54,7 @@ def on_context_found(event):
     """
     request = event.request  # type: Request
     context = request.context  # type: Resource
+    context.template_env = request.registry.getAdapter(IJinja2Environment, 'template-env')
     import pprint
     pp = pprint.PrettyPrinter(width=120, stream=sys.stderr)
     pp.pprint(context)
@@ -119,3 +100,26 @@ def on_context_found(event):
 
 def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
+
+def includeme(config: Configurator):
+    config.include('..template')
+    # FIXME should not need this
+
+    desc = 'request method template_env'
+    disc = ('add-request-method', 'template_env')
+    intr = config.introspectable('add-request-method', 'template_env', 'template_env request method', 'app request methods')
+
+    config.add_request_method(lambda request: request.registry.getUtility(IJinja2Environment, 'template-env'), 'template_env')
+
+#    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
+
+    config.include('..entrypoint')
+    factory = Factory(Resource, 'resource',
+                      'ResourceFactory', (IResource,))
+    config.registry.registerUtility(factory, IFactory, 'resource')
+
+    config.add_subscriber(on_context_found, ContextFound)
+    config.add_subscriber(on_before_render, BeforeRender)
+    config.add_subscriber(on_new_request, NewRequest)
+    config.add_subscriber(on_application_created, ApplicationCreated)
+

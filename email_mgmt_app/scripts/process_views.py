@@ -16,7 +16,7 @@ import db_dump.args
 from email_mgmt_app import get_root, util
 import model.email_mgmt
 from entrypoint import IEntryPoint, EntryPoints, EntryPoint
-from impl import IProcess, NamespaceStore
+from impl import NamespaceStore
 from myapp_config import on_new_request
 from process import ProcessContext, setup_jsonencoder, AssetManager, GenerateEntryPointProcess
 from scripts.util import get_request, template_env
@@ -63,7 +63,7 @@ def main(input_args=None):
     config.include(model.email_mgmt)
     config.include('.process')
 
-    config.commit()
+    #config.commit()
 
     registry = config.registry
 
@@ -131,10 +131,6 @@ def main(input_args=None):
         proc_context.template_env.get_template('entry_point.js.jinja2')
     assert entry_points
 
-    env = request.registry.getUtility(IRendererFactory, 'template-env')
-
-    logger.critical("%r", env)
-
     root_namespace = NamespaceStore('root')
 
     ep: EntryPoint
@@ -147,6 +143,7 @@ def main(input_args=None):
 
         # fixme this does not belong here!!
         util._dump(registry, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr))
+        env = request.registry.getUtility(IJinja2Environment, 'template-env')
         ep.init_generator(registry, root_namespace, env)
         assert ep.generator is not None
         ep.generator.generate()
