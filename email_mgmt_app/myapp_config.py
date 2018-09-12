@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def includeme(config: Configurator):
-    config.include('.template')
+    config.include('..template')
     # FIXME should not need this
     config.commit()
 
