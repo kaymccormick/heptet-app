@@ -13,8 +13,8 @@ from pyramid.request import Request
 from pyramid_jinja2 import IJinja2Environment
 
 import db_dump.args
-import model
 from email_mgmt_app import get_root, util
+import model.email_mgmt
 from entrypoint import IEntryPoint, EntryPoints, EntryPoint
 from impl import IProcess, NamespaceStore
 from myapp_config import on_new_request

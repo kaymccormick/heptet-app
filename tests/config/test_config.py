@@ -30,7 +30,7 @@ def make_wsgi_app():
         """
         config = Configurator(
             settings=settings, root_factory=get_root,
-            package=email_mgmt_app.myapp_config
+            package=email_mgmt_app
         )
         config.include(myapp_config)
         config.include(model_package)
