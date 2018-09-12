@@ -13,6 +13,8 @@ from pyramid.config import Configurator, PHASE2_CONFIG, PHASE1_CONFIG, PHASE0_CO
 from pyramid.renderers import RendererHelper
 from pyramid_jinja2 import IJinja2Environment
 
+from myapp_config import TEMPLATE_ENV_NAME
+
 logger = logging.getLogger(__name__)
 
 
@@ -121,12 +123,12 @@ def register_components(components: Components):
 
 def includeme(config: Configurator):
     config.include('pyramid_jinja2')
-    intr = config.introspectable('email_mgmt_app',
-                                 'template-env',
-                                 'template-env renderer',
-                                 'template renderer')
+    # intr = config.introspectable('email_mgmt_app',
+    #                              TEMPLATE_ENV_NAME,
+    #                              'template-env renderer',
+    #                              'template renderer')
 
-    config.add_jinja2_renderer('template-env', settings_prefix='email_mgmt_app.jinja2.')
+    config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='email_mgmt_app.jinja2.')
 
     #config.action(('email_mgmt_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)
 

@@ -18,7 +18,7 @@ import model.email_mgmt
 from entrypoint import IEntryPoint, EntryPoints, EntryPoint
 from impl import NamespaceStore
 from interfaces import IProcess
-from myapp_config import on_new_request
+from myapp_config import on_new_request, TEMPLATE_ENV_NAME
 from process import ProcessContext, setup_jsonencoder, AssetManager, GenerateEntryPointProcess
 from scripts.util import get_request, template_env
 
@@ -147,7 +147,7 @@ def main(input_args=None):
 
         # fixme this does not belong here!!
         util._dump(registry, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr))
-        env = request.registry.getUtility(IJinja2Environment, 'template-env')
+        env = request.registry.getUtility(IJinja2Environment, TEMPLATE_ENV_NAME)
         ep.init_generator(registry, root_namespace, env)
         assert ep.generator is not None
         ep.generator.generate()

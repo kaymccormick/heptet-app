@@ -54,8 +54,6 @@ def wsgi_app(global_config, **settings):
     if use_global_reg:
         config.setup_registry(settings=settings, root_factory=get_root)
 
-    # we want to use the default template thingy if we can
-
     # include our sql alchemy model.
     pkg = 'email_mgmt_app.model.email_mgmt'
     pkg2 = 'model.email_mgmt'
@@ -76,6 +74,7 @@ def wsgi_app(global_config, **settings):
     #    config.add_view_predicate('entity_name', EntityNamePredicate)
 
     config.include('.routes')
+    config.include('.viewderiver')
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],

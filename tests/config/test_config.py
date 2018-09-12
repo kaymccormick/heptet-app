@@ -35,9 +35,11 @@ def make_wsgi_app():
         config.include(myapp_config)
         config.include(model_package)
         config.include('.process')
-        config.include('.routes')
+
         renderer_pkg = 'pyramid_jinja2.renderer_factory'
         config.add_renderer(None, renderer_pkg)
+
+        config.include('.routes')
         config.include('.viewderiver')
 
         config.set_authentication_policy(

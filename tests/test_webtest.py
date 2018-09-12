@@ -146,6 +146,7 @@ def test_webtest_urls(url, make_webtest):
 
 def test_webtest_domain_form(make_webtest):
     (resp, html) = make_webtest('/domain/form')
+    logger.critical("%s", resp.text)
     form_ = html.xpath("//form[@data-pyclass='Form']")
     assert form_ and 1 == len(form_)
     (form,) = form_

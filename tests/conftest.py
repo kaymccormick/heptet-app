@@ -24,6 +24,7 @@ from entity import FormRelationshipMapper, RelationshipSelect
 from entrypoint import EntryPoint
 from form import Form
 from impl import NamespaceStore, MapperWrapper
+from myapp_config import TEMPLATE_ENV_NAME
 from process import load_process_struct
 from tvars import TemplateVars
 from util import _dump
@@ -44,7 +45,9 @@ def webapp_settings():
         'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
         'email_mgmt_app.authsource': 'db',
         'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
-        'email_mgmt_app.jinja2_loader_template_path': 'email_mgmt_app/templates:email_mgmt_app',
+        'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\nemail_mgmt_app\ntemplates\n.",
+        'email_mgmt_app.jinja2.autoescape': "false",
+
     }
 
 
@@ -162,7 +165,7 @@ def make_jinja2_env(make_config):
         config = make_config(
             {'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\ntemplates\nemail_mgmt_apps\n."})
         config.include('.template')
-        config.add_jinja2_renderer('template-env', settings_prefix='email_mgmt_app.jinja2.', package=email_mgmt_app)
+        config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='email_mgmt_app.jinja2.', package=email_mgmt_app)
         return config
 
     return _make_jinja2_env
@@ -172,7 +175,7 @@ def make_jinja2_env(make_config):
 def jinja2_env(make_jinja2_env, make_config):
     config = make_jinja2_env()
     config.commit()
-    return config.registry.getUtility(IJinja2Environment, 'template-env')
+    return config.registry.getUtility(IJinja2Environment, TEMPLATE_ENV_NAME)
 
 
 @pytest.fixture

@@ -519,9 +519,9 @@ class EntityFormView(BaseEntityRelatedView[T]):
         assert entry_point
 
         root_namespace = NamespaceStore('root')
-        entry_point.init_generator(self.request.registry, root_namespace)
+        entry_point.init_generator(self.request.registry, root_namespace, resource.template_env)
         generator = entry_point.generator
-        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), template_vars=TemplateVars(),
+        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), template_env=resource.template_env, template_vars=TemplateVars(),
                                 form_context_factory=FormContext, root_namespace=root_namespace)
         assert generator, "Need generator to function"
         mapper_info = gctx.mapper_info
