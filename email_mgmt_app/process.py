@@ -24,6 +24,20 @@ from myapp_config import logger
 logger = logging.getLogger(__name__)
 
 
+class FileType:
+
+    def __init__(self, name, ext) -> None:
+        self.name = name
+        self.ext = ext
+
+    @property
+    def discriminator(self):
+        return ['.' + self.ext]
+
+
+JavaScript = FileType('JavaScript', 'js')
+
+
 class IProcessContext(Interface):
     pass
 
@@ -65,7 +79,34 @@ class BaseProcessor:
         self._pcontex = new
 
 
+class Asset:
+    def __init__(self, disc, open=True) -> None:
+        """
+
+        :param disc: A discriminator for the asset. Used to construct the asset path. Should be a tuple of values.
+        :param open:
+        """
+        super().__init__()
+
+
 class AssetManager:
+    def get(self, disc):
+        def _disc(l, *elems):
+            for elem in elems:
+                attr = getattr(elem, "discriminator", None)
+                if attr:
+                    _disc(l, *attr)
+                else:
+                    l.append(str(elem))
+
+        l = list()
+        _disc(l, *disc)
+        p = Path(self._output_dir)
+        p2 = p.joinpath(''.join(l))
+        if not p2.parent.exists():
+            p2.parent.mkdir(mode=0o0755, parents=True)
+
+        return open(p2, 'w')
     def __init__(self, output_dir, mkdir=False) -> None:
         super().__init__()
         p = Path(output_dir)
@@ -114,7 +155,7 @@ def setup_jsonencoder():
 @adapter(IProcessContext, IEntryPoint)
 @implementer(IProcess)
 class GenerateEntryPointProcess:
-    def __init__(self, context, ep) -> None:
+    def __init__(self, context: ProcessContext, ep: EntryPoint) -> None:
         """
 
         :param ep:
@@ -132,6 +173,7 @@ class GenerateEntryPointProcess:
 
         if ep.view_kwargs and 'view' in ep.view_kwargs:
             view_arg = ep.view_kwargs['view']
+            logger.critical("PROCESS view_arg = %r", view_arg)
             view = resolver.maybe_resolve(view_arg)
             ep.view = view
 
@@ -148,22 +190,24 @@ class GenerateEntryPointProcess:
             #
             #     ready_stmts = generator.ready_stmts()
 
-        fname = ep.get_output_filename()
-        assert fname
-        logger.critical("generating output file %s", fname)
+        data = dict(js_imports=js_imports,
+                    js_stmts=js_stmts,
+                    ready_stmts=ready_stmts)
 
-        data = {'filename': fname,
-                'vars': dict(js_imports=js_imports,
-
-                             js_stmts=js_stmts,
-                             ready_stmts=ready_stmts)}
-
-        with open(fname, 'w') as f:
-            content = ep.get_template().render(
-                **data['vars']
+        with self._context.asset_manager.get((self._ep, JavaScript)) as f:
+            content = self._context.template_env.get_template('entry_point.js.jinja2').render(
+                **data
             )
-            f.write(str(content))
+            f.write(content)
             f.close()
+
+        # with open(fname, 'w') as f:
+        #     content = ep.get_template().render(
+        #         **data['vars']
+        #     )
+        #     f.write(content)
+        #     f.close()
+        #
 
 
 # how do we split the responsibility between this function and "config.add_resource_manager"!?!?!

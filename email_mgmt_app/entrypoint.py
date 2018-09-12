@@ -13,7 +13,7 @@ from tvars import TemplateVars
 from zope import interface
 
 from interfaces import *
-from impl import MyCollector
+from impl import MyCollector, Separator
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
@@ -59,9 +59,6 @@ class EntryPoint:
             js=None,
             view_kwargs: dict = None,
             mapper_wrapper: MapperWrapper = None,
-            template_name=None,
-            template=None,
-            output_filename=None
     ) -> None:
         # just to make sure we're sane
         assert isinstance(key, str)
@@ -75,16 +72,18 @@ class EntryPoint:
         self._view_kwargs = view_kwargs  # view coupling !!! FIXME
         self._view = None
         self._mapper_wrapper = mapper_wrapper
-        self._template_name = template_name
-        self._output_filename = output_filename
-        self._template = template
         self._vars = TemplateVars()
         self._manager = manager
+        try:
+            x = repr(self)
+        except Exception as ex:
+            x = ex
+
+        logger.debug("Entry Point is %s", x)
 
     def __repr__(self):
         return "EntryPoint(manager=%r, key=%r, request=%r, registry=%r, generator=%r, \
-js=%r, view_kwargs=%r, mapper_wrapper=%r, template_name=%r, template=%r, output_filename=%r)" % (
-
+js=%r, view_kwargs=%r, mapper_wrapper=%r)" % (
             self._manager,
             self._key,
             self._request.__class__,
@@ -93,25 +92,8 @@ js=%r, view_kwargs=%r, mapper_wrapper=%r, template_name=%r, template=%r, output_
             self._js,
             self._view_kwargs,
             self._mapper_wrapper,
-            self._template_name,
-            self._template,
-            self._output_filename
+
         )
-
-    def get_key(self):
-        return self._key
-
-    def get_output_filename(self):
-        return self._output_filename
-
-    def set_output_filename(self, filename):
-        self._output_filename = filename
-
-    def get_template(self):
-        return self._template
-
-    def set_template(self, template):
-        self._template = template
 
     def init_generator(self, registry, root_namespace, template_env, cb=None):
         w = self.mapper_wrapper and self.mapper_wrapper.get_one_mapper_info() or None
@@ -134,14 +116,6 @@ js=%r, view_kwargs=%r, mapper_wrapper=%r, template_name=%r, template=%r, output_
     @key.setter
     def key(self, new):
         self._key = new
-
-    @property
-    def js(self):
-        return self._js
-
-    @js.setter
-    def js(self, new):
-        self._js = new
 
     @property
     def view_kwargs(self) -> dict:
@@ -181,8 +155,10 @@ js=%r, view_kwargs=%r, mapper_wrapper=%r, template_name=%r, template=%r, output_
     @property
     def manager(self) -> 'ResourceManager':
         return self._manager
-    # @property
-    # def vars(self):
+
+    @property
+    def discriminator(self):
+        return [self.__class__.__name__.lower(), Separator, self.key]
 
 
 # we get a request, which means we get a registry
@@ -330,12 +306,8 @@ class DefaultEntryPoint(EntryPoint):
         js = None
         view_kwargs = {}
         mapper_wrapper = None
-        template_name = None
-        template = None
-        output_filename = None
         request = None
-        super().__init__(manager, key, request, registry, generator, js, view_kwargs, mapper_wrapper, template_name,
-                         template, output_filename)
+        super().__init__(manager, key, request, registry, generator, js, view_kwargs, mapper_wrapper)
 
 
 _default_manager = DefaultResourceManager()

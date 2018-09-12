@@ -214,3 +214,12 @@ class EntityTypeMixin(Generic[T], MixinBase):
     @entity_type.setter
     def entity_type(self, new: T) -> None:
         self._entity_type = new
+
+
+class _Separator:
+    @property
+    def discriminator(self):
+        return ['/']
+
+
+Separator = _Separator()

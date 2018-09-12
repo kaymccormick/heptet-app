@@ -66,6 +66,7 @@ def wsgi_app(global_config, **settings):
         model_mod = importlib.import_module(pkg)
     config.include(model_mod)
 
+    config.include('.viewderiver')
     config.include('.process')
 
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
@@ -74,7 +75,7 @@ def wsgi_app(global_config, **settings):
     #    config.add_view_predicate('entity_name', EntityNamePredicate)
 
     config.include('.routes')
-    config.include('.viewderiver')
+
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],

@@ -23,9 +23,9 @@ from entity import EntityFormViewEntryPointGenerator
 from entity import FormRelationshipMapper, RelationshipSelect
 from entrypoint import EntryPoint
 from form import Form
-from impl import NamespaceStore, MapperWrapper
+from impl import NamespaceStore, MapperWrapper, Separator
 from myapp_config import TEMPLATE_ENV_NAME
-from process import load_process_struct
+from process import load_process_struct, AssetManager
 from tvars import TemplateVars
 from util import _dump
 from viewderiver import entity_view
@@ -121,10 +121,13 @@ def app_registry():
 
 
 @pytest.fixture
-def entry_point_mock(entry_point):
-    mock = Mock(entry_point, )
-    p = PropertyMock(return_value='_default')
+def entry_point_mock():
+    mock = Mock(EntryPoint, name='entry_point')
+    name = '_default'
+    p = PropertyMock(return_value=name)
     type(mock).key = p
+    type(mock).view_kwargs = PropertyMock(return_value=dict(view=lambda x, y: {}))
+    type(mock).discriminator = PropertyMock(return_value=['entry_point', Separator, name])
     return mock
 
 
@@ -183,7 +186,7 @@ def jinja2_env(make_jinja2_env, make_config):
 
 @pytest.fixture
 def jinja2_env_mock():
-    mock = MagicMock(Environment)
+    mock = MagicMock(Environment, name='jinja2_env')
     # mock.mock_add_spec(Environment.__class__)
     # mock.mock_add_spec(['get_template'])
     _templates = {}
@@ -222,9 +225,9 @@ def resource_operation(view_test):
 
 
 @pytest.fixture
-def make_resource(root_resource, entity_type_mock, resource_manager, entry_point):
+def make_resource(root_resource, entry_point_mock, resource_manager):
     def _make_resource(name):
-        return Resource(resource_manager, name, root_resource, entry_point)
+        return Resource(resource_manager, name, root_resource, entry_point_mock)
 
     return _make_resource
 
@@ -242,11 +245,10 @@ def resource_manager(config_fixture, entity_type_mock, mapper_wrapper_real):
 #
 # ENTRY POINT
 #
-@pytest.fixture
-def entry_point(mapper_wrapper_real, app_request, app_registry, jinja2_env_mock, resource_manager):
-    return EntryPoint(resource_manager, "domain_form", app_request, app_registry, mapper_wrapper=mapper_wrapper_real,
-                      output_filename="tmp.out",
-                      template=jinja2_env_mock.get_template('entry_point.js.jinja2'))
+# @pytest.fixture
+# def entry_point(mapper_wrapper_real, app_request, app_registry, jinja2_env_mock, resource_manager):
+#     return EntryPoint(resource_manager, "domain_form", app_request, app_registry, mapper_wrapper=mapper_wrapper_real)
+
 
 
 #
@@ -486,3 +488,13 @@ def model_module():
 @pytest.fixture(params=('test1', 'test2'))
 def my_column_info(request):
     return ColumnInfo(TypeInfo(), request.param, request.param)
+
+
+@pytest.fixture
+def asset_manager():
+    return AssetManager("tmpdir", mkdir=True)
+
+
+@pytest.fixture
+def asset_manager_mock():
+    return Mock(AssetManager)

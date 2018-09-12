@@ -4,10 +4,10 @@ from email_mgmt_app import get_root, RootResource, Resource
 
 logger = logging.getLogger(__name__)
 
-def test_resource_meta(root_resource, entry_point):
+def test_resource_meta(root_resource, entry_point_mock):
     root = root_resource
-    a = root.sub_resource('a', entry_point)
-    b = root.sub_resource('b', entry_point)
+    a = root.sub_resource('a', entry_point_mock)
+    b = root.sub_resource('b', entry_point_mock)
     assert root['a'] is a
     assert root['b'] is b
     logger.warning("%s, %s", type(a), type(b))

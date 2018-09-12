@@ -44,15 +44,16 @@ def _dump(v, line_prefix=None, name_prefix="", depth=0, cb: Callable = None, rec
     if isinstance(v, types.ModuleType):
         pass  # cb("%s: module %s", lineprefix, v)
     elif isinstance(v, Components):
-        for x in v.registeredUtilities():
-            _dump(x, None, "%s%s." % (name_prefix, "utility"), depth + 1, cb, recurse=False)
+        # for x in v.registeredUtilities():
+        #     _dump(x, None, "%s%s." % (name_prefix, "utility"), depth + 1, cb, recurse=False)
         #     _dump(x, None, "%s%s." % (nameprefix, "utility"), depth + 1, cb)
         pass
     elif hasattr(v, "__dict__"):
         for x, y in v.__dict__.items():
             if not x.startswith('_'):
+                pass
                 # cb("%s%s%s = %s", lineprefix, nameprefix, x, y)
-                _dump(y, name_prefix="%s%s." % (name_prefix, x), depth=depth + 1, cb=cb)
+                #_dump(y, name_prefix="%s%s." % (name_prefix, x), depth=depth + 1, cb=cb)
     else:
         return
 

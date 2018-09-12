@@ -9,7 +9,7 @@ from typing import AnyStr, Generic, TypeVar
 import pyramid
 import stringcase
 from pyramid.config import Configurator
-from pyramid.interfaces import IRequestFactory, IRendererFactory
+from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 from zope.interface import implementer
 
@@ -346,6 +346,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
         d['entry_point'] = entry_point
 
         # d['decorator'] = view_decorator
+
         logger.debug("Adding view: %s", d)
         config.add_view(**d)
 
@@ -492,3 +493,5 @@ class OperationArgumentExceptionView(ExceptionView):
     def __init__(self, context, request) -> None:
         super().__init__(context, request)
         request.override_renderer = "templates/args.jinja2"
+
+

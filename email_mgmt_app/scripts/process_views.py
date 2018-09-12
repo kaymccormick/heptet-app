@@ -151,8 +151,7 @@ def main(input_args=None):
         ep.init_generator(registry, root_namespace, env)
         assert ep.generator is not None
         ep.generator.generate()
-        ep.set_template(entry_point_js_template)
-        ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
+
         subscribers = registry.subscribers((proc_context, ep), IProcess)
         subscribers = [GenerateEntryPointProcess(proc_context, ep)]
         assert subscribers, "No subscribers for processing"
