@@ -120,13 +120,18 @@ def register_components(components: Components):
 
 
 def includeme(config: Configurator):
-    return
+    config.include('pyramid_jinja2')
+    intr = config.introspectable('app template config',
+                                 'app template config',
+                                 'app template config',
+                                 'app template config')
     config.add_jinja2_renderer('template-env', settings_prefix='email_mgmt_app.jinja2.')
 
     def do_action():
-        #        renderer = config.get_renderer('template-env')
-        env = config.registry.getUtility(IJinja2Environment, 'app_env')
-        register_components(config.registry)
-        _templates(config, env)
+        pass
+        # #        renderer = config.get_renderer('template-env')
+        # env = config.registry.getUtility(IJinja2Environment, 'app_env')
+        # register_components(config.registry)
+        # _templates(config, env)
 
-    config.action(None, do_action)
+    config.action('app template config', do_action, introspectables=(intr,))

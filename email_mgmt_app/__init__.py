@@ -1,28 +1,25 @@
 from __future__ import annotations
-import logging
 
+import logging
 import sys
 from abc import ABCMeta
-from collections import UserDict, OrderedDict
 from threading import Lock
-from traceback import print_stack
-from typing import AnyStr
+from typing import AnyStr, Generic, TypeVar
 
 import pyramid
 import stringcase
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
-from sqlalchemy.ext.declarative import DeclarativeMeta
-from zope.component import IFactory
-from zope.component.factory import Factory
 from zope.interface import implementer
 
-from entrypoint import EntryPoint, ResourceManager, DefaultResourceManager, DefaultEntryPoint, default_manager, \
+from context import EntityTypeMixin
+from entrypoint import EntryPoint, ResourceManager, default_manager, \
     default_entry_point
-from interfaces import IResource, IRootResource
+from exceptions import MissingArgumentException
+from interfaces import IResource
 from manager import ResourceOperation
-from util import get_entry_point_key
+from util import get_entry_point_key, get_exception_entry_point_key
 
 # class MapperInfosMixin:
 #     @property
@@ -35,7 +32,7 @@ from util import get_entry_point_key
 #
 #     def set_mapper_info(self, mapper_key: AnyStr, mapper_info: MapperInfo) -> None:
 #         self.mapper_infos[mapper_key] = mapper_info
-
+T = TypeVar('T')
 
 logger = logging.getLogger(__name__)
 
@@ -74,9 +71,9 @@ class ResourceMeta(ABCMeta):
     count = 0
 
     def __new__(cls, *args, **kwargs):
-        # logger.critical("meta in new %s %s %s", cls, args, kwargs)
+        # logger.debug("meta in new %s %s %s", cls, args, kwargs)
         x = super().__new__(cls, *args, **kwargs)
-        # logger.critical("meta x = %s", x)
+        # logger.debug("meta x = %s", x)
         return x
     # if '__count__' not in cls.__dict__:
     #     setattr(cls, '__count__', 0)
@@ -94,38 +91,39 @@ class ResourceMeta(ABCMeta):
 
 
 @implementer(IResource)
-class _Resource:
+class _Resource(EntityTypeMixin):
     """
     Base resource type. Implements functionality common to all resource types.
     """
 
     #
-    def __new__(cls, manager, name: AnyStr, parent: ContainerResource,
+    logger = logger.getChild('_Resource')
+    def __new__(cls, manager, name: AnyStr, parent: Resource,
                 entry_point: EntryPoint,
                 title: AnyStr = None,
 
                 ):
-        # logger.critical("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
+        # logger.debug("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
         if cls == Resource:
             count = getattr(cls, "__count__", 0)
             count = count + 1
             clsname = "%s_%04X" % (cls.__name__, count)
             setattr(cls, "__count__", count)
             meta = ResourceMeta(clsname, (cls,), {})
-            # logger.critical("meta = %s", meta)
+            # logger.debug("meta = %s", meta)
             inst = meta(manager, name, parent, entry_point, title)
             assert inst.manager is manager
             # inst.__init__(manager, name, parent, entry_point, title)
             return inst
 
-        logger.critical("super = %r", super)
+        logger.debug("super = %r", super)
         x = super().__new__(cls)
         if not title:
             title = stringcase.sentencecase(name)
         else:
             title = title
         x.__init__(manager, name, parent, entry_point, title)
-        logger.critical("%r", x)
+        logger.debug("%r", x)
         return x
 
     def __setitem__(self, key, value):
@@ -190,14 +188,6 @@ class _Resource:
                                            self._title)
         except:
             return repr(sys.exc_info()[1])
-        # s = ''
-        # for x in dir(self):
-        #     if x.startswith('_') and not x.startswith('__') and not x.startswith('_abc_') and x != '_data':
-        #         s = s + x[1:] + '=' + repr(getattr(self, x)) + ', '
-        #
-        # return "Resource(%s, %s, %sdata=%r)" % (self.__name__, self.__parent__, s, getattr(self, '_data', None)) #manager=%s, name=%s, parent=%s, title=%s, entity_type=%s)" % (
-        #     #self._manager, self.__name__, self.__parent__, self._title, self._entity_type
-        #     #)
 
     @property
     def is_container(self) -> bool:
@@ -217,24 +207,20 @@ class _Resource:
     def url(self):
         return pyramid.threadlocal.get_current_request().resource_url(self)
 
-    @property
-    def entity_type(self):
-        return self._entity_type
-
     def add_name(self, name):
         self._names.append(name)
 
     def sub_resource(self, name: AnyStr, entry_point: EntryPoint, title=None):
-        logger.critical("%r", self.__class__)
+        logger.debug("%r", self.__class__)
         assert self.manager
         assert self.entry_point
         if not title:
             title = stringcase.sentencecase(name)
-        logger.critical("%s", title)
+        logger.debug("%s", title)
         sub = self._subresource_type.__new__(self._subresource_type, self.manager, name, self, entry_point, title)
         assert sub.manager is self.manager
         # sub.__init__(self.manager, name, self, )
-        #        logger.critical("%s", dir(sub))
+        #        logger.debug("%s", dir(sub))
         self[name] = sub
         return sub
 
@@ -255,34 +241,6 @@ class Resource(_Resource, metaclass=ResourceMeta):
     pass
 
 
-@implementer(IResource)
-class ContainerResource(Resource, UserDict):
-    """
-    Resource containing sub-resources.
-    """
-
-    def __init__(self, manager: AnyStr, name: ContainerResource, parent: AnyStr,
-                 entry_point: DeclarativeMeta = None) -> None:
-        super().__init__(name, parent, title, entity_type)
-        self.data = OrderedDict()
-
-    @property
-    def is_container(self) -> bool:
-        return True
-
-    # def __getitem__(self, key=None):
-    #     if key is None:
-    #         logger.critical("poop") # ???
-    #     logger.debug("querying ContainerResource for %s.%s", self, key)
-    #     v = super().__getitem__(key)
-    #     logger.debug("result is %s", v)
-    #     return v
-    #
-    # def __setitem__(self, key, value):
-    #     logger.debug("setting ContainerResource for %s to %s", key, value)
-    #     super().__setitem__(key, value)
-
-
 class HasRequestMixin:
     @property
     def request(self):
@@ -291,22 +249,6 @@ class HasRequestMixin:
     @request.setter
     def request(self, new):
         self._request = new
-
-
-class LeafResource(Resource):
-    def __getattr__(self, item):
-        raise KeyError
-
-
-class EntityResource():
-    def __init__(self, name, entity_type) -> None:
-        super().__init__()
-        self._name = name
-        self._entity_type = entity_type
-
-    @property
-    def entity_name(self):
-        return self._name
 
 
 def _add_resmgr_action(config: Configurator, manager: ResourceManager):
@@ -345,7 +287,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
     mapper_wrapper = manager.mapper_wrappers[manager._mapper_key]
     assert mapper_wrapper, "no mapper wrapper %s in %s" % (manager._mapper_key, manager.mapper_wrappers)
-    entity_type = mapper_wrapper.mapper_info.entity
+    # entity_type = mapper_wrapper.mapper_info.entity
 
     container_entry_point = EntryPoint(manager, manager.mapper_key,
                                        request,
@@ -391,15 +333,11 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
                                  # we shouldn't be calling into the "operation" for the entry point
                                  mapper_wrapper=mapper_wrapper,
                                  view_kwargs=d)
-        logger.critical("spawning sub resource for op %s, %s", op.name, node_name)
+        logger.debug("spawning sub resource for op %s, %s", op.name, node_name)
         op_resource = resource.sub_resource(op.name, entry_point)
         d['context'] = type(op_resource)
 
-        # x = op.view(resource, request)
 
-        # generator = config.registry.getMultiAdapter([env, entry_point, x], IEntryPointGenerator)
-        # # logger.debug("setting generator to %s", generator)
-        # entry_point.generator = generator
         config.register_entry_point(entry_point)
 
         d['entry_point'] = entry_point
@@ -421,18 +359,8 @@ def add_resource_manager(config: Configurator, mgr: ResourceManager):
     config.action(None, _add_resmgr_action(config, mgr))
 
 
-def includeme(config: Configurator):
-    config.include('..entrypoint')
-    factory = Factory(Resource, 'resource',
-                      'ResourceFactory', (IResource,))
-    config.registry.registerUtility(factory, IFactory, 'resource')
-
-    config.add_directive('add_resource_manager', add_resource_manager)
-
-
-@implementer(IRootResource)
 class RootResource(Resource):
-    def __new__(cls, manager=None, name: AnyStr = '', parent: ContainerResource = None,
+    def __new__(cls, manager=None, name: AnyStr = '', parent: Resource = None,
                 entry_point: EntryPoint = None,
                 title: AnyStr = None, ):
         if not manager:
@@ -459,3 +387,111 @@ class RootResource(Resource):
 
     def __repr__(self):
         return 'RootResource()'
+
+
+class BaseView(Generic[T]):
+    def __init__(self, context, request: Request = None) -> None:
+        self._context = context
+        self._request = request
+        self._operation = None
+        self._values = {}
+        self._entry_point = None
+        self._response_dict = {'request': request,
+                               'context': context}  # give it a nice default?
+        self._template_env = None
+
+    def __call__(self, *args, **kwargs):
+        self.collect_args(self.request)
+        entry_point = None
+        if isinstance(self.context, Exception):
+            entry_point = EntryPoint(None, get_exception_entry_point_key(self.context), self.request)
+        elif hasattr(self.context, 'entry_point'):
+            logger.debug("%s", self.context)
+            entry_point = self.context.entry_point
+
+        if entry_point is None:
+            assert entry_point is not None, "Entry point for view should not be None (context=%r)" % self.context
+        key = entry_point.key
+        assert key, "Entry point key for view should be truthy"
+
+        # todo it might be super helpful to sanity check this value, because this generates errors
+        # later that t+race to here
+        self._response_dict['entry_point_key'] = entry_point.key
+        self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % key
+
+        return self._response_dict
+
+    @property
+    def request(self) -> Request:
+        return self._request
+
+    @request.setter
+    def request(self, new: Request) -> None:
+        self._request = new
+
+    @property
+    def operation(self) -> 'ResourceOperation':
+        return self._operation
+
+    @operation.setter
+    def operation(self, new) -> None:
+        self._operation = new
+
+    def collect_args(self, request):
+        if self.operation is None:
+            logger.debug("operation is none! this could be bad.")
+            return
+        assert self.operation is not None
+        args = self.operation.args
+        values = []
+        arg_context = ArgumentContext()
+        arg: 'OperationArgument' = None
+        for arg in args:
+            has_value = arg.has_value(request, arg_context)
+            got_value = False
+            value = None
+            if has_value is None:
+                try:
+                    value = arg.get_value(request, arg_context)
+                    got_value = True
+                    has_value = value is not None
+                except:
+                    logging.info("ex: %s", sys.exc_info()[1])
+
+            if not has_value:
+                if arg._default is not None:
+                    has_value = True
+                    value = arg._default
+                    got_value = True
+
+            if not has_value:
+                if not arg.optional:
+                    raise MissingArgumentException(self.operation, arg, "Missing argument %s for operation %s" % (
+                        arg.name, self.operation.name))
+
+            if not got_value:
+                value = arg.get_value(request, arg_context)
+                got_value = True
+
+            self._values[arg.name] = value
+            values.append(value)
+
+    @property
+    def entry_point(self):
+        return self._entry_point
+
+    @property
+    def context(self) -> 'Resource':
+        return self._context
+
+
+class ExceptionView(BaseView):
+    def __init__(self, context, request) -> None:
+        super().__init__(context, request)
+        # request.override_renderer = "templates/exception.jinja2"
+
+
+class OperationArgumentExceptionView(ExceptionView):
+    def __init__(self, context, request) -> None:
+        super().__init__(context, request)
+        request.override_renderer = "templates/args.jinja2"

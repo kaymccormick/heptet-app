@@ -5,21 +5,19 @@ import sys
 from pathlib import Path
 
 from marshmallow import ValidationError
+from pyramid.config import Configurator
+from pyramid.path import DottedNameResolver
 from sqlalchemy import Column, String
 from sqlalchemy.exc import InvalidRequestError
+from zope.component import adapter
+from zope.interface import implementer, Interface
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
 from email_mgmt_app import ResourceManager, EntryPoint
 from entity import EntityFormView
 from impl import MapperWrapper
-
 from interfaces import IProcess, IEntryPoint, IMapperInfo
-from pyramid.config import Configurator
-from pyramid.path import DottedNameResolver
-from zope.component import adapter
-from zope.interface import implementer, Interface
-
 from manager import OperationArgument
 from myapp_config import logger
 
@@ -83,7 +81,6 @@ class AssetManager:
 
         self._output_dir = output_dir
 
-
     @property
     def output_dir(self):
         return self._output_dir
@@ -138,19 +135,18 @@ class GenerateEntryPointProcess:
             view = resolver.maybe_resolve(view_arg)
             ep.view = view
 
-
-                # if generator:
-                #     js_imports = generator.js_imports()
-                #     if js_imports:
-                #         for stmt in js_imports:
-                #             logger.debug("import: %s", stmt)
-                #
-                #     js_stmts = generator.js_stmts()
-                #     if js_stmts:
-                #         for stmt in js_stmts:
-                #             logger.debug("js: %s", stmt)
-                #
-                #     ready_stmts = generator.ready_stmts()
+            # if generator:
+            #     js_imports = generator.js_imports()
+            #     if js_imports:
+            #         for stmt in js_imports:
+            #             logger.debug("import: %s", stmt)
+            #
+            #     js_stmts = generator.js_stmts()
+            #     if js_stmts:
+            #         for stmt in js_stmts:
+            #             logger.debug("js: %s", stmt)
+            #
+            #     ready_stmts = generator.ready_stmts()
 
         fname = ep.get_output_filename()
         assert fname
@@ -159,9 +155,8 @@ class GenerateEntryPointProcess:
         data = {'filename': fname,
                 'vars': dict(js_imports=js_imports,
 
-                            js_stmts=js_stmts,
+                             js_stmts=js_stmts,
                              ready_stmts=ready_stmts)}
-
 
         with open(fname, 'w') as f:
             content = ep.get_template().render(
@@ -169,13 +164,6 @@ class GenerateEntryPointProcess:
             )
             f.write(str(content))
             f.close()
-
-
-def includeme(config: Configurator):
-    def do_action():
-        config.registry.registerSubscriptionAdapter(GenerateEntryPointProcess)
-
-    config.action(None, do_action)
 
 
 # how do we split the repsonsibility between this function and "config.add_resource_manager"!?!?!
@@ -223,3 +211,21 @@ def load_process_struct() -> ProcessStruct:
             logger.critical("input error in %s: %s", k, v)
         raise ve
     return process
+
+
+def includeme(config: Configurator):
+    def do_action():
+        config.registry.registerSubscriptionAdapter(GenerateEntryPointProcess)
+
+    # load our pre-processed info
+    process = load_process_struct()  # type: ProcessStruct
+    config.add_request_method(lambda r: process, 'process_struct')
+    for mapper in process.mappers:
+        wrapper = MapperWrapper(mapper)
+        config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
+
+    config.include('.viewderiver')
+    config.include('.entity')
+    config_process_struct(config, process)
+
+    config.action(None, do_action)

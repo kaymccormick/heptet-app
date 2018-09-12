@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from jinja2 import FileSystemLoader, select_autoescape, Environment
 
-from entity import EntityFormView, EntryPoint, EntityFormViewEntryPointGenerator
+from entity import EntityFormView, EntityFormViewEntryPointGenerator
 
 
 @pytest.fixture

@@ -4,10 +4,12 @@ from typing import Mapping, AnyStr, Tuple
 from unittest.mock import MagicMock, call
 
 import pytest
+from lxml import html
+
 from db_dump.info import RelationshipInfo
 
-from entity import FormRelationshipMapper, TemplateVars
-from tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar
+from entity import FormRelationshipMapper
+from tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar, TemplateVars
 
 import logging
 
@@ -71,22 +73,14 @@ def my_form_relationship_mapper(make_form_relationship_mapper,
     return make_form_relationship_mapper(my_relationship_select)
 
 
-def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_env_mock, my_relationship_info):
+def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_env, my_relationship_info):
     fm = my_form_context
     # lame we have to initialize this here
     fm.extra['suppress_cols'] = {}
     logger.critical("%s", repr(fm))
     t = my_form_relationship_mapper
     my_form_context.current_element = my_relationship_info
-    r = t.map_relationship(my_form_context)
-    input = r['input_html']
+    the_html = t.map_relationship(my_form_context)
+    root = html.fromstring(the_html)
+    logger.critical("%s", root)
 
-    jinja2_env_mock.assert_has_calls([call.get_template('entity/rel_select.jinja2'),
-                                      call.get_template('entity/field_relationship.jinja2'),
-                                      ])
-
-    assert input
-    select_html = input['select_html']
-    assert select_html
-
-    logger.critical("%s", r)

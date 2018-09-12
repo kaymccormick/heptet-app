@@ -15,7 +15,7 @@ from impl import MapperWrapper, NamespaceStore
 from interfaces import IMapperInfo, INamespaceStore
 from model import email_mgmt
 from process import config_process_struct, load_process_struct
-from webapp_main import on_context_found, on_before_render, on_new_request, on_application_created
+from myapp_config import on_new_request, on_application_created, on_before_render, on_context_found
 
 
 # we need to keep this somewhat synchronized!
@@ -32,48 +32,15 @@ def make_wsgi_app():
             settings=settings, root_factory=get_root,
             package=email_mgmt_app.myapp_config
         )
-        config.include(email_mgmt_app)
         config.include(myapp_config)
-
-        # # I wish we could do away this is
-        # jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
-        # env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
-        #                   autoescape=select_autoescape(default=False))
-        # config.registry.registerUtility(env, IJinja2Environment, 'app_env')
-
-        # exceptionresponse_view=ExceptionView)#lambda x,y: Response(str(x), content_type="text/plain"))
-
         config.include(model_package)
-        process = load_process_struct()  # type: ProcessStruct
-        for mapper in process.mappers:
-            wrapper = MapperWrapper(mapper)
-            config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
-
-        # we can include viewderiver here because we haven't created all of our views yet
-        # view derivers mut be included prior to view registration ?
-        config.include('.viewderiver')
-        # we no longer need a custom predicate!
-        # config.add_view_predicate('entity_type', EntityTypePredicate)
-        config.include('.entity')
-        # this adds all our views, and other stuff
-        config_process_struct(config, process)
-
-        config.include('pyramid_jinja2')
-        config.commit()
-
+        config.include('.process')
+        config.include('.routes')
+        config.include('.template')
         renderer_pkg = 'pyramid_jinja2.renderer_factory'
         config.add_renderer(None, renderer_pkg)
-
-        #    config.add_view_predicate('entity_name', EntityNamePredicate)
-
-        config.include('.view')
-
-        # now static routes only
-        config.include('.routes')
-        #    config.include('.auth')
-        config.include('.views')
-        config.include('.template')
-        config.include('.process')
+        config.include('.viewderiver')
+        config.commit()
 
         config.set_authentication_policy(
             AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],

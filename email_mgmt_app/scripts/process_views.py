@@ -2,30 +2,24 @@ import atexit
 import json
 import logging
 import sys
-import traceback
 from dataclasses import dataclass, field
 from datetime import datetime
+from logging import Formatter
+
+from pyramid.config import Configurator
+from pyramid.interfaces import IRendererFactory
+from pyramid.paster import get_appsettings, setup_logging
+from pyramid.request import Request
+from pyramid_jinja2 import IJinja2Environment
 
 import db_dump.args
-from pyramid_jinja2 import IJinja2Environment
-from webtest import TestApp
-
-import email_mgmt_app.webapp_main
-import email_mgmt_app.interfaces
-import pyramid.interfaces
-
-from context import GeneratorContext, FormContext
-from email_mgmt_app import get_root
-from entrypoint import IEntryPoint, ICollector, EntryPoints, EntryPoint, IEntryPointGenerator
-from impl import CollectorContext, IProcess, NamespaceStore
-from interfaces import IMapperInfo
+import model
+from email_mgmt_app import get_root, util
+from entrypoint import IEntryPoint, EntryPoints, EntryPoint
+from impl import IProcess, NamespaceStore
+from myapp_config import on_new_request
 from process import ProcessContext, setup_jsonencoder, AssetManager, GenerateEntryPointProcess
 from scripts.util import get_request, template_env
-from webapp_main import on_new_request
-from pyramid.paster import get_appsettings, setup_logging
-from pyramid.registry import Registry
-from pyramid.request import Request
-from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +28,19 @@ def main(input_args=None):
     if not input_args:
         input_args = sys.argv[1:]
 
+    logging.lastResort = logging.StreamHandler(stream=sys.stderr)
+    logging.lastResort.setFormatter(
+        Formatter('%(asctime)s %(levelname)-5.5s [%(name)s:%(lineno)s][%(threadName)s] %(message)s'))
+
     now = datetime.now()
-    logger.critical("%s Startup in main", now)
+    logger.debug("Startup in main", now)
 
-    def do_atexit():
-        newnow = datetime.now()
-        logger.critical("exiting... [%s]", newnow - now)
+    def do_at_exit():
+        new_now = datetime.now()
+        logger.info("exiting... [%s]", new_now - now)
 
-    atexit.register(do_atexit)
+    atexit.register(do_at_exit)
+
     # deal with parsing args
     parser = db_dump.args.argument_parser()
     parser.add_argument('--test-app', '-t', help="Test the application", action="store_true")
@@ -54,15 +53,19 @@ def main(input_args=None):
 
     # get_appsettings
     settings = get_appsettings(config_uri)
-    # this sets up the json.JSONENcoder.default
-
 
     setup = setup_jsonencoder()
     setup()
 
-    # initialize application
-    myapp = email_mgmt_app.webapp_main.wsgi_app(None, **settings)
-    registry = myapp.registry  # type: Registry
+    config = Configurator(settings=settings, root_factory=get_root, package="email_mgmt_app")
+
+    config.include('.myapp_config')
+    config.include(model.email_mgmt)
+    config.include('.process')
+
+    config.commit()
+
+    registry = config.registry
 
     manager = AssetManager("build/assets", mkdir=True)
     proc_context = ProcessContext(settings, template_env(), manager)
@@ -79,7 +82,7 @@ def main(input_args=None):
         return r
 
     # generate a request
-    request = get_request(myapp.request_factory, myapp)  # type: Request
+    request = get_request(Request, registry=registry)  # type: Request
     assert request
     root = get_root(request)
     assert root is not None
@@ -102,13 +105,12 @@ def main(input_args=None):
 
     # wtf is this
     ep_cmp = EntryPoints()
-    col_context = CollectorContext(ep_cmp, IEntryPoint)
-    collector = registry.getAdapter(col_context, ICollector)
+    # col_context = CollectorContext(ep_cmp, IEntryPoint)
+    # collector = registry.getAdapter(col_context, ICollector)
 
     eps2 = []
     entry_points = []
     for key, ep in registry.getUtilitiesFor(IEntryPoint):
-        collector.add_value(ep)
         entry_points.append(ep)
         eps2.append(ep.key)
 
@@ -123,13 +125,16 @@ def main(input_args=None):
 
     event = MyEvent()
     on_new_request(event)
-    test_app = TestApp(myapp)
+    #    test_app = TestApp(myapp)
 
     entry_point_js_template = \
         proc_context.template_env.get_template('entry_point.js.jinja2')
     assert entry_points
 
-    env = request.registry.getUtility(IJinja2Environment, 'app_env')
+    env = request.registry.getUtility(IRendererFactory, 'template-env')
+
+    logger.critical("%r", env)
+
     root_namespace = NamespaceStore('root')
 
     ep: EntryPoint
@@ -141,12 +146,13 @@ def main(input_args=None):
             mi = ep.mapper_wrapper.get_one_mapper_info()
 
         # fixme this does not belong here!!
+        util._dump(registry, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr))
         ep.init_generator(registry, root_namespace, env)
         assert ep.generator is not None
         ep.generator.generate()
         ep.set_template(entry_point_js_template)
         ep.set_output_filename('src/entry_point/%s.js' % ep.get_key())
-        subscribers = registry.subscribers((proc_context,ep), IProcess)
+        subscribers = registry.subscribers((proc_context, ep), IProcess)
         subscribers = [GenerateEntryPointProcess(proc_context, ep)]
         assert subscribers, "No subscribers for processing"
         for s in subscribers:
@@ -155,27 +161,26 @@ def main(input_args=None):
             if result:
                 logger.debug("result = %s", result)
 
-    if args.test_app:
-        for ep in entry_points:
-            logger.debug("testing entry point %s", ep)
-
-            if not ep.view_kwargs:
-                continue
-            uri = '/' + ep.view_kwargs['node_name'] + '/' + ep.view_kwargs['name']
-
-            try:
-                if ep.view_kwargs['name'] == 'view':
-                    params = '?id=1'
-                    uri = uri + params
-
-                logger.debug("TESTING uri = %s", uri)
-                resp = test_app.get(uri)
-                fname = 'temp/%s.html' % ep.key
-                logger.info("Writing output file %s" % fname)
-                with open(fname, 'w') as fout:
-                    fout.write(resp.text)
-                    fout.close()
-            except:
-                logger.exception(sys.exc_info()[1])
-                traceback.print_exc()
-                traceback.print_tb(sys.exc_info()[2])
+        # for ep in entry_points:
+        #     logger.debug("testing entry point %s", ep)
+        #
+        #     if not ep.view_kwargs:
+        #         continue
+        #     uri = '/' + ep.view_kwargs['node_name'] + '/' + ep.view_kwargs['name']
+        #
+        #     try:
+        #         if ep.view_kwargs['name'] == 'view':
+        #             params = '?id=1'
+        #             uri = uri + params
+        #
+        #         logger.debug("TESTING uri = %s", uri)
+        #         resp = test_app.get(uri)
+        #         fname = 'temp/%s.html' % ep.key
+        #         logger.info("Writing output file %s" % fname)
+        #         with open(fname, 'w') as fout:
+        #             fout.write(resp.text)
+        #             fout.close()
+        #     except:
+        #         logger.exception(sys.exc_info()[1])
+        #         traceback.print_exc()
+        #         traceback.print_tb(sys.exc_info()[2])

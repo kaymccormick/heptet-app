@@ -8,7 +8,6 @@ from jinja2 import Environment
 from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
-from db_dump.info import MapperInfo
 from form import Form
 from impl import NamespaceStore
 from interfaces import IFormContext, IGeneratorContext
@@ -200,7 +199,8 @@ class GeneratorContext(
         #     assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
 
         #        assert isinstance(template_env, Environment)
-        assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars, is %s" % (template_vars, type(template_vars))
+        assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars, is %s" % (
+        template_vars, type(template_vars))
         self.mapper_info = mapper_info
         self.template_env = template_env
         self.template_vars = template_vars
@@ -217,12 +217,7 @@ class GeneratorContext(
         return form_context
 
     def __repr__(self):
-        return "GeneratorContext("
-        x = []
-        for b in self.__class__.__bases__:
-            x.append(b.__repr__(self))
-
-        return self.__class__.__name__ + '/' + '/'.join(x)
+        return 'GeneratorContext(%r, %r, %r, %r, %r)' % (self._mapper_info, self._template_env, self._template_vars, self.form_context_factory, self.root_namespace)
 
 
 FormContextArgs = ()
@@ -261,20 +256,6 @@ class CurrentElementMixin(Generic[T]):
     @current_element.setter
     def current_element(self, new: T) -> None:
         self._current_element = new
-
-
-class ContextFactoryMixin:
-    def __init__(self) -> None:
-        super().__init__()
-        self._factory = None
-
-    @property
-    def factory(self):
-        return self._factory
-
-    @factory.setter
-    def factory(self, new):
-        self._factory = new
 
 
 class FieldMapper(object):

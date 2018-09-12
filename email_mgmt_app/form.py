@@ -4,8 +4,8 @@ from typing import AnyStr, Dict
 
 from lxml import html
 
-from interfaces import INamespaceStore
 from impl import NamespaceStore
+from interfaces import INamespaceStore
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +165,7 @@ class FormVariable:
 class Form(FormElement):
     def __init__(
             self,
-            namespace_id, # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
+            namespace_id,  # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
             root_namespace,
             namespace: NamespaceStore = None,
             outer_form=False, attr={}) -> None:

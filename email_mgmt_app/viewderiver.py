@@ -6,7 +6,7 @@ from pyramid.httpexceptions import HTTPException
 from pyramid.tweens import INGRESS
 
 from entity import BaseEntityRelatedView
-from view import BaseView
+from email_mgmt_app import BaseView
 
 logger = logging.getLogger(__name__)
 

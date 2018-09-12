@@ -1,27 +1,36 @@
 import json
+import logging
 import re
 import sys
-from typing import Mapping
+from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
+from lxml import html
 from marshmallow import ValidationError
+from pyramid.config import Configurator
+from pyramid.renderers import RendererHelper
 from pyramid.request import Request
 from pyramid.response import Response
-from pyramid_jinja2 import IJinja2Environment
 from sqlalchemy.ext.declarative import DeclarativeMeta
+from zope.component import adapter
+from zope.interface import Interface, implementer
 
-from context import ContextFormContextMixin, EntityTypeMixin
+from context import ContextFormContextMixin, EntityTypeMixin, FormContext, GeneratorContext
 from db_dump.info import IRelationshipInfo
-from entrypoint import *
-from form import *
-from interfaces import IFormContext
+from entrypoint import EntryPointGenerator
+from form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, FormOptionElement
+from impl import NamespaceStore
+from interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView, \
+    IEntryPointGenerator
 from model import get_column_map
 from model.meta import Base
-from tvars import TemplateVarsSchema
-from view import BaseView
+from tvars import TemplateVarsSchema, TemplateVars
+from email_mgmt_app import BaseView
+from util import get_template
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
+T = TypeVar('T')
 
 
 def _make_form_representation(context: FormContext):
@@ -42,7 +51,7 @@ def _make_form_representation(context: FormContext):
     logger.debug("in form_representation with namespace id of %s", namespace_id)
     # we should provide for initialize the form in another fashion for testability!!!
     action = context.form_action
-    #assert action
+    # assert action
     the_form = Form(namespace_id=namespace_id,
                     root_namespace=context.root_namespace,
                     namespace=context.namespace,  # can be None
@@ -133,19 +142,17 @@ def _map_column(context, column):
     e = {'id': input_id,
          'input_html': div_col_sm_8.as_html(),
          'label_html': label.as_html(),
-         #'help': x.doc,
+         # 'help': x.doc,
          }
     tmpl_name = 'entity/field.jinja2'
-    x = context.template_env.get_template(tmpl_name).render(**e)
-    assert x
-    form_contents = form_contents + str(x)
-    return form_contents
+    return get_template(context.template_env, 'entity/field_relationship.jinja2')(e, {})
 
 
 class EntityFormRepresentation:
     pass
 
 
+# Only in test for now.
 class EntityFormConfiguration(EntityTypeMixin[DeclarativeMeta]):
     def __init__(self, entity_type: DeclarativeMeta, field_renderers: Mapping[AnyStr, object]) -> None:
         super().__init__()
@@ -173,26 +180,29 @@ class IFormRelationshipFieldMapper(IFormFieldMapper):
 @adapter(IFormContext)
 @implementer(IFormRelationshipFieldMapper)
 class FormRelationshipMapper:
-    def __init__(self, form_select, *args, **kwargs) -> None:
+    def __init__(self, form_select) -> None:
+        super().__init__()
         self._select = form_select
 
     def map_relationship(self, context):
         rel = context.current_element
         assert rel is not None
 
-        _vars = context.generator_context.template_vars
+        t_vars = context.generator_context.template_vars
+
         schema = TemplateVarsSchema()
         try:
-            dump = schema.dump(_vars)
+            dump = schema.dump(t_vars)
             json.dump(dump, fp=sys.stderr, indent=4, sort_keys=True)
         except ValidationError as ex:
             import traceback
+            logger.critical(ex)
             traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
             print(ex, file=sys.stderr)
 
-        if 'js_stmts' not in _vars:
-            _vars['js_stmts'] = ['// test']
-        # js_stmts_col = _vars['js_stmts']
+        if 'js_stmts' not in t_vars:
+            t_vars['js_stmts'] = ['// test']
+        # js_stmts_col = t_vars['js_stmts']
         # js_stmts_col.append('// %s' % rel)
 
         logger.debug("Encountering relationship %s", rel)
@@ -211,30 +221,22 @@ class FormRelationshipMapper:
         return select_html
 
 
-class BaseEntityRelatedView(BaseView):
+class BaseEntityRelatedView(BaseView[T], EntityTypeMixin):
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
-        self._entity_type = None
-        self._entity = None
+        self._entity_type = None  # type: DeclarativeMeta
+        self._entity = None  # type: T
 
     @property
-    def entity_type(self):
-        return self._entity_type
-
-    @entity_type.setter
-    def entity_type(self, new):
-        self._entity_type = new
-
-    @property
-    def entity(self):
+    def entity(self) -> T:
         return self._entity
 
     @entity.setter
-    def entity(self, new):
+    def entity(self, new: T):
         self._entity = new
 
 
-class EntityView(BaseEntityRelatedView):
+class EntityView(BaseEntityRelatedView[T]):
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
 
@@ -303,9 +305,10 @@ class RelationshipSelect:
     def __init__(self) -> None:
         super().__init__()
 
+
     def gen_select_html(self, context):
         rel = context.current_element
-        env = context.template_env
+        env = context.template_env # type: RendererHelper
         nest_level = context.nest_level
 
         argument = rel.argument
@@ -348,10 +351,9 @@ class RelationshipSelect:
 
             entity_form = _make_form_representation(context2)
 
-            collapse = env.get_template(template.collapse.name).render(
-                collapse_id=collapse_id.get_id(),
-                collapse_contents=entity_form.as_html()
-            )
+            collapse = get_template(context.template_env, template.collapse.name)({
+                'collapse_id': collapse_id.get_id(),
+                'collapse_contents': entity_form.as_html()}, {})
 
             ready_stmts = None  # request.registry.queryUtility(ICollector, 'ready_stmts')
             if ready_stmts:
@@ -381,10 +383,10 @@ class RelationshipSelect:
                           attr={"class": "col-sm-4 col-form-label"})
 
         select_html = select.as_html()
-        rel_select = env.get_template('entity/rel_select.jinja2').render(
+        rel_select = get_template(env, 'entity/rel_select.jinja2')(dict(
             select_html=select_html,
-            buttons="\n".join(buttons)
-        )
+            buttons="\n".join(buttons)), {})
+
 
         logger.debug("suppressing column %s", local.column)
         context.extra['suppress_cols'][local.column] = True
@@ -394,9 +396,7 @@ class RelationshipSelect:
                  'collapse': collapse,
                  'help': rel.doc}
 
-        x = env.get_template('entity/field_relationship.jinja2').render(**_vars)
-        assert x
-        return x
+        return get_template(env, 'entity/field_relationship.jinja2')(_vars, {})
 
 
 @implementer(IEntryPointGenerator)
@@ -406,7 +406,11 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
     def __init__(self, ctx: GeneratorContext) -> None:
         super().__init__(ctx)
         try:
-            self.form_context = ctx.form_context(relationship_field_mapper=FormRelationshipMapper, form_action="./")
+            self.form_context = \
+                ctx.form_context(
+                    relationship_field_mapper=FormRelationshipMapper,
+                    form_action="./"
+                )
         except AssertionError as ex:
             logger.critical("Unable to create form context")
             logger.critical(ex)
@@ -463,6 +467,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
 
         return self._form.as_html()
 
+    # FIXME delete
     def js_stmts(self):
         utility = self._request.registry.queryUtility(ICollector, 'js_stmts')
         if utility:
@@ -502,8 +507,9 @@ class EntityDesignView(BaseEntityRelatedView):
 # class needs: entry point.
 # we were passing entry point as argument to the view
 # we have no control over the view being instantiated.
+
 @implementer(IEntryPointView)
-class EntityFormView(BaseEntityRelatedView):
+class EntityFormView(BaseEntityRelatedView[T]):
     def __init__(self, context, request: Request = None) -> None:
         super().__init__(context, request)
 
@@ -569,10 +575,11 @@ class EntityAddView(BaseEntityRelatedView):
 
 
 def includeme(config: Configurator):
-    reg = config.registry.registerAdapter
-    reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
-    # reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipFieldMapper)
-    reg(EntityFormViewEntryPointGenerator, [IGeneratorContext], IEntryPointGenerator)
-    # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
-    ##    IEntryPointView)
-    pass
+    def do_action():
+        reg = config.registry.registerAdapter
+        reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
+        # reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipFieldMapper)
+        reg(EntityFormViewEntryPointGenerator, [IGeneratorContext], IEntryPointGenerator)
+        # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
+        ##    IEntryPointView)
+    config.action(None, do_action)

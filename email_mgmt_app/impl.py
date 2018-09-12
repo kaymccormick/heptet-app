@@ -2,6 +2,7 @@ import abc
 import logging
 
 from zope.component import adapter
+from zope.interface import implementer
 
 from exceptions import NamespaceCollision
 from interfaces import *

@@ -2,34 +2,35 @@ import importlib
 import json
 import logging
 import sys
-import types
-from typing import Callable
 from unittest.mock import MagicMock, Mock
 
 import pytest
 from jinja2 import Environment, Template
 from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
+from pyramid.interfaces import IRendererFactory
 from pyramid.response import Response
 from pyramid_tm.tests import DummyRequest
-from zope.interface.registry import Components
 
 import email_mgmt_app
 import email_mgmt_app.myapp_config
 from context import FormContext, GeneratorContext
 from db_dump import RelationshipSchema, ColumnInfo
 from db_dump.info import MapperInfo, TypeInfo
-from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation
-from entity import EntityFormViewEntryPointGenerator, EntryPoint
+from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView
+from entity import EntityFormViewEntryPointGenerator
 from entity import FormRelationshipMapper, RelationshipSelect
+from entrypoint import EntryPoint
 from form import Form
 from impl import NamespaceStore, MapperWrapper
 from process import load_process_struct
 from tvars import TemplateVars
-from view import BaseView
+from util import _dump
 from viewderiver import entity_view
 
 logger = logging.getLogger(__name__)
+
+APP_PACKAGE = 'email_mgmt_app'
 
 
 #
@@ -119,47 +120,42 @@ def app_context(request, root_resource, resource_manager, entry_point):
 # CONFIG
 #
 @pytest.fixture
+def make_config():
+    def _make_config(settings):
+        return Configurator(settings=settings, package=APP_PACKAGE)
+
+    return _make_config
+
+
+@pytest.fixture
+def config_mock():
+    return MagicMock(Configurator())
+
+
+@pytest.fixture
 def config_fixture():
     config = Configurator(package="email_mgmt_app", root_package="email_mgmt_app")
     config.include(email_mgmt_app.myapp_config)
-    config.include(email_mgmt_app)
     logger.warning("config = %s", config)
     _dump(config, name_prefix="config.", cb=lambda x, *args, **kwargs: print(x % args, file=sys.stderr))
     config.commit()
     return config
 
 
-def _dump(v, line_prefix=None, name_prefix="", depth=0, cb: Callable = None, recurse=True):
-    if line_prefix is None:
-        line_prefix = "  " * depth
-
-    vv = None
-    if isinstance(v, types.ModuleType):
-        vv = "<module '%s'>" % v.__name__
-    if vv is None:
-        vv = str(v)
-    cb("%s%s = %s", line_prefix, name_prefix[0:-1], vv)
-    if depth >= 5 or not recurse:
-        return
-    if isinstance(v, types.ModuleType):
-        pass  # cb("%s: module %s", lineprefix, v)
-    elif isinstance(v, Components):
-        for x in v.registeredUtilities():
-            _dump(x, None, "%s%s." % (name_prefix, "utility"), depth + 1, cb, recurse=False)
-        #     _dump(x, None, "%s%s." % (nameprefix, "utility"), depth + 1, cb)
-        pass
-    elif hasattr(v, "__dict__"):
-        for x, y in v.__dict__.items():
-            if not x.startswith('_'):
-                # cb("%s%s%s = %s", lineprefix, nameprefix, x, y)
-                _dump(y, name_prefix="%s%s." % (name_prefix, x), depth=depth + 1, cb=cb)
-    else:
-        return
-
-
 #
 # TEMPLATE ENVIRONMENT
 #
+@pytest.fixture
+def jinja2_env(webapp_settings, make_config):
+    config = make_config({'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\ntemplates"})
+
+    from pyramid_jinja2 import add_jinja2_renderer
+    add_jinja2_renderer(config, 'template-env', settings_prefix='email_mgmt_app.jinja2.', package=email_mgmt_app)
+    config.commit()
+    env = config.registry.getUtility(IRendererFactory, 'template-env')
+    config.add_request_method(lambda x: env, 'template_env')
+    return env
+
 @pytest.fixture
 def jinja2_env_mock():
     mock = MagicMock(Environment)
@@ -363,8 +359,8 @@ def generator_context_mock(make_generator_context):
 
 
 @pytest.fixture
-def my_gen_context(make_generator_context, jinja2_env_mock, mapper_info_real, my_template_vars):
-    return make_generator_context(mapper_info_real, jinja2_env_mock, my_template_vars)
+def my_gen_context(make_generator_context, jinja2_env, mapper_info_real, my_template_vars):
+    return make_generator_context(mapper_info_real, jinja2_env, my_template_vars)
 
 
 @pytest.fixture
@@ -432,7 +428,7 @@ def my_form_context(my_gen_context, my_relationship_select, root_namespace_store
     the_form = Form(namespace_id="test",
                     root_namespace=root_namespace_store,
                     namespace=None,  # can be None
-                    outer_form=True)#, form_action="./")
+                    outer_form=True)  # , form_action="./")
 
     return my_gen_context.form_context(relationship_field_mapper=FormRelationshipMapper, form=the_form)
 
@@ -446,6 +442,7 @@ def entity_form_view_entry_point_generator(my_gen_context):
 def entity_form_view_mock():
     return MagicMock('entity_form_view')
 
+
 @pytest.fixture
 def model_module():
     pkg = 'model.email_mgmt'
@@ -454,6 +451,7 @@ def model_module():
 
     return importlib.import_module(pkg)
 
-@pytest.fixture
-def my_column_info():
-    return ColumnInfo(TypeInfo(), 'test1', 'test2')
+
+@pytest.fixture(params=('test1', 'test2'))
+def my_column_info(request):
+    return ColumnInfo(TypeInfo(), request.param, request.param)

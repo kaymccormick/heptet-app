@@ -39,18 +39,8 @@ class EntryPoints:
     def __init__(self) -> None:
         self._entry_points = []
 
-    def get_entry_points(self):
-        return self._entry_points
-
-    def add_entry_point(self, entry_point):
-        self._entry_points.append(entry_point)
-
     def add_value(self, instance):
         self._entry_points.append(instance)
-
-
-class IEntryPointGenerator(Interface):
-    pass
 
 
 @interface.implementer(IEntryPoint)
@@ -107,12 +97,6 @@ js=%r, view_kwargs=%r, mapper_wrapper=%r, template_name=%r, template=%r, output_
             self._template,
             self._output_filename
         )
-
-    def get_template_name(self):
-        return self._template_name
-
-    def set_template_name(self, template_name):
-        self._template_name = template_name
 
     def get_key(self):
         return self._key

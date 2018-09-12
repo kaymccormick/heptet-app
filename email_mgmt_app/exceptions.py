@@ -1,5 +1,6 @@
-from pyramid.config import Configurator
-from pyramid.httpexceptions import HTTPClientError
+from string import Template
+
+from pyramid.httpexceptions import HTTPServerError
 from pyramid.interfaces import IExceptionResponse
 from zope.interface import implementer
 
@@ -15,14 +16,25 @@ class NamespaceCollision(Exception):
 
 
 @implementer(IExceptionResponse)
-class BaseAppException(HTTPClientError):
-    def __init__(self, message):
-        super().__init__(detail=message,comment=message)
+class AppException(HTTPServerError):
+    html_template_obj = Template('''\
+<html>
+ <head>
+  <title>${status}</title>
+ </head>
+ <body>
+  <h1>${status}</h1>
+  ${body}
+ </body>
+</html>''')
+
+    def __init__(self, message, wrapped=None):
+        super().__init__(detail=message, comment=message)
         self.message = message
 
 
 @implementer(IExceptionResponse)
-class OperationException(BaseAppException):
+class OperationException(AppException):
     code = 500
     title = 'Operation Exception'
     explanation = 'Operation Exception'
