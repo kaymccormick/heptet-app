@@ -29,9 +29,9 @@ def get_entry_point_key(request, resource, op_name):
     return epstr
 
 
-def _dump(v, line_prefix=None, name_prefix="", depth=0, cb: Callable = None, recurse=True):
-    if line_prefix is None:
-        line_prefix = "  " * depth
+def _dump(v, line_prefix="", name_prefix="", depth=0, cb: Callable = None, recurse=True):
+
+    line_prefix = "  " * depth + line_prefix
 
     vv = None
     if isinstance(v, types.ModuleType):

@@ -27,6 +27,7 @@ def munge_view(view, info):
 
 # entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
 # this function needs major help! TODO
+# i feel like we can replace this stuff with Contextfound stuff
 def entity_view(view, info):
     # pull entity type from options (out of date!!)
     operation = info.options.get('operation')

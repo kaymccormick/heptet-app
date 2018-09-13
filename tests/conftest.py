@@ -8,6 +8,7 @@ import pytest
 from jinja2 import Environment, Template
 from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
+from pyramid.registry import Registry
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_tm.tests import DummyRequest
@@ -25,9 +26,8 @@ from entrypoint import EntryPoint
 from form import Form
 from impl import NamespaceStore, MapperWrapper, Separator
 from myapp_config import TEMPLATE_ENV_NAME
-from process import load_process_struct, AssetManager
+from process import load_process_struct, AssetManager, ProcessContext
 from tvars import TemplateVars
-from util import _dump
 from viewderiver import entity_view
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,6 @@ def webapp_settings():
         'jinja2.autoescape': "false",
         'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\nemail_mgmt_app\ntemplates\n.",
         'email_mgmt_app.jinja2.autoescape': "false",
-
 
     }
 
@@ -121,6 +120,19 @@ def app_registry():
 
 
 @pytest.fixture
+def app_registry_mock(jinja2_env_mock):
+    x = MagicMock(Registry)
+
+    def _se(i, name):
+        if i is IJinja2Environment and name == TEMPLATE_ENV_NAME:
+            return jinja2_env_mock
+        raise None
+
+    x.queryUtility.side_effect = _se
+    return x
+
+
+@pytest.fixture
 def entry_point_mock():
     mock = Mock(EntryPoint, name='entry_point')
     name = '_default'
@@ -133,6 +145,7 @@ def entry_point_mock():
 
 @pytest.fixture(params=["test"])
 def app_context(request, root_resource, resource_manager, entry_point_mock):
+    # this template wont exist...
     return root_resource.sub_resource('app-context-%s' % request.param, entry_point_mock)
 
 
@@ -210,13 +223,9 @@ def jinja2_env_mock():
 #
 @pytest.fixture()
 def root_resource(app_request):
-    try:
-        return get_root(app_request)
-    except Exception as ex:
-        import traceback
-        traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
-        print(ex, file=sys.stderr)
-        raise ex
+    yield get_root(app_request)
+
+    email_mgmt_app.reset_root(app_request)
 
 
 @pytest.fixture
@@ -248,7 +257,6 @@ def resource_manager(config_fixture, entity_type_mock, mapper_wrapper_real):
 # @pytest.fixture
 # def entry_point(mapper_wrapper_real, app_request, app_registry, jinja2_env_mock, resource_manager):
 #     return EntryPoint(resource_manager, "domain_form", app_request, app_registry, mapper_wrapper=mapper_wrapper_real)
-
 
 
 #
@@ -498,3 +506,8 @@ def asset_manager():
 @pytest.fixture
 def asset_manager_mock():
     return Mock(AssetManager)
+
+
+@pytest.fixture
+def process_context_mock():
+    return MagicMock(ProcessContext)

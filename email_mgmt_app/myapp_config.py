@@ -55,7 +55,9 @@ def on_context_found(event):
     """
     request = event.request  # type: Request
     context = request.context  # type: Resource
-    context.template_env = request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME)
+    assert context is not None
+    context.template_env = request.registry.queryUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME)
+    assert context.template_env
     if context.template_env is None:
         _dump(request.registry, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr))
 
