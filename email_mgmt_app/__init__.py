@@ -13,12 +13,14 @@ from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 from zope.interface import implementer
 
+from db_dump import TypeField
 from entrypoint import EntryPoint, ResourceManager, default_manager, \
     default_entry_point
 from exceptions import MissingArgumentException
-from impl import GetTemplateMixin, EntityTypeMixin
+from impl import EntityTypeMixin, TemplateEnvMixin
 from interfaces import IResource
 from manager import ResourceOperation
+from marshmallow import Schema, fields
 from util import get_entry_point_key, get_exception_entry_point_key
 
 # class MapperInfosMixin:
@@ -76,6 +78,9 @@ class ArgumentContext:
 class ResourceMeta(ABCMeta):
     count = 0
 
+    def _serialize(cls, field, value, attr, obj):
+        return str(type(value))
+
     def __new__(cls, *args, **kwargs):
         # logger.debug("meta in new %s %s %s", cls, args, kwargs)
         x = super().__new__(cls, *args, **kwargs)
@@ -97,7 +102,7 @@ class ResourceMeta(ABCMeta):
 
 
 @implementer(IResource)
-class _Resource(EntityTypeMixin, GetTemplateMixin):
+class _Resource(EntityTypeMixin, TemplateEnvMixin):
     """
     Base resource type. Implements functionality common to all resource types.
     """
@@ -137,6 +142,9 @@ class _Resource(EntityTypeMixin, GetTemplateMixin):
         self._data.__setitem__(key, value)
 
     def __getitem__(self, k):
+        if k in ('__parent__', '__name__', '_data', 'manager'):
+            raise AttributeError
+
         return self._data.__getitem__(k)
 
     def __len__(self):
@@ -213,8 +221,10 @@ class _Resource(EntityTypeMixin, GetTemplateMixin):
     def path(self):
         return pyramid.threadlocal.get_current_request().resource_path(self)
 
-    def url(self):
-        return pyramid.threadlocal.get_current_request().resource_url(self)
+    def url(self, request=None):
+        if not request:
+            request = pyramid.threadlocal.get_current_request()
+        return request.resource_url(self)
 
     def add_name(self, name):
         self._names.append(name)
@@ -501,3 +511,19 @@ class OperationArgumentExceptionView(ExceptionView):
         request.override_renderer = "templates/args.jinja2"
 
 
+class ResourceManagerSchema(Schema):
+    mapper_key = fields.String()
+    title = fields.String()
+    entity_type = TypeField()
+    node_name = fields.String()
+    pass
+
+
+class ResourceSchema(Schema):
+    type = TypeField(attribute='__class__')
+    manager = fields.Nested(ResourceManagerSchema)
+    name = fields.String(attribute='__name__')#function=lambda x: x.__name__)
+    parent = fields.Nested('self', attribute='__parent__', only=[])#functiona=lambda x: x.__parent__)
+    data = fields.Dict(attribute='_data',
+                       keys=fields.String(), values=fields.Nested('ResourceSchema'))
+    url = fields.Url(function=lambda x: x.url())

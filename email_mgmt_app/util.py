@@ -31,7 +31,7 @@ def get_entry_point_key(request, resource, op_name):
 
 def _dump(v, line_prefix="", name_prefix="", depth=0, cb: Callable = None, recurse=True):
 
-    line_prefix = "  " * depth + line_prefix
+    line_prefix = "  " * depth + (line_prefix or "")
 
     vv = None
     if isinstance(v, types.ModuleType):
@@ -44,9 +44,9 @@ def _dump(v, line_prefix="", name_prefix="", depth=0, cb: Callable = None, recur
     if isinstance(v, types.ModuleType):
         pass  # cb("%s: module %s", lineprefix, v)
     elif isinstance(v, Components):
-        # for x in v.registeredUtilities():
-        #     _dump(x, None, "%s%s." % (name_prefix, "utility"), depth + 1, cb, recurse=False)
-        #     _dump(x, None, "%s%s." % (nameprefix, "utility"), depth + 1, cb)
+        for x in v.registeredUtilities():
+            #_dump(x, None, line_prefix, depth + 1, cb, recurse=False)
+            _dump(x, None, line_prefix, depth + 1, cb)
         pass
     elif hasattr(v, "__dict__"):
         for x, y in v.__dict__.items():
@@ -65,3 +65,12 @@ def get_template(env, name):
         package: AnyStr=None
 
     return env(_info(name))
+
+
+def format_discriminator(l, *elems):
+    for elem in elems:
+        attr = getattr(elem, "discriminator", None)
+        if attr:
+            format_discriminator(l, *attr)
+        else:
+            l.append(str(elem))

@@ -13,8 +13,8 @@ class IProcess(Interface):
     pass
 
 
-class ICollectorContext(Interface):
-    pass
+# class ICollectorContext(Interface):
+#     pass
 
 
 class IObject(Interface):

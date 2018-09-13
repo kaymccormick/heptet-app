@@ -111,6 +111,7 @@ def app_request(app_registry):
     # We'll use dummy request until we can't anymore
     request = DummyRequest()
     request.registry = app_registry
+
     return request
 
 
@@ -307,6 +308,11 @@ def make_view_deriver_info():
 
     return _make_view_deriver_info
 
+@pytest.fixture
+def make_entity_view_deriver(resource_operation_mock, app_registry_mock):
+    def _make_entity_view_deriver(view, info):
+        return entity_view(view, info)
+    return _make_entity_view_deriver
 
 @pytest.fixture
 def entity_view_deriver(view_test, make_view_deriver_info, app_registry, resource_operation):
@@ -511,3 +517,23 @@ def asset_manager_mock():
 @pytest.fixture
 def process_context_mock():
     return MagicMock(ProcessContext)
+
+@pytest.fixture
+def make_entry_point():
+    def _make_entry_point(manager, key, request, registry, generator, mapper_wrapper):
+        return EntryPoint(manager, key, request, registry, generator, mapper_wrapper)
+    return _make_entry_point
+
+@pytest.fixture
+def resource_manager_mock():
+    return MagicMock(ResourceManager)
+
+@pytest.fixture
+def make_entity_form_view_entry_point_generator():
+    def _make_entity_form_view_entry_point_generator(registry, ctx):
+        return MagicMock(EntityFormViewEntryPointGenerator)
+    return _make_entity_form_view_entry_point_generator
+
+@pytest.fixture
+def resource_operation_mock():
+    return MagicMock(ResourceOperation)

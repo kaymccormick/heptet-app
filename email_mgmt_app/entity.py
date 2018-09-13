@@ -6,6 +6,7 @@ from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
 from lxml import html
+from pyramid.path import DottedNameResolver
 
 from email_mgmt_app import BaseView
 from marshmallow import ValidationError
@@ -297,9 +298,7 @@ class _templates:
 template = _templates()
 
 
-# we should seaprate concernts here
-# if we need to build the form representation, we should be able to do it before
-# this point.
+#  FIXME - separate concerns
 @adapter(IFormContext)
 @implementer(IRelationshipSelect)
 class RelationshipSelect:
@@ -329,11 +328,17 @@ class RelationshipSelect:
 
         class_ = argument
         entities = []
-        if issubclass(class_, Base):
-            try:
-                entities = context.dbsession.query(class_).all()
-            except AttributeError as ex:
-                pass
+        logger.critical("argument is %r", argument)
+
+        # fixme
+        # d = DottedNameResolver()
+        # logger.critical("db session is %s", self._request.dbsession)
+        # class_ = d.maybe_resolve(argument)
+        # if issubclass(class_, Base):
+        #     try:
+        #         entities = self._request.dbsession.query(class_).all()
+        #     except AttributeError as ex:
+        #         pass
 
         modal_id = context.form.get_html_id(stringcase.camelcase('modal_%s' % key), True)
         buttons = []
@@ -379,8 +384,8 @@ class RelationshipSelect:
 
         select = FormSelect(name=select_name.get_id(), id=select_id.get_id(), options=options,
                             attr={"class": "form-control"})
-        select_name.set_element(select)
-        select_id.set_element(select)
+        select_name.element = select
+        select_id.element = select
         label = FormLabel(form_control=select, label_contents=label_contents,
                           attr={"class": "col-sm-4 col-form-label"})
 

@@ -1,6 +1,7 @@
+import json
 import logging
 
-from email_mgmt_app import Resource, get_root
+from email_mgmt_app import Resource, get_root, ResourceSchema
 
 logger = logging.getLogger(__name__)
 
@@ -49,3 +50,11 @@ def test_resource(root_resource, resource_manager, entry_point_mock):
     logger.critical("r2 = %r", r2)
 
     assert not resource.is_container
+
+def test_resource_dump(root_resource):
+    s = ResourceSchema()
+    logger.critical("%s", json.dumps(s.dump(root_resource), indent=4))
+
+def test_resource_url(root_resource, app_request):
+    path = app_request.resource_path(root_resource, _host='localhost')
+    assert '/' == path

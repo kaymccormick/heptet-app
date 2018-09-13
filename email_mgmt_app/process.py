@@ -9,23 +9,25 @@ from typing import Iterable
 from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
 from pyramid.request import Request
-from pyramid_jinja2 import IJinja2Environment
 from sqlalchemy import Column, String
 from sqlalchemy.exc import InvalidRequestError
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
+from context import GeneratorContext, FormContext
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
 from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, get_root
 from entity import EntityFormView
 from impl import MapperWrapper, NamespaceStore
-from interfaces import IProcess, IEntryPoint, IMapperInfo
+from interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
 from manager import OperationArgument
 from marshmallow import ValidationError
-from myapp_config import logger, on_new_request, TEMPLATE_ENV_NAME
+from myapp_config import logger
 
 from scripts.util import get_request
+from tvars import TemplateVars
+from util import format_discriminator
 
 logger = logging.getLogger(__name__)
 
@@ -97,16 +99,9 @@ class Asset:
 
 class AssetManager:
     def get(self, disc):
-        def _disc(l, *elems):
-            for elem in elems:
-                attr = getattr(elem, "discriminator", None)
-                if attr:
-                    _disc(l, *attr)
-                else:
-                    l.append(str(elem))
 
         l = list()
-        _disc(l, *disc)
+        format_discriminator(l, *disc)
         p = Path(self._output_dir)
         p2 = p.joinpath(''.join(l))
         if not p2.parent.exists():
@@ -284,38 +279,31 @@ def includeme(config: Configurator):
     config.action(None, do_action)
 
 
-def process_views(registry, asset_mgr, proc_context, ep_iterable: Iterable[EntryPoint]):
+def process_views(registry, template_env, asset_mgr, proc_context, ep_iterable: Iterable[EntryPoint], request):
 
 
-    # generate a request
-    request = get_request(Request, registry=registry)  # type: Request
-    assert request
     root = get_root(request)
     assert root is not None
-
-    eps2 = []
 
     @dataclass
     class MyEvent:
         request: Request = field(default_factory=lambda: request)
 
     event = MyEvent()
-    on_new_request(event)
+    #on_new_request(event)
 
     root_namespace = NamespaceStore('root')
     entry_points_data = dict(list=[])
+    entry_point: EntryPoint
     for name, entry_point in ep_iterable:
         entry_points_data['list'].append(entry_point.key)
 
-#        util._dump(registry, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr))
-
-        env = request.registry.queryUtility(IJinja2Environment, TEMPLATE_ENV_NAME)
-        assert env, "No template environment %s" % TEMPLATE_ENV_NAME
-
-        # FIXME - ew
-        entry_point.init_generator(registry, root_namespace, env)
-
-        assert entry_point.generator is not None
+        # What can we set us up with?
+        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), TemplateVars(), form_context_factory=FormContext, root_namespace=root_namespace,
+                                template_env=template_env)
+        generator = registry.queryAdapter(gctx, IEntryPointGenerator)
+        assert None is not generator
+        entry_point.generator = generator
 
         entry_point.generator.generate()
         subscribers = registry.subscribers((proc_context, entry_point), IProcess)

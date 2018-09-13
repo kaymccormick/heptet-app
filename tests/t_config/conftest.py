@@ -1,24 +1,18 @@
-import copy
-
 import pytest
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid_ldap3 import groupfinder
-from sqlalchemy.exc import InvalidRequestError
 
-import email_mgmt_app.myapp_config
+import email_mgmt_app
 import myapp_config
 from email_mgmt_app import get_root
-from impl import MapperWrapper, NamespaceStore
-from interfaces import IMapperInfo, INamespaceStore
-from model import email_mgmt
-from process import config_process_struct, load_process_struct
-from myapp_config import on_new_request, on_application_created, on_before_render, on_context_found
+from impl import NamespaceStore
+from interfaces import INamespaceStore
+from myapp_config import on_context_found, on_before_render, on_new_request, on_application_created
 
 
-# we need to keep this somewhat synchronized!
 @pytest.fixture
 def make_wsgi_app():
     def _make_wsgi_app(global_config, model_package=None, **settings):
@@ -60,10 +54,3 @@ def make_wsgi_app():
         return config.make_wsgi_app()
 
     return _make_wsgi_app
-
-
-# make_wsgi_app is a fixture, not our application!!
-def test_my_config(make_wsgi_app, webapp_settings):
-    settings = copy.copy(webapp_settings)
-    settings['model_package'] = email_mgmt
-    app = make_wsgi_app({}, **settings)

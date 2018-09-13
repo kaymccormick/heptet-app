@@ -1,18 +1,14 @@
-import glob
 import logging
 from typing import AnyStr
 
+from jinja2 import TemplateNotFound, BaseLoader
+from pyramid.config import Configurator
+from pyramid.renderers import RendererHelper
 from zope.component import adapter
+from zope.interface import implementer
 from zope.interface.registry import Components
 
-from jinja2 import FileSystemLoader, TemplateNotFound, BaseLoader
-from zope.interface import implementer
-
 from interfaces import *
-from pyramid.config import Configurator, PHASE2_CONFIG, PHASE1_CONFIG, PHASE0_CONFIG
-from pyramid.renderers import RendererHelper
-from pyramid_jinja2 import IJinja2Environment
-
 from myapp_config import TEMPLATE_ENV_NAME
 
 logger = logging.getLogger(__name__)
@@ -128,7 +124,7 @@ def includeme(config: Configurator):
     #                              'template-env renderer',
     #                              'template renderer')
 
+    logger.critical("inclusion of template")
     config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='email_mgmt_app.jinja2.')
 
-    #config.action(('email_mgmt_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)
-
+    # config.action(('email_mgmt_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)

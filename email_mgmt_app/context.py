@@ -9,7 +9,7 @@ from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
 from form import Form
-from impl import NamespaceStore, TemplateEnvMixin, MixinBase, GetTemplateMixin
+from impl import NamespaceStore, TemplateEnvMixin, MixinBase
 from interfaces import IFormContext, IGeneratorContext
 from tvars import TemplateVars
 
@@ -255,7 +255,6 @@ class FormContext(
     FormContextFactoryMixin,
     RelationshipFieldMapperMixin,
     DottedNameResolverMixin,
-    GetTemplateMixin,
 ):
     def __init__(
             self,

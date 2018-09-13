@@ -140,10 +140,12 @@ def make_webtest(sqlalchemy_engine, tm_session, app_test, javascript_contenttype
     return _webtest
 
 
+@pytest.mark.integration
 def test_webtest_urls(url, make_webtest):
     make_webtest(url)
 
 
+@pytest.mark.integration
 def test_webtest_domain_form(make_webtest):
     (resp, html) = make_webtest('/domain/form')
     logger.critical("%s", resp.text)

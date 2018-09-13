@@ -13,7 +13,7 @@ from tvars import TemplateVars
 from zope import interface
 
 from interfaces import *
-from impl import MyCollector, Separator
+from impl import Separator
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
@@ -321,7 +321,8 @@ def register_entry_point(config, entry_point: IEntryPoint):
 
 def includeme(config: 'Configurator'):
     def do_action():
-        config.registry.registerAdapter(MyCollector, [ICollectorContext], ICollector)
+        pass
+        #config.registry.registerAdapter(MyCollector, [ICollectorContext], ICollector)
 
     config.add_directive('register_entry_point', register_entry_point)
     register_entry_point(config, default_entry_point())

@@ -22,12 +22,3 @@ def get_request(request_factory, myapp=None, registry=None):
         request.registry = registry
         request.tm = explicit_manager(request)
     return request
-
-
-def template_env():
-    from jinja2 import Environment, PackageLoader, select_autoescape
-    env = Environment(
-        loader=PackageLoader('email_mgmt_app', 'templates'),
-        autoescape=select_autoescape(default=False)
-    )
-    return env

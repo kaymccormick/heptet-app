@@ -1,13 +1,12 @@
 import abc
 import logging
-from dataclasses import dataclass
-from typing import AnyStr, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from zope.component import adapter
 from zope.interface import implementer
 
 from exceptions import NamespaceCollision
-from interfaces import ICollectorContext, ITemplateVariable, ICollector, IMapperInfo, INamespaceStore
+from interfaces import ITemplateVariable, ICollector, IMapperInfo, INamespaceStore
 from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
@@ -15,17 +14,17 @@ logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
 
-@implementer(ICollectorContext)
-class CollectorContext:
-    def __init__(self, backing_var, item_type) -> None:
-        self._backing_var = backing_var
-        self._item_type = item_type
-
-    def get_backing_var(self):
-        return self._backing_var
-
-    def get_item_type(self):
-        return self._item_type
+# @implementer(ICollectorContext)
+# class CollectorContext:
+#     def __init__(self, backing_var, item_type) -> None:
+#         self._backing_var = backing_var
+#         self._item_type = item_type
+#
+#     def get_backing_var(self):
+#         return self._backing_var
+#
+#     def get_item_type(self):
+#         return self._item_type
 
 
 @implementer(ITemplateVariable)
@@ -79,11 +78,13 @@ class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
         self._parent = parent
         self._element = None
 
-    def set_element(self, element):
-        self._element = element
-
-    def get_element(self):
+    @property
+    def element(self):
         return self._element
+
+    @element.setter
+    def element(self, new):
+        self.new = new
 
     def make_namespace(self, key):
         assert '.' not in key and '_' not in key, "Invalid key %s" % key
@@ -126,25 +127,25 @@ class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
         return self._namespace
 
 
-@adapter(ICollectorContext)
-@implementer(ICollector)
-class MyCollector:
-    def __init__(self, context) -> None:
-        self._context = context
-        self._value = []
-
-    def add_value(self, instance):
-        var = self._context.get_backing_var()
-        if var:
-            var.add_value(instance)
-        else:
-            self._value.append(instance)
-
-    def get_value(self):
-        var = self._context.get_backing_var()
-        if var:
-            return var.get_value()
-        return self._value
+# @adapter(ICollectorContext)
+# @implementer(ICollector)
+# class MyCollector:
+#     def __init__(self, context) -> None:
+#         self._context = context
+#         self._value = []
+#
+#     def add_value(self, instance):
+#         var = self._context.get_backing_var()
+#         if var:
+#             var.add_value(instance)
+#         else:
+#             self._value.append(instance)
+#
+#     def get_value(self):
+#         var = self._context.get_backing_var()
+#         if var:
+#             return var.get_value()
+#         return self._value
 
 
 class MixinBase:
@@ -171,35 +172,35 @@ class TemplateEnvMixin(MixinBase):
 
     def check_instance(self):
         super().check_instance()
-        #assert self.template_env
-
-
-class GetTemplateMixin(TemplateEnvMixin):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def get_template(self, name):
-        return self.template_env.get_template(name)
         # assert self.template_env
-        #
-        # @dataclass
-        # class _info:
-        #     name: AnyStr
-        #     package: AnyStr = None
-        #
-        # class _template:
-        #     def __init__(self, template_env, info):
-        #         assert template_env
-        #         self.template_env = template_env
-        #         self.info = info
-        #
-        #     def render(self, **kwargs):
-        #         assert self.template_env, "%r" % self
-        #         x = self.template_env(self.info)
-        #         logger.critical("x = %r", x)
-        #         return x(dict(**kwargs), {})
-        #
-        # return _template(self.template_env, _info(name))
+
+
+# class GetTemplateMixin(TemplateEnvMixin):
+#     def __init__(self) -> None:
+#         super().__init__()
+#
+#     def get_template(self, name):
+#         return self.template_env.get_template(name)
+#         # assert self.template_env
+#         #
+#         # @dataclass
+#         # class _info:
+#         #     name: AnyStr
+#         #     package: AnyStr = None
+#         #
+#         # class _template:
+#         #     def __init__(self, template_env, info):
+#         #         assert template_env
+#         #         self.template_env = template_env
+#         #         self.info = info
+#         #
+#         #     def render(self, **kwargs):
+#         #         assert self.template_env, "%r" % self
+#         #         x = self.template_env(self.info)
+#         #         logger.critical("x = %r", x)
+#         #         return x(dict(**kwargs), {})
+#         #
+#         # return _template(self.template_env, _info(name))
 
 
 class EntityTypeMixin(Generic[T], MixinBase):

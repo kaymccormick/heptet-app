@@ -1,5 +1,8 @@
+import json
 import logging
 import sys
+
+from email_mgmt_app import BaseView, ResourceSchema
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +14,23 @@ def test_entity_view(entity_view_deriver, app_context, app_request, view_result)
     print(result.text, file=sys.stderr)
     assert result is view_result
 
-def test_entity_view_deriver_baseview(entity_view_deriver, app_context, app_request, ):
-    result = entity_view_deriver(app_context, app_request)
 
+def test_entity_view_deriver_baseview(
+        make_entity_view_deriver,
+        app_context,
+        app_request,
+        make_view_deriver_info,
+        app_registry_mock,
+        resource_operation_mock):
+    baseview = BaseView(app_context, app_request)
+    options = {'operation': resource_operation_mock}
+    info = make_view_deriver_info(baseview, app_registry_mock, __name__, [], False, options)
+    deriver = make_entity_view_deriver(baseview, info)
+    result = deriver(app_context, app_request)
+    schema = ResourceSchema()
+    context = result['context']
+
+    resource = dict(__name__=context.__name__, __parent__=context.__parent__,
+                    manager=context.manager, data=context._data)
+    dump = schema.dump(context)
+    logger.critical("%s", json.dumps(dump, indent=4, sort_keys=True))

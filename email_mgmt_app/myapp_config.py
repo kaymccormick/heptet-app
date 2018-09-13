@@ -17,7 +17,7 @@ from webapp_main import logger
 
 logger = logging.getLogger(__name__)
 
-TEMPLATE_ENV_NAME = 'template_env'
+TEMPLATE_ENV_NAME = 'template-env'
 
 
 # jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
