@@ -53,6 +53,12 @@ def get_root(request: Request):
     return root
 
 
+def reset_root(request: Request):
+    lock.acquire()
+    if hasattr(sys.modules[__name__], "_root"):
+        delattr(sys.modules[__name__], "_root")
+    lock.release()
+
 class ArgumentContext:
     def __init__(self) -> None:
         self._subpath_index = 0
