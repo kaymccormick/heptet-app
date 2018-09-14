@@ -21,6 +21,7 @@ from impl import EntityTypeMixin, TemplateEnvMixin
 from interfaces import IResource
 from manager import ResourceOperation
 from marshmallow import Schema, fields
+from mixin import EntryPointMixin
 from util import get_entry_point_key, get_exception_entry_point_key
 
 # class MapperInfosMixin:
@@ -60,6 +61,7 @@ def reset_root(request: Request):
     if hasattr(sys.modules[__name__], "_root"):
         delattr(sys.modules[__name__], "_root")
     lock.release()
+
 
 class ArgumentContext:
     def __init__(self) -> None:
@@ -102,40 +104,42 @@ class ResourceMeta(ABCMeta):
 
 
 @implementer(IResource)
-class _Resource(EntityTypeMixin, TemplateEnvMixin):
+class _Resource(EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
     """
     Base resource type. Implements functionality common to all resource types.
     """
 
-    #
-    logger = logger.getChild('_Resource')
+    def __format__(self, spec: AnyStr):
+        if spec == 'x':
+            return self.__class__.__name__
+        return super().__format__(spec)
 
-    def __new__(cls, manager, name: AnyStr, parent: Resource,
-                entry_point: EntryPoint,
-                title: AnyStr = None,
-                template_env=None,
-                ):
-        # logger.debug("cls,args=%s,kwargs=%s,%s", cls, args, kwargs)
-        if cls == Resource:
+    def __new__(
+            cls,
+            name: AnyStr,
+            parent: Resource,
+            entry_point: EntryPoint,
+            title: AnyStr = None,
+            template_env=None,
+    ):
+        # fixme not thread safe
+        if cls is Resource:
             count = getattr(cls, "__count__", 0)
             count = count + 1
             clsname = "%s_%04X" % (cls.__name__, count)
             setattr(cls, "__count__", count)
             meta = ResourceMeta(clsname, (cls,), {})
             # logger.debug("meta = %s", meta)
-            inst = meta(manager, name, parent, entry_point, title, template_env)
-            assert inst.manager is manager
+            inst = meta(name, parent, entry_point, title, template_env)
             # inst.__init__(manager, name, parent, entry_point, title)
             return inst
 
-        logger.debug("super = %r", super)
         x = super().__new__(cls)
         if not title:
             title = stringcase.sentencecase(name)
         else:
             title = title
-        x.__init__(manager, name, parent, entry_point, title, template_env)
-        logger.debug("%r", x)
+        x.__init__(name, parent, entry_point, title, template_env)
         return x
 
     def __setitem__(self, key, value):
@@ -153,13 +157,11 @@ class _Resource(EntityTypeMixin, TemplateEnvMixin):
     def __contains__(self, item):
         return self._data.__contains__(item)
 
-    def __init__(self, manager: ResourceManager, name: AnyStr, parent: Resource, entry_point: EntryPoint,
-                 title: AnyStr = None, template_env=None) -> None:
+    def __init__(self, name: AnyStr, parent: Resource, entry_point: EntryPoint, title: AnyStr = None,
+                 template_env=None) -> None:
         """
 
-        :type manager: ResourceManager
         :type parent: ContainerResource
-        :param manager: Manager
         :param name: The name as appropriate for a resource key. (confusing)
         :param parent: Parent resources.
         :param title: Defaults to name if not given.
@@ -169,7 +171,6 @@ class _Resource(EntityTypeMixin, TemplateEnvMixin):
         assert entry_point is not None, "Need entry point."
         assert entry_point.key
 
-        assert entry_point.manager is not None
         if not title:
             self._title = stringcase.sentencecase(name)
         else:
@@ -178,7 +179,7 @@ class _Resource(EntityTypeMixin, TemplateEnvMixin):
         self._template_env = template_env
         self.__name__ = name
         self.__parent__ = parent
-        self._entry_point = entry_point
+        self.entry_point = entry_point
         assert entry_point is not None
         self._names = []
         self._data = {}
@@ -188,21 +189,19 @@ class _Resource(EntityTypeMixin, TemplateEnvMixin):
         self.keys = lambda: self._data.keys()
         self.values = lambda: self._data.values()
         self.get = lambda x: self._data.get(x)
-        self._manager = manager
-        self._entity_type = manager.entity_type
+        self._entity_type = entry_point.manager.entity_type
         self._subresource_type = self.__class__
 
     def validate(self):
-        assert self.manager is not None
         assert self.entry_point is not None
         assert self.__name__
         assert self.__parent__ is not None
 
     def __repr__(self):
         try:
-            return "%s(%r, %r, %s, %r)" % (self.__class__.__name__, self._manager, self.__name__,
-                                           self.__parent__ and "%s()" % self.__parent__.__class__.__name__ or None,
-                                           self._title)
+            return "%s(%r, %s, %r)" % (self.__class__.__name__, self.__name__,
+                                       self.__parent__ and "%s()" % self.__parent__.__class__.__name__ or None,
+                                       self._title)
         except:
             return repr(sys.exc_info()[1])
 
@@ -231,29 +230,14 @@ class _Resource(EntityTypeMixin, TemplateEnvMixin):
 
     def sub_resource(self, name: AnyStr, entry_point: EntryPoint, title=None):
         logger.debug("%r", self.__class__)
-        assert self.manager
         assert self.entry_point
         if not title:
             title = stringcase.sentencecase(name)
         logger.debug("%s", title)
-        sub = self._subresource_type.__new__(self._subresource_type, self.manager, name, self, entry_point, title, self.template_env)
-        assert sub.manager is self.manager
-        # sub.__init__(self.manager, name, self, )
-        #        logger.debug("%s", dir(sub))
+        sub = self._subresource_type.__new__(self._subresource_type, name, self, entry_point, title,
+                                             self.template_env)
         self[name] = sub
         return sub
-
-    @property
-    def manager(self) -> ResourceManager:
-        return self._manager
-
-    @property
-    def entry_point(self) -> EntryPoint:
-        return self._entry_point
-
-    @entry_point.setter
-    def entry_point(self, new: EntryPoint):
-        self._entry_point = new
 
 
 class Resource(_Resource, metaclass=ResourceMeta):
@@ -293,7 +277,6 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     my_parent = root_resource
     assert my_parent is not None
 
-
     #        env = request.registry.getUtility(IJinja2Environment, 'app_env')
 
     #
@@ -320,7 +303,6 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     resource = Resource(
         name=node_name, title=manager._title,
         parent=my_parent,
-        manager=manager,
         entry_point=container_entry_point,
     )
     root_resource.__setitem__(node_name, resource)
@@ -374,23 +356,18 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
 
 class RootResource(Resource):
-    def __new__(cls, manager=None, name: AnyStr = '', parent: Resource = None,
+    def __new__(cls, name: AnyStr = '', parent: Resource = None,
                 entry_point: EntryPoint = None,
                 title: AnyStr = None, template_env=None):
-        if not manager:
-            manager = default_manager()
         if not entry_point:
             entry_point = default_entry_point()
-        return super().__new__(cls, manager, name, parent, entry_point, title, template_env)
+        return super().__new__(cls, name, parent, entry_point, title, template_env)
 
-    def __init__(self=None, manager=None, name: AnyStr = '', parent: Resource = None,
-                 entry_point: EntryPoint = None,
-                 title: AnyStr = None, template_env=None) -> None:
-        if not manager:
-            manager = default_manager()
+    def __init__(self, name: AnyStr='', parent: Resource=None, entry_point: EntryPoint=None, title: AnyStr = None,
+                 template_env=None) -> None:
         if not entry_point:
             entry_point = default_entry_point()
-        super().__init__(manager, name, parent, entry_point, title, template_env)
+        super().__init__(name, parent, entry_point, title, template_env)
         assert self._entry_point is entry_point
         self._subresource_type = Resource
 
@@ -400,7 +377,12 @@ class RootResource(Resource):
         assert self.manager is not None
 
     def __repr__(self):
-        return 'RootResource()'
+
+        items = self._data.items()
+        i = map(lambda item: "{0}={1:x}".format(*item), items)
+        x = list(i)
+        join = ", ".join(x)
+        return 'RootResource(' + join + ')'
 
 
 class BaseView(Generic[T]):
@@ -522,8 +504,8 @@ class ResourceManagerSchema(Schema):
 class ResourceSchema(Schema):
     type = TypeField(attribute='__class__')
     manager = fields.Nested(ResourceManagerSchema)
-    name = fields.String(attribute='__name__')#function=lambda x: x.__name__)
-    parent = fields.Nested('self', attribute='__parent__', only=[])#functiona=lambda x: x.__parent__)
+    name = fields.String(attribute='__name__')  # function=lambda x: x.__name__)
+    parent = fields.Nested('self', attribute='__parent__', only=[])  # functiona=lambda x: x.__parent__)
     data = fields.Dict(attribute='_data',
                        keys=fields.String(), values=fields.Nested('ResourceSchema'))
     url = fields.Url(function=lambda x: x.url())

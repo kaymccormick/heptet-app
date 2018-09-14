@@ -1,7 +1,0 @@
-{% if ready_js_stmts|length > 0 %}
-$(document).ready(function() {
-{% for stmt in ready_js_stmts %}
-{{ stmt }}
-{% endfor %}
-});
-{% endif %}

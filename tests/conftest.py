@@ -107,10 +107,10 @@ def my_data(my_json):
 # Primary application related fixtures
 #
 @pytest.fixture
-def app_request(app_registry):
+def app_request(app_registry_mock):
     # We'll use dummy request until we can't anymore
     request = DummyRequest()
-    request.registry = app_registry
+    request.registry = app_registry_mock
 
     return request
 
@@ -224,9 +224,12 @@ def jinja2_env_mock():
 #
 @pytest.fixture()
 def root_resource(app_request):
-    yield get_root(app_request)
-
+    logger.critical("root resource fixture")
+    root = get_root(app_request)
+    yield root
+    logger.critical("resetting app root")
     email_mgmt_app.reset_root(app_request)
+    assert get_root(app_request) is not root
 
 
 @pytest.fixture
@@ -235,9 +238,9 @@ def resource_operation(view_test):
 
 
 @pytest.fixture
-def make_resource(root_resource, entry_point_mock, resource_manager):
+def make_resource(entry_point_mock, resource_manager):
     def _make_resource(name):
-        return Resource(resource_manager, name, root_resource, entry_point_mock)
+        return Resource(name, root_resource, entry_point_mock)
 
     return _make_resource
 
@@ -537,3 +540,20 @@ def make_entity_form_view_entry_point_generator():
 @pytest.fixture
 def resource_operation_mock():
     return MagicMock(ResourceOperation)
+
+# BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+#
+# RESET_SEQ = "\\033[0m"
+# COLOR_SEQ = "\\033[1;%dm"
+# BOLD_SEQ = "\\033[1m"
+#
+# from lxml.builder import E
+# xml = E.entrypoint(dict(manager=repr(entry_point_1.manager)))
+# from lxml import etree
+# print(etree.tostring(xml, pretty_print=True), file=sys.stderr)
+#
+# s = textwrap.fill(repr(entry_point_1), 120)
+# s = re.sub('(?:\s|^)(\S+)\(', BOLD_SEQ + '\\1(' + RESET_SEQ, s)
+# s = re.sub('([\(,\s]?\s*)([^=\s]+)(\s*)=', '\\1' + (COLOR_SEQ % (30 + 64)) + '\\2' + RESET_SEQ + '\\3=', s)
+# print(s, file=sys.stderr)#logger.critical("%s", textwrap.fill(s, width=120, subsequent_indent="  "))
+# logger.critical("%r", entry_point_1.discriminator)

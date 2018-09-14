@@ -527,7 +527,9 @@ class EntityFormView(BaseEntityRelatedView[T]):
 
         env = self.context.template_env
         root_namespace = NamespaceStore('root')
+
         entry_point.init_generator(self.request.registry, root_namespace, env)
+        
         generator = entry_point.generator
         gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), TemplateVars(), FormContext,
                                 root_namespace, env)

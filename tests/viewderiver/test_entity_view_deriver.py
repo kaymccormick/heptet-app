@@ -30,7 +30,5 @@ def test_entity_view_deriver_baseview(
     schema = ResourceSchema()
     context = result['context']
 
-    resource = dict(__name__=context.__name__, __parent__=context.__parent__,
-                    manager=context.manager, data=context._data)
     dump = schema.dump(context)
     logger.critical("%s", json.dumps(dump, indent=4, sort_keys=True))

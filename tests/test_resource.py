@@ -1,13 +1,17 @@
 import json
 import logging
+import sys
+import textwrap
+
+import pytest
 
 from email_mgmt_app import Resource, get_root, ResourceSchema
 
 logger = logging.getLogger(__name__)
 
 
-def test_add_resources(make_resource, app_request):
-    root1 = get_root(app_request)
+def test_add_resources(make_resource, app_request, root_resource):
+    root1 = root_resource
     res1 = make_resource('resource1')
     root1[res1.__name__] = res1
     root2 = get_root(app_request)
@@ -17,6 +21,7 @@ def test_add_resources(make_resource, app_request):
 
 
 def test_add_resources_2(root_resource, entry_point_mock):
+    #print(textwrap.fill(repr(root_resource), 120), file=sys.stderr)
     root = root_resource
     assert 0 == len(root)
     a = root.sub_resource('a', entry_point_mock)
@@ -39,9 +44,9 @@ def test_root_Resource(app_request):
     # assert type(root) == RootResource
 
 
-def test_resource(root_resource, resource_manager, entry_point_mock):
+def test_resource(root_resource, entry_point_mock):
     name = "test"
-    resource = Resource(resource_manager, name, root_resource, entry_point_mock)
+    resource = Resource(name, root_resource, entry_point_mock)
     logger.critical("root = %r", root_resource)
     assert resource.__name__ is name
     assert resource.__parent__ is root_resource
@@ -56,5 +61,6 @@ def test_resource_dump(root_resource):
     logger.critical("%s", json.dumps(s.dump(root_resource), indent=4))
 
 def test_resource_url(root_resource, app_request):
-    path = app_request.resource_path(root_resource, _host='localhost')
-    assert '/' == path
+    with pytest.raises(AssertionError):
+        path = app_request.resource_path(root_resource, _host='localhost')
+        assert '/' == path

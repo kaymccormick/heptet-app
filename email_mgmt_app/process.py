@@ -25,7 +25,7 @@ from manager import OperationArgument
 from marshmallow import ValidationError
 from myapp_config import logger
 
-from scripts.util import get_request
+from test.util import get_request
 from tvars import TemplateVars
 from util import format_discriminator
 
