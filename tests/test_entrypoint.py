@@ -1,22 +1,17 @@
 import logging
-import re
 import sys
-import textwrap
 
 import pytest
-import termcolor
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def entry_point_1(make_entry_point, resource_manager_mock, app_request, app_registry_mock):
+def entry_point_1(make_entry_point, resource_manager_mock):
     logger.debug("Returning fixture entry_point_1")
     return make_entry_point(
         resource_manager_mock,
         'test1',
-        app_request,
-        app_registry_mock,
         None,
         None,
     )
@@ -37,6 +32,7 @@ def test_entrypoint_init_generator(
     )
     assert entry_point_1.generator
     # TODO
+
 
 def test_entrypoint_generate(
         entry_point_1,

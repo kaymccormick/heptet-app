@@ -1,7 +1,5 @@
 import json
 import logging
-import sys
-import textwrap
 
 import pytest
 
@@ -21,7 +19,7 @@ def test_add_resources(make_resource, app_request, root_resource):
 
 
 def test_add_resources_2(root_resource, entry_point_mock):
-    #print(textwrap.fill(repr(root_resource), 120), file=sys.stderr)
+    # print(textwrap.fill(repr(root_resource), 120), file=sys.stderr)
     root = root_resource
     assert 0 == len(root)
     a = root.sub_resource('a', entry_point_mock)
@@ -34,7 +32,6 @@ def test_add_resources_2(root_resource, entry_point_mock):
     assert root['a'] is a
     assert root['b'] is b
     logger.warning("%s, %s", type(a), type(b))
-
 
 
 def test_root_Resource(app_request):
@@ -56,9 +53,11 @@ def test_resource(root_resource, entry_point_mock):
 
     assert not resource.is_container
 
+
 def test_resource_dump(root_resource):
     s = ResourceSchema()
     logger.critical("%s", json.dumps(s.dump(root_resource), indent=4))
+
 
 def test_resource_url(root_resource, app_request):
     with pytest.raises(AssertionError):

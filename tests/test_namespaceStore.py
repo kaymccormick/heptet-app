@@ -1,7 +1,7 @@
 import logging
-from unittest import TestCase
 
 logger = logging.getLogger(__name__)
+
 
 def test_root(root_namespace_store):
     assert root_namespace_store is not None

@@ -22,7 +22,7 @@ from db_dump.info import MapperInfo, TypeInfo
 from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView
 from entity import EntityFormViewEntryPointGenerator
 from entity import FormRelationshipMapper, RelationshipSelect
-from entrypoint import EntryPoint
+from entrypoint import EntryPoint, EntryPointGenerator
 from form import Form
 from impl import NamespaceStore, MapperWrapper, Separator
 from myapp_config import TEMPLATE_ENV_NAME
@@ -311,11 +311,14 @@ def make_view_deriver_info():
 
     return _make_view_deriver_info
 
+
 @pytest.fixture
 def make_entity_view_deriver(resource_operation_mock, app_registry_mock):
     def _make_entity_view_deriver(view, info):
         return entity_view(view, info)
+
     return _make_entity_view_deriver
+
 
 @pytest.fixture
 def entity_view_deriver(view_test, make_view_deriver_info, app_registry, resource_operation):
@@ -513,6 +516,17 @@ def asset_manager():
 
 
 @pytest.fixture
+def make_asset_manager():
+    def _make_asset_manager(dir, mkdir=None):
+        if mkdir is None:
+            return AssetManager(dir)
+        else:
+            return AssetManager(dir, mkdir)
+
+    return _make_asset_manager
+
+
+@pytest.fixture
 def asset_manager_mock():
     return Mock(AssetManager)
 
@@ -521,21 +535,27 @@ def asset_manager_mock():
 def process_context_mock():
     return MagicMock(ProcessContext)
 
+
 @pytest.fixture
 def make_entry_point():
-    def _make_entry_point(manager, key, request, registry, generator, mapper_wrapper):
-        return EntryPoint(manager, key, request, registry, generator, mapper_wrapper)
+    def _make_entry_point(manager, key, generator, mapper_wrapper):
+        return EntryPoint(manager, key, generator, mapper_wrapper)
+
     return _make_entry_point
+
 
 @pytest.fixture
 def resource_manager_mock():
     return MagicMock(ResourceManager)
 
+
 @pytest.fixture
 def make_entity_form_view_entry_point_generator():
     def _make_entity_form_view_entry_point_generator(registry, ctx):
         return MagicMock(EntityFormViewEntryPointGenerator)
+
     return _make_entity_form_view_entry_point_generator
+
 
 @pytest.fixture
 def resource_operation_mock():
@@ -557,3 +577,7 @@ def resource_operation_mock():
 # s = re.sub('([\(,\s]?\s*)([^=\s]+)(\s*)=', '\\1' + (COLOR_SEQ % (30 + 64)) + '\\2' + RESET_SEQ + '\\3=', s)
 # print(s, file=sys.stderr)#logger.critical("%s", textwrap.fill(s, width=120, subsequent_indent="  "))
 # logger.critical("%r", entry_point_1.discriminator)
+
+@pytest.fixture
+def entry_point_generator_mock():
+    return MagicMock(EntryPointGenerator)

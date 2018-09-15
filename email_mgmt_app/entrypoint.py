@@ -53,8 +53,6 @@ class EntryPoint:
             self,
             manager: 'ResourceManager',
             key: AnyStr,
-            request=None,
-            registry=None,
             generator=None,
             js=None,
             view_kwargs: dict = None,
@@ -63,10 +61,6 @@ class EntryPoint:
         # just to make sure we're sane
         assert isinstance(key, str)
         self._key = key
-        self._request = request
-        if registry is None and request is not None:
-            registry = request.registry
-        self._registry = registry
         self._generator = generator
         self._js = js
         self._view_kwargs = view_kwargs  # view coupling !!! FIXME
@@ -82,12 +76,10 @@ class EntryPoint:
         logger.debug("Entry Point is %s", x)
 
     def __repr__(self):
-        return "EntryPoint(manager=%r, key=%r, request=%r, registry=%r, generator=%r, \
+        return "EntryPoint(manager=%r, key=%r, generator=%r, \
 js=%r, view_kwargs=%r, mapper_wrapper=%r)" % (
             self._manager,
             self._key,
-            self._request.__class__,
-            self._registry.__class__,
             self._generator,
             self._js,
             self._view_kwargs,
@@ -308,7 +300,7 @@ class DefaultEntryPoint(EntryPoint):
         view_kwargs = {}
         mapper_wrapper = None
         request = None
-        super().__init__(manager, key, request, registry, generator, js, view_kwargs, mapper_wrapper)
+        super().__init__(manager, key, generator, js, view_kwargs, mapper_wrapper)
 
 
 _default_manager = DefaultResourceManager()

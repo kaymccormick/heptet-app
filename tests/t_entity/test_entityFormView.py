@@ -1,10 +1,8 @@
 import sys
-from unittest.mock import MagicMock, call
 
 import pytest
-from jinja2 import FileSystemLoader, select_autoescape, Environment
 
-from entity import EntityFormView, EntityFormViewEntryPointGenerator
+from entity import EntityFormView
 from util import _dump
 
 
@@ -23,7 +21,6 @@ def entity_form_view(
 
     x = EntityFormView(app_context, app_request)
     return x
-
 
 
 # what mock is used here ??

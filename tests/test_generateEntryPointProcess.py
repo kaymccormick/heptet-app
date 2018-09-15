@@ -1,10 +1,10 @@
+import logging
 import sys
 from unittest.mock import mock_open, patch, Mock
 
 import pytest
 
 from process import GenerateEntryPointProcess, ProcessContext
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ def test_(generate_entry_point_process):
     m = mock_open()
     m2 = m()
     _x = None
+
     def se(x):
         print(x, file=sys.stderr)
         _x = x
@@ -37,12 +38,8 @@ def test_(generate_entry_point_process):
     elif len(calls_) == 2:
         (args, kwargs) = calls_
 
-    m2 = m() # type: Mock
+    m2 = m()  # type: Mock
     logger.critical("!!! %r", _x)
 
     for x in m2.mock_calls:
         logger.critical("!! %r", x)
-
-
-
-

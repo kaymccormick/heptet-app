@@ -1,6 +1,6 @@
-from tvars import TemplateVars
-
 import logging
+
+from tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 

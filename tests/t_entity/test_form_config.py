@@ -1,13 +1,11 @@
-from sqlalchemy import Table, inspect
-from sqlalchemy.orm import Mapper
+import logging
+
+from sqlalchemy import inspect
 
 import field_renderer
 from entity import EntityFormConfiguration, EntityFormViewEntryPointGenerator
-import logging
-
 from model import map_column, get_column_map
 from model.email_mgmt import Domain
-from model.meta import metadata
 
 logger = logging.getLogger(__name__)
 

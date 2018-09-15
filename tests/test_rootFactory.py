@@ -11,5 +11,3 @@ def test_root_factory(app_request):
     logger.warning("typ is %s", type(root))
     logger.warning("r is %s", root)
     assert isinstance(root, RootResource)
-
-

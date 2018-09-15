@@ -1,17 +1,15 @@
 from __future__ import annotations
 
+import logging
 from typing import Mapping, AnyStr, Tuple
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 import pytest
 from lxml import html
 
 from db_dump.info import RelationshipInfo
-
 from entity import FormRelationshipMapper
 from tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar, TemplateVars
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -83,4 +81,3 @@ def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_e
     the_html = t.map_relationship(my_form_context)
     root = html.fromstring(the_html)
     logger.critical("%s", root)
-

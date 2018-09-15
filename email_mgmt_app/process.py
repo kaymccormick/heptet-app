@@ -6,28 +6,26 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
-from pyramid.config import Configurator, PHASE3_CONFIG
-from pyramid.path import DottedNameResolver
-from pyramid.request import Request
-from sqlalchemy import Column, String
-from sqlalchemy.exc import InvalidRequestError
-from zope.component import adapter
-from zope.interface import implementer, Interface
-
 from context import GeneratorContext, FormContext
-from db_dump import get_process_schema
-from db_dump.info import ProcessStruct
 from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, get_root
 from entity import EntityFormView
 from impl import MapperWrapper, NamespaceStore
 from interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
 from manager import OperationArgument
-from marshmallow import ValidationError
 from myapp_config import logger
-
-from test.util import get_request
+from pyramid.config import Configurator, PHASE3_CONFIG
+from pyramid.path import DottedNameResolver
+from pyramid.request import Request
+from sqlalchemy import Column, String
+from sqlalchemy.exc import InvalidRequestError
 from tvars import TemplateVars
 from util import format_discriminator
+from zope.component import adapter
+from zope.interface import implementer, Interface
+
+from db_dump import get_process_schema
+from db_dump.info import ProcessStruct
+from marshmallow import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -76,15 +74,15 @@ class BaseProcessor:
         Base class for a processing unit.
         :param pcontext:
         """
-        self._pcontex = pcontext
+        self._pcontext = pcontext
 
     @property
     def pcontext(self):
-        return self._pcontex
+        return self._pcontext
 
     @pcontext.setter
     def pcontext(self, new):
-        self._pcontex = new
+        self._pcontext = new
 
 
 class Asset:
@@ -108,13 +106,14 @@ class AssetManager:
             p2.parent.mkdir(mode=0o0755, parents=True)
 
         return open(p2, 'w')
+
     def __init__(self, output_dir, mkdir=False) -> None:
         super().__init__()
         p = Path(output_dir)
         if p.exists():
             if not p.is_dir():
                 raise Exception("%s should be directory." % output_dir)
-        else:
+        elif mkdir:
             # this is messing us up
             try:
                 os.mkdir(output_dir)
@@ -223,7 +222,8 @@ def config_process_struct(config: Configurator, process):
             node_name=node_name,
             mapper_wrapper=wrapper
         )
-        entry_point = EntryPoint(manager, wrapper.key, None, None, None, None, None, wrapper,
+        # fixme code smell
+        entry_point = EntryPoint(manager, wrapper.key, None, None, None, wrapper,
                                  )
 
         manager.operation(name='form', view=EntityFormView,
@@ -279,9 +279,7 @@ def includeme(config: Configurator):
     config.action(None, do_action)
 
 
-def process_views(registry, template_env, asset_mgr, proc_context, ep_iterable: Iterable[EntryPoint], request):
-
-
+def process_views(registry, template_env, proc_context, ep_iterable: Iterable[EntryPoint], request):
     root = get_root(request)
     assert root is not None
 
@@ -290,7 +288,7 @@ def process_views(registry, template_env, asset_mgr, proc_context, ep_iterable: 
         request: Request = field(default_factory=lambda: request)
 
     event = MyEvent()
-    #on_new_request(event)
+    # on_new_request(event)
 
     root_namespace = NamespaceStore('root')
     entry_points_data = dict(list=[])
@@ -298,23 +296,22 @@ def process_views(registry, template_env, asset_mgr, proc_context, ep_iterable: 
     for name, entry_point in ep_iterable:
         entry_points_data['list'].append(entry_point.key)
 
-        # What can we set us up with?
-        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), TemplateVars(), form_context_factory=FormContext, root_namespace=root_namespace,
+        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), TemplateVars(),
+                                form_context_factory=FormContext, root_namespace=root_namespace,
                                 template_env=template_env)
         generator = registry.queryAdapter(gctx, IEntryPointGenerator)
         assert None is not generator
-        entry_point.generator = generator
 
-        entry_point.generator.generate()
-        subscribers = registry.subscribers((proc_context, entry_point), IProcess)
-        subscribers = [GenerateEntryPointProcess(proc_context, entry_point)]
-        assert subscribers, "No subscribers for processing"
-        for s in subscribers:
-
-            result = s.process()
-            if result:
-                logger.debug("result = %s", result)
+        process_view(gctx, entry_point, proc_context, registry, generator)
 
     with open('entry_points.json', 'w') as f:
         json.dump(entry_points_data, f)
         f.close()
+
+
+def process_view(gctx, entry_point, proc_context, registry, generator):
+    subscribers = registry.subscribers((proc_context, entry_point), IProcess)
+    subscribers = [GenerateEntryPointProcess(proc_context, entry_point)]
+    assert subscribers, "No subscribers for processing"
+    for s in subscribers:
+        s.process()

@@ -1,7 +1,7 @@
+import logging
 import sys
 
-from email_mgmt_app import RootResource, get_root
-import logging
+from email_mgmt_app import get_root
 
 logger = logging.getLogger(__name__)
 
@@ -13,4 +13,4 @@ def test_rm_add_action(config_fixture, resource_manager, app_request):
     root = get_root(app_request)
     for k, v in root.items():
         print("k, v is %s = %s" % (k, v), file=sys.stderr)
-    #logger.warning("%s", root.items())
+    # logger.warning("%s", root.items())

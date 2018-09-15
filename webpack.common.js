@@ -5,10 +5,12 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
+const MyPlugin = require('./myplugin')
 
 
 entry_points = require('./entry_points')
 plugins_ = [
+    new MyPlugin({}),
 //        new CleanWebpackPlugin(['email_mgmt_app/build/dist']),
         new CopyWebpackPlugin([
             {

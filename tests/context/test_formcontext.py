@@ -8,5 +8,3 @@ def test_(my_form_context):
     assert x.root_namespace is not None
     assert x.template_env is not None
     assert x.form is not None
-
-
