@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import copy
 import logging
-from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr
+from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr, Mapping
 
+from email_mgmt_app import EntryPointMixin
 from jinja2 import Environment
 from pyramid.path import DottedNameResolver
 from zope.interface import implementer
@@ -67,11 +68,11 @@ class TemplateVarsMixin(MixinBase):
         self._template_vars = None
 
     @property
-    def template_vars(self):
+    def template_vars(self) -> TemplateVars:
         return self._template_vars
 
     @template_vars.setter
-    def template_vars(self, new):
+    def template_vars(self, new: TemplateVars):
         self._template_vars = new
 
     def __repr__(self):
@@ -144,14 +145,16 @@ class ContextRootNamespaceMixin(MixinBase):
 
 @implementer(IGeneratorContext)
 class GeneratorContext(
-    ContextMapperInfoMixin,
     TemplateEnvMixin,
     TemplateVarsMixin,
     FormContextFactoryMixin,
     ContextRootNamespaceMixin,
+    EntryPointMixin,
 ):
-    def __init__(self, mapper_info, template_vars, form_context_factory: FormContextFactory,
-                 root_namespace: NamespaceStore, template_env=None) -> None:
+    # adding options here doesnt necessarily make things any clearer
+
+    def __init__(self, entry_point, template_vars, form_context_factory: FormContextFactory,
+                 root_namespace: NamespaceStore, template_env=None, options: Mapping[AnyStr, object]=None) -> None:
         super().__init__()
         # if mapper_info is not None:
         #     assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
@@ -159,11 +162,13 @@ class GeneratorContext(
         #        assert isinstance(template_env, Environment)
         assert isinstance(template_vars, TemplateVars), "%s should be TemplateVars, is %s" % (
             template_vars, type(template_vars))
-        self.mapper_info = mapper_info
+
+        self._entry_point = entry_point
         self.template_env = template_env
         self.template_vars = template_vars
         self.form_context_factory = form_context_factory
         self.root_namespace = root_namespace
+        self._options = options
         assert form_context_factory
 
     def form_context(self, **kwargs):
@@ -174,9 +179,13 @@ class GeneratorContext(
         form_context.check_instance()
         return form_context
 
+    @property
+    def options(self):
+        return self._options
+
     def __repr__(self):
-        return 'GeneratorContext(%r, %r, %r, %r, %r)' % (
-            self._mapper_info, self._template_env, self._template_vars, self.form_context_factory, self.root_namespace)
+        return 'GeneratorContext(%r, %r, %r, %r)' % (
+            self._template_env, self._template_vars, self.form_context_factory, self.root_namespace)
 
 
 FormContextArgs = ()

@@ -7,11 +7,11 @@ import email_mgmt_app
 import email_mgmt_app.myapp_config
 import pytest
 import sys
-from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView
+from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
+    EntryPointGenerator
 from email_mgmt_app.context import FormContext, GeneratorContext
 from email_mgmt_app.entity import EntityFormViewEntryPointGenerator
 from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
-from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
 from email_mgmt_app.form import Form
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper, Separator
 from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
@@ -433,10 +433,10 @@ def my_template_vars(make_template_vars):
 # GENERATOR
 #
 @pytest.fixture
-def make_generator_context(jinja2_env_mock, mapper_info_real, template_vars, root_namespace_store):
-    def _make_generator_context(mapper=mapper_info_real, env=jinja2_env_mock, tvars=template_vars,
+def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store):
+    def _make_generator_context(entry_point, mapper=None, env=jinja2_env_mock, tvars=template_vars,
                                 root=root_namespace_store):
-        return GeneratorContext(mapper, tvars, FormContext, root, env)
+        return GeneratorContext(entry_point, tvars, FormContext, root, env, options=dict(mapper=mapper)) # options is now redundant
 
     return _make_generator_context
 
@@ -449,8 +449,8 @@ def generator_context_mock(make_generator_context):
 
 
 @pytest.fixture
-def my_gen_context(make_generator_context, jinja2_env, mapper_info_real, my_template_vars):
-    return make_generator_context(mapper_info_real, jinja2_env, my_template_vars)
+def my_gen_context(make_generator_context, jinja2_env, mapper_info_real, my_template_vars, entry_point):
+    return make_generator_context(, mapper_info_real, jinja2_env, my_template_vars)
 
 
 @pytest.fixture
@@ -483,12 +483,6 @@ def my_relationship_select():
     return RelationshipSelect()
 
 
-@pytest.fixture
-def form_config_test(my_gen_context, process_struct_real):
-    pass
-    # organization = inspect(Domain).relationships.organization
-    # map_column(organization, field_renderer.Select)
-    # logger.warning("%s", get_column_map(organization))
 
 
 @pytest.fixture
@@ -512,6 +506,7 @@ def my_form(root_namespace_store):
     return Form('myform', root_namespace_store, outer_form=True)
 
 
+# this fixture is going currently unsued!!
 @pytest.fixture
 def my_form_context(my_gen_context, my_relationship_select, root_namespace_store):
     # mapper = FormRelationshipMapper(my_relationship_select) # fixme

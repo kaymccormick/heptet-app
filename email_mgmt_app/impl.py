@@ -1,6 +1,6 @@
 import abc
 import logging
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, AnyStr
 
 from zope.component import adapter
 from zope.interface import implementer
@@ -78,6 +78,9 @@ class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
         self._parent = parent
         self._element = None
 
+    def __repr__(self):
+        return 'NamespaceStore(%s)' % self._name
+
     @property
     def element(self):
         return self._element
@@ -86,8 +89,12 @@ class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
     def element(self, new):
         self.new = new
 
-    def make_namespace(self, key):
+    def check_key(self, key: AnyStr):
         assert '.' not in key and '_' not in key, "Invalid key %s" % key
+        return True
+
+    def make_namespace(self, key):
+        assert self.check_key(key)
         logger.debug("in get_namespace(%s)", key)
         element = None
         if key in self._namespace:

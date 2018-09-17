@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import inspect
 
-import field_renderer
+import email_mgmt_app.field_renderer
 from email_mgmt_app.entity import EntityFormConfiguration, EntityFormViewEntryPointGenerator
 from email_mgmt_app.model import map_column, get_column_map
 from email_mgmt_app.model.email_mgmt import Domain

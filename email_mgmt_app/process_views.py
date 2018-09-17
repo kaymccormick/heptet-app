@@ -58,7 +58,7 @@ def main(input_args=None):
     )
 
     config.include('.myapp_config')
-    config.include(model.email_mgmt)
+    config.include('email_mgmt_app.model.email_mgmt')
     config.include('.process')
 
     config.add_renderer(None, 'pyramid_jinja2.renderer_factory')

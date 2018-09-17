@@ -10,7 +10,16 @@ class InvalidMode(Exception):
         super().__init__(*args, **kwargs)
 
 
-class NamespaceCollision(Exception):
+class NamespaceKeyException(Exception):
+    pass
+
+
+class InvalidNamespaceId(NamespaceKeyException):
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)
+
+
+class NamespaceCollision(NamespaceKeyException):
     def __init__(self, *args: object, **kwargs: object) -> None:
         super().__init__(*args, **kwargs)
 

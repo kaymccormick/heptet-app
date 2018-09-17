@@ -5,13 +5,14 @@ import sys
 from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
-from email_mgmt_app import BaseView
+from email_mgmt_app import BaseView, EntryPointGenerator
 from email_mgmt_app.context import FormContextMixin, FormContext, GeneratorContext
-from email_mgmt_app.entrypoint import EntryPointGenerator, IEntryPointGenerator
+
 from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, \
     FormOptionElement
 from email_mgmt_app.impl import NamespaceStore, EntityTypeMixin
-from email_mgmt_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView
+from email_mgmt_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView, \
+    IEntryPointGenerator
 from email_mgmt_app.model import get_column_map
 from email_mgmt_app.tvars import TemplateVarsSchema, TemplateVars
 from lxml import html
@@ -26,6 +27,7 @@ from db_dump.info import IRelationshipInfo
 from marshmallow import ValidationError
 
 GLOBAL_NAMESPACE = 'global'
+JS_VARS = ('js_imports', 'js_stmts', 'ready_stmts')
 logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
@@ -430,14 +432,18 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
         return m.make_form_representation()
 
     def generate(self):
-        vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
+        """
+
+        :return:
+        """
         ctx = self.ctx
         t_vars = ctx.template_vars
 
-        for var in vars_:
+        for var in JS_VARS:
             t_vars[var] = []
 
         ctx = self.ctx
+        mapper_info = ctx.options
         if ctx.mapper_info is None:
             # fixme - we get called here when we shouldn't and our fix is to bail out right now
             logger.critical("no mapper! probably not gonna work.")
@@ -533,13 +539,14 @@ class EntityFormView(BaseEntityRelatedView[T]):
         env = self.context.template_env
         root_namespace = NamespaceStore('root')
 
-        entry_point.init_generator(self.request.registry, root_namespace, env)
+        gctx = GeneratorContext(entry_point, TemplateVars(), form_context_factory=FormContext, root_namespace=root_namespace,
+                                template_env=env, options=dict(entry_point_config=entry_point.config))
 
+        entry_point.init_generator(self.request.registry, root_namespace, env, gctx)
         generator = entry_point.generator
-        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), TemplateVars(), FormContext,
-                                root_namespace, env)
+
         assert generator, "Need generator to function"
-        mapper_info = gctx.mapper_info
+        mapper_info = entry_point.config.get('mapper')
         assert mapper_info is not None
         if self.request.method == "GET":
             # namespace = resource.root_namespace

@@ -44,7 +44,7 @@ for(i = 0; i < entry_points.list.length; i++)
         new HtmlWebpackPlugin({
             title: '',
             template: 'src/assets/entry_point_generic.html',
-            filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/'  + ep + '.jinja2'),
+            filename: path.resolve(__dirname, 'build/assets/entry_point/email_mgmt_app/build/templates/entry_point/'  + ep + '.jinja2'),
             inject: false,
             chunks: [ep],
         })

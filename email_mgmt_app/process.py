@@ -104,7 +104,7 @@ class AssetManager:
         return p2
 
     def get(self, disc):
-        p2 = self.get_path()
+        p2 = self.get_path(disc)
         if not p2.parent.exists():
             p2.parent.mkdir(mode=0o0755, parents=True)
 
@@ -283,23 +283,22 @@ def includeme(config: Configurator):
 
 
 def process_views(registry, template_env, proc_context, ep_iterable: Iterable[EntryPoint], request):
-    root = get_root(request)
-    assert root is not None
-
     @dataclass
     class MyEvent:
         request: Request = field(default_factory=lambda: request)
 
-    event = MyEvent()
-    # on_new_request(event)
-
     root_namespace = NamespaceStore('root')
+
     entry_points_data = dict(list=[])
     entry_point: EntryPoint
     for name, entry_point in ep_iterable:
+        # this is random as fickle
         entry_points_data['list'].append(entry_point.key)
 
-        gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), TemplateVars(),
+        # is this our most advantageous entry pint?
+        mapper = entry_point.config and entry_point.config.get('mapper')
+
+        gctx = GeneratorContext(mapper, TemplateVars(),
                                 form_context_factory=FormContext, root_namespace=root_namespace,
                                 template_env=template_env)
         generator = registry.queryAdapter(gctx, IEntryPointGenerator)
@@ -307,6 +306,7 @@ def process_views(registry, template_env, proc_context, ep_iterable: Iterable[En
 
         process_view(gctx, entry_point, proc_context, registry, generator)
 
+    # we shoudldn't just dump in currecnt directory
     with open('entry_points.json', 'w') as f:
         json.dump(entry_points_data, f)
         f.close()

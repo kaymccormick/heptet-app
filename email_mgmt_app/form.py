@@ -2,10 +2,9 @@ import abc
 import logging
 from typing import AnyStr, Dict
 
-from lxml import html
-
 from email_mgmt_app.impl import NamespaceStore
 from email_mgmt_app.interfaces import INamespaceStore
+from lxml import html
 
 logger = logging.getLogger(__name__)
 
@@ -178,15 +177,21 @@ class Form(FormElement):
         self._variables = {}
         self._labels = []
         self._mapper_infos = {}
+        self._orig_namespace_id = namespace_id
 
         assert root_namespace is not None
         self._root_namespace = root_namespace
         self._form_namespace = self._root_namespace.get_namespace('form', True)
         if namespace is None:
-            logger.warning("making namespace in form namepsace %s", namespace_id)
+            assert namespace_id
+            logger.warning("making namespace in form namespace %s", namespace_id)
             self._namespace = self._form_namespace.make_namespace(namespace_id)
         else:
             self._namespace = namespace
+
+    def __repr__(self):
+        return 'Form(%r, %r, %r, %r)' % (
+        self._orig_namespace_id, self._root_namespace, self._namespace, self._outer_form)
 
     def get_html_id(self, html_id, *args, **kwargs):
         return self._namespace.get_namespace(html_id)
