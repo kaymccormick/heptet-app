@@ -1,6 +1,6 @@
 import json
 
-from process import setup_jsonencoder
+from email_mgmt_app.process import setup_jsonencoder
 
 
 def test_json_encoder(model_module):

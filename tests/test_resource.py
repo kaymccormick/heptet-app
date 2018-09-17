@@ -8,6 +8,7 @@ from email_mgmt_app import Resource, get_root, ResourceSchema
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.integration
 def test_add_resources(make_resource, app_request, root_resource):
     root1 = root_resource
     res1 = make_resource('resource1')

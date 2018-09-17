@@ -2,8 +2,8 @@ import sys
 
 import pytest
 
-from entity import EntityFormView
-from util import _dump
+from email_mgmt_app.entity import EntityFormView
+from email_mgmt_app.util import _dump
 
 
 @pytest.fixture

@@ -3,9 +3,9 @@ import logging
 from sqlalchemy import inspect
 
 import field_renderer
-from entity import EntityFormConfiguration, EntityFormViewEntryPointGenerator
-from model import map_column, get_column_map
-from model.email_mgmt import Domain
+from email_mgmt_app.entity import EntityFormConfiguration, EntityFormViewEntryPointGenerator
+from email_mgmt_app.model import map_column, get_column_map
+from email_mgmt_app.model.email_mgmt import Domain
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,11 @@
 import logging
 import sys
 
+from email_mgmt_app.interfaces import ISqlAlchemySession, IResource
+from email_mgmt_app.model.meta import Base
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, LargeBinary
-from sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 from sqlalchemy.orm import relationship, configure_mappers, backref
-
-from model.meta import Base
-from interfaces import ISqlAlchemySession, IResource
+from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 from zope.component import IFactory
 from zope.component.factory import Factory
 from zope.interface import implementer
@@ -15,6 +14,7 @@ logger = logging.getLogger(__name__)
 mappers = {}
 
 print("In model.email_mgmt", file=sys.stderr)
+
 
 # marker class for objects which are "association tables"
 class AssociationTableMixin(object):
@@ -39,6 +39,26 @@ class Mixin(object):
     @property
     def display_name(self):
         return self.name
+
+
+class Entity(Mixin, Base):
+    __tablename__ = 'app_entity'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+
+class Property(Mixin, Base):
+    __tablename__ = 'app_property'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    type_id = Column(Integer, ForeignKey('app_type.id'))
+    type = relationship('AppType', backref='types')
+
+
+class AppType(Mixin, Base):
+    __tablename__ = 'app_type'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
 
 
 class PublicKey(Mixin, Base):

@@ -8,8 +8,8 @@ from zope.component import adapter
 from zope.interface import implementer
 from zope.interface.registry import Components
 
-from interfaces import *
-from myapp_config import TEMPLATE_ENV_NAME
+from email_mgmt_app.interfaces import *
+from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
 
 logger = logging.getLogger(__name__)
 

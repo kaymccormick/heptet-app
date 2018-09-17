@@ -10,9 +10,9 @@ from pyramid_ldap3 import groupfinder
 from zope.component import getGlobalSiteManager
 
 from email_mgmt_app import get_root
-from exceptions import InvalidMode
-from impl import NamespaceStore
-from interfaces import INamespaceStore
+from email_mgmt_app.exceptions import InvalidMode
+from email_mgmt_app.impl import NamespaceStore
+from email_mgmt_app.interfaces import INamespaceStore
 
 DEV_MODE = 'development'
 PROD_MODE = 'production'

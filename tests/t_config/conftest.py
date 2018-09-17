@@ -6,11 +6,11 @@ from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCr
 from pyramid_ldap3 import groupfinder
 
 import email_mgmt_app
-import myapp_config
+import email_mgmt_app.myapp_config
 from email_mgmt_app import get_root
-from impl import NamespaceStore
-from interfaces import INamespaceStore
-from myapp_config import on_context_found, on_before_render, on_new_request, on_application_created
+from email_mgmt_app.impl import NamespaceStore
+from email_mgmt_app.interfaces import INamespaceStore
+from email_mgmt_app.myapp_config import on_context_found, on_before_render, on_new_request, on_application_created
 
 
 @pytest.fixture

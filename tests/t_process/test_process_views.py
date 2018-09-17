@@ -1,5 +1,5 @@
 import pytest
-from process import process_views, process_view
+from email_mgmt_app.process import process_views, process_view
 
 
 @pytest.mark.integration

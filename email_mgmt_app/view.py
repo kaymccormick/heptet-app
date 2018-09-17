@@ -4,9 +4,9 @@ from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPNotFound
 
 from email_mgmt_app import ExceptionView, OperationArgumentExceptionView
-from entrypoint import EntryPoint
-from exceptions import OperationArgumentException
-from util import get_exception_entry_point_key
+from email_mgmt_app.entrypoint import EntryPoint
+from email_mgmt_app.exceptions import OperationArgumentException
+from email_mgmt_app.util import get_exception_entry_point_key
 
 logger = logging.getLogger(__name__)
 

@@ -16,19 +16,19 @@ from zope.interface.registry import Components
 
 import email_mgmt_app
 import email_mgmt_app.myapp_config
-from context import FormContext, GeneratorContext
+from email_mgmt_app.context import FormContext, GeneratorContext
 from db_dump import RelationshipSchema, ColumnInfo
 from db_dump.info import MapperInfo, TypeInfo
 from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView
-from entity import EntityFormViewEntryPointGenerator
-from entity import FormRelationshipMapper, RelationshipSelect
-from entrypoint import EntryPoint, EntryPointGenerator
-from form import Form
-from impl import NamespaceStore, MapperWrapper, Separator
-from myapp_config import TEMPLATE_ENV_NAME
-from process import load_process_struct, AssetManager, ProcessContext
-from tvars import TemplateVars
-from viewderiver import entity_view
+from email_mgmt_app.entity import EntityFormViewEntryPointGenerator
+from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
+from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
+from email_mgmt_app.form import Form
+from email_mgmt_app.impl import NamespaceStore, MapperWrapper, Separator
+from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
+from email_mgmt_app.process import load_process_struct, AssetManager, ProcessContext
+from email_mgmt_app.tvars import TemplateVars
+from email_mgmt_app.viewderiver import entity_view
 
 logger = logging.getLogger(__name__)
 
@@ -349,6 +349,7 @@ def mapper_info_mock():
 
 @pytest.fixture
 def mapper_info_real(mappers_real):
+
     return mappers_real[0]
 
 
@@ -423,6 +424,7 @@ def process_struct_real():
 
 @pytest.fixture
 def mappers_real(process_struct_real):
+    assert process_struct_real.mappers
     return process_struct_real.mappers
 
 

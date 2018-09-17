@@ -1,6 +1,6 @@
 import logging
 
-from tvars import TemplateVars
+from email_mgmt_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 

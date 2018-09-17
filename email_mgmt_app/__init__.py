@@ -14,15 +14,15 @@ from pyramid.request import Request
 from zope.interface import implementer
 
 from db_dump import TypeField
-from entrypoint import EntryPoint, ResourceManager, default_manager, \
+from email_mgmt_app.entrypoint import EntryPoint, ResourceManager, default_manager, \
     default_entry_point
-from exceptions import MissingArgumentException
-from impl import EntityTypeMixin, TemplateEnvMixin
-from interfaces import IResource
-from manager import ResourceOperation
+from email_mgmt_app.exceptions import MissingArgumentException
+from email_mgmt_app.impl import EntityTypeMixin, TemplateEnvMixin
+from email_mgmt_app.interfaces import IResource
+from email_mgmt_app.manager import ResourceOperation
 from marshmallow import Schema, fields
-from mixin import EntryPointMixin
-from util import get_entry_point_key, get_exception_entry_point_key
+from email_mgmt_app.mixin import EntryPointMixin
+from email_mgmt_app.util import get_entry_point_key, get_exception_entry_point_key
 
 # class MapperInfosMixin:
 #     @property
@@ -329,8 +329,6 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
         entry_point_key = get_entry_point_key(request, root_resource[node_name], op.name)
         d['view'] = op.view
         entry_point = EntryPoint(manager, entry_point_key,
-                                 request,
-                                 request.registry,
                                  js=op.entry_point_js(request),
                                  # we shouldn't be calling into the "operation" for the entry point
                                  mapper_wrapper=mapper_wrapper,

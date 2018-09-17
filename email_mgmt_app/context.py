@@ -8,10 +8,10 @@ from jinja2 import Environment
 from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
-from form import Form
-from impl import NamespaceStore, TemplateEnvMixin, MixinBase
-from interfaces import IFormContext, IGeneratorContext
-from tvars import TemplateVars
+from email_mgmt_app.form import Form
+from email_mgmt_app.impl import NamespaceStore, TemplateEnvMixin, MixinBase
+from email_mgmt_app.interfaces import IFormContext, IGeneratorContext
+from email_mgmt_app.tvars import TemplateVars
 
 TemplateEnvironment = Environment
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
 
-class ContextFormContextMixin(MixinBase):
+class FormContextMixin(MixinBase):
     def __init__(self):
         super().__init__()
         self._form_context = None  # type: FormContext

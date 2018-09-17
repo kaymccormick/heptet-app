@@ -5,7 +5,7 @@ import sys
 import pytest
 
 from email_mgmt_app import get_root, ResourceSchema
-from model import email_mgmt
+from email_mgmt_app.model import email_mgmt
 
 
 # we need to keep this somewhat synchronized!

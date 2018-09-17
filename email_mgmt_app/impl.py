@@ -5,9 +5,9 @@ from typing import Generic, TypeVar
 from zope.component import adapter
 from zope.interface import implementer
 
-from exceptions import NamespaceCollision
-from interfaces import ITemplateVariable, ICollector, IMapperInfo, INamespaceStore
-from tvars import TemplateVars
+from email_mgmt_app.exceptions import NamespaceCollision
+from email_mgmt_app.interfaces import ITemplateVariable, ICollector, IMapperInfo, INamespaceStore
+from email_mgmt_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 

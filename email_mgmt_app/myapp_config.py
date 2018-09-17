@@ -10,10 +10,10 @@ from zope.component import IFactory
 from zope.component.factory import Factory
 
 from email_mgmt_app import Resource, RootResource
-from impl import NamespaceStore
-from interfaces import IResource, INamespaceStore
-from util import _dump
-from webapp_main import logger
+from email_mgmt_app.impl import NamespaceStore
+from email_mgmt_app.interfaces import IResource, INamespaceStore
+from email_mgmt_app.util import _dump
+from email_mgmt_app.webapp_main import logger
 
 logger = logging.getLogger(__name__)
 

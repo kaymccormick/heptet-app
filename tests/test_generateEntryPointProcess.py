@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch, Mock
 
 import pytest
 
-from process import GenerateEntryPointProcess, ProcessContext
+from email_mgmt_app.process import GenerateEntryPointProcess, ProcessContext
 
 logger = logging.getLogger(__name__)
 

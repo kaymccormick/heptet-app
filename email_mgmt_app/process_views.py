@@ -5,17 +5,18 @@ from datetime import datetime
 from logging import Formatter
 
 from pyramid.config import Configurator
+from pyramid.exceptions import ConfigurationExecutionError
 from pyramid.paster import setup_logging, get_appsettings
 from pyramid.request import Request
 from pyramid_jinja2 import IJinja2Environment
 
 import db_dump.args
-import model.email_mgmt
+import email_mgmt_app.model.email_mgmt
 from email_mgmt_app import get_root
-from interfaces import IEntryPoint
-from process import setup_jsonencoder, AssetManager, ProcessContext, process_views
+from email_mgmt_app.interfaces import IEntryPoint
+from email_mgmt_app.process import setup_jsonencoder, AssetManager, ProcessContext, process_views
 from test.util import get_request
-from util import _dump
+from email_mgmt_app.util import _dump
 
 logger = logging.getLogger()
 
@@ -62,7 +63,17 @@ def main(input_args=None):
 
     config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
 
-    config.commit()
+    try:
+        config.commit()
+    except ConfigurationExecutionError:
+        msg = "Application error. Can't commit pyramid configuration. %s" % sys.exc_info()[1]
+        logger.critical(msg)
+        print(msg, file=sys.stderr)
+        import traceback
+        traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
+        print(sys.exc_info()[1], file=sys.stderr)
+
+        exit(1)
     registry = config.registry
 
     _dump(
@@ -83,4 +94,4 @@ def main(input_args=None):
     request = get_request(Request, registry=registry)  # type: Request
     assert request
 
-    process_views(registry, template_env, asset_mgr, proc_context, l, request)
+    process_views(registry, template_env, proc_context, l, request)

@@ -6,20 +6,20 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
-from context import GeneratorContext, FormContext
+from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, get_root
-from entity import EntityFormView
-from impl import MapperWrapper, NamespaceStore
-from interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-from manager import OperationArgument
-from myapp_config import logger
+from email_mgmt_app.entity import EntityFormView
+from email_mgmt_app.impl import MapperWrapper, NamespaceStore
+from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
+from email_mgmt_app.manager import OperationArgument
+from email_mgmt_app.myapp_config import logger
 from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
 from pyramid.request import Request
 from sqlalchemy import Column, String
 from sqlalchemy.exc import InvalidRequestError
-from tvars import TemplateVars
-from util import format_discriminator
+from email_mgmt_app.tvars import TemplateVars
+from email_mgmt_app.util import format_discriminator
 from zope.component import adapter
 from zope.interface import implementer, Interface
 

@@ -4,8 +4,8 @@ from typing import AnyStr, Dict
 
 from lxml import html
 
-from impl import NamespaceStore
-from interfaces import INamespaceStore
+from email_mgmt_app.impl import NamespaceStore
+from email_mgmt_app.interfaces import INamespaceStore
 
 logger = logging.getLogger(__name__)
 

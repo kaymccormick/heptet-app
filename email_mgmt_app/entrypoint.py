@@ -7,17 +7,17 @@ from typing import AnyStr, Type
 from pyramid.config import Configurator
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
-from context import GeneratorContext, FormContext
-from manager import OperationArgument, ResourceOperation
-from tvars import TemplateVars
+from email_mgmt_app.context import GeneratorContext, FormContext
+from email_mgmt_app.manager import OperationArgument, ResourceOperation
+from email_mgmt_app.tvars import TemplateVars
 from zope import interface
 
-from interfaces import *
-from impl import Separator
+from email_mgmt_app.interfaces import *
+from email_mgmt_app.impl import Separator
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
-from impl import MapperWrapper
+from email_mgmt_app.impl import MapperWrapper
 
 logger = logging.getLogger(__name__)
 

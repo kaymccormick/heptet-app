@@ -8,8 +8,8 @@ from pyramid.events import ContextFound
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
 import email_mgmt_app.myapp_config
-from myapp_config import on_context_found
-from process import config_process_struct, load_process_struct
+from email_mgmt_app.myapp_config import on_context_found
+from email_mgmt_app.process import config_process_struct, load_process_struct
 
 logger = logging.getLogger(__name__)
 

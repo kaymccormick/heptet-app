@@ -5,115 +5,121 @@ import sys
 from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
-from lxml import html
-from pyramid.path import DottedNameResolver
-
+from email_mgmt_app.context import FormContextMixin, FormContext, GeneratorContext
 from email_mgmt_app import BaseView
-from marshmallow import ValidationError
+from email_mgmt_app.entrypoint import EntryPointGenerator, IEntryPointGenerator
+from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, FormOptionElement
+from email_mgmt_app.impl import NamespaceStore, EntityTypeMixin
+from email_mgmt_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView
+from lxml import html
+from email_mgmt_app.model import get_column_map
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.ext.declarative import DeclarativeMeta
+from email_mgmt_app.tvars import TemplateVarsSchema, TemplateVars
 from zope.component import adapter
 from zope.interface import Interface, implementer
 
-from context import ContextFormContextMixin, FormContext, GeneratorContext
 from db_dump.info import IRelationshipInfo
-from entrypoint import EntryPointGenerator, IEntryPointGenerator
-from form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, FormOptionElement
-from impl import NamespaceStore, EntityTypeMixin
-from interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView
-from model import get_column_map
-from model.meta import Base
-from tvars import TemplateVarsSchema, TemplateVars
-
+from marshmallow import ValidationError
 
 GLOBAL_NAMESPACE = 'global'
 logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
 
-def _make_form_representation(context: FormContext):
-    """
-    Generate a logical representation of an entity form.
-    :return:
-    """
+class MakeFormRepresentation(FormContextMixin):
+    def __init__(self, form_context: FormContext):
+        super().__init__()
+        self._form_context = form_context
 
-    assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
-    mapper = context.generator_context.mapper_info
+    def make_form_representation(self):
+        """
+        Generate a logical representation of an entity form.
+        :return:
+        """
 
-    outer_form = False
-    if context.nest_level == 0:
-        outer_form = True
+        context = self.form_context
+        # fix me - this is error prone!
+        assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
+        mapper = context.generator_context.mapper_info
 
-    mapper_key = mapper.local_table.key  # ??
-    namespace_id = stringcase.camelcase(mapper_key)
-    logger.debug("in form_representation with namespace id of %s", namespace_id)
-    # we should provide for initialize the form in another fashion for testability!!!
-    action = context.form_action
-    # assert action
-    the_form = Form(namespace_id=namespace_id,
-                    root_namespace=context.root_namespace,
-                    namespace=context.namespace,  # can be None
-                    outer_form=outer_form,
-                    # attr=dict(action=context.form_action,
-                    #           method='POST')
+        outer_form = False
+        if context.nest_level == 0:
+            outer_form = True
 
-                    )
-    context.form = the_form
+        mapper_key = mapper.local_table.key  # ??
+        namespace_id = stringcase.camelcase(mapper_key)
+        logger.debug("in form_representation with namespace id of %s", namespace_id)
+        # we should provide for initialize the form in another fashion for testability!!!
+        action = context.form_action
+        # assert action
+        the_form = Form(namespace_id=namespace_id,
+                        root_namespace=context.root_namespace,
+                        namespace=context.namespace,  # can be None
+                        outer_form=outer_form,
+                        # attr=dict(action=context.form_action,
+                        #           method='POST')
 
-    form_contents = '<div>'
-    #        the_form.set_mapper_info(mapper.local_table.key, mapper)
+                        )
+        context.form = the_form
 
-    # we want a script tag containing stuff we like
-    #         script = html.Element('script')
-    # #        script.text = "mapper = %s;" % json.dumps(mapper)
-    #         the_form.element.append(script)
-    logger.debug("Generating form representation for %s" % mapper_key)
+        form_contents = '<div>'
+        #        the_form.set_mapper_info(mapper.local_table.key, mapper)
 
-    # suppress primary keys
-    suppress = context.extra['suppress_cols'] = {}
-    for akey in mapper.primary_key:
-        assert akey.table == mapper.local_table.key
-        suppress[akey.column] = True
+        # we want a script tag containing stuff we like
+        #         script = html.Element('script')
+        # #        script.text = "mapper = %s;" % json.dumps(mapper)
+        #         the_form.element.append(script)
+        logger.debug("Generating form representation for %s" % mapper_key)
 
-    form_html = {}
-    # PROCESS RELATIONSHIP
-    # for each relationship
-    # where its appropriate, embed or supply a subordinate form
-    # additionally, supply a form variable and mapping for the relevant column.
-    for rel in mapper.relationships:
-        # rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRe#lationshipMapper)
+        # suppress primary keys
+        suppress = context.extra['suppress_cols'] = {}
+        for akey in mapper.primary_key:
+            assert akey.table == mapper.local_table.key
+            suppress[akey.column] = True
 
-        # we specify relationship select here. However, there are other ways we'll wish to
-        # render
+        form_html = {}
+        # PROCESS RELATIONSHIP
+        # for each relationship
+        # where its appropriate, embed or supply a subordinate form
+        # additionally, supply a form variable and mapping for the relevant column.
+        for rel in mapper.relationships:
+            # rel_mapper = context.request.registry.getMultiAdapter((rel, context), IFormRe#lationshipMapper)
 
-        (local, remote) = rel.local_remote_pairs[0]
-        column_name = local.column
-        context.current_element = rel
+            # we specify relationship select here. However, there are other ways we'll wish to
+            # render
 
-        column = get_column_map(local)
-        # store the html!
-        form_html[column_name] = context.relationship_field_mapper(
-            RelationshipSelect()).map_relationship(context)
+            (local, remote) = rel.local_remote_pairs[0]
+            column_name = local.column
+            context.current_element = rel
 
-    # process each column
-    for column in mapper.columns:
-        key = column.key
-        if key in form_html:
-            # we already have the html, append it and continue
-            form_contents = form_contents + str(form_html[key])
-            continue
-        if key in suppress and suppress[key]:
-            logger.debug("skipping suppressed column %s", key)
-            continue
+            column = get_column_map(local)
+            # store the html!
 
-        form_contents = form_contents + _map_column(context, column)
+            #
 
-    form_contents = form_contents + '</div>'
-    the_form.element.append(html.fromstring(form_contents))
+            form_html[column_name] = context.relationship_field_mapper(
+                RelationshipSelect()).map_relationship(context)
 
-    return the_form
+        # process each column
+        for column in mapper.columns:
+            key = column.key
+            if key in form_html:
+                # we already have the html, append it and continue
+                form_contents = form_contents + str(form_html[key])
+                continue
+            if key in suppress and suppress[key]:
+                logger.debug("skipping suppressed column %s", key)
+                continue
+
+            form_contents = form_contents + _map_column(context, column)
+
+        form_contents = form_contents + '</div>'
+        the_form.element.append(html.fromstring(form_contents))
+
+        return the_form
 
 
 def _map_column(context, column):
@@ -275,10 +281,6 @@ class EntityCollectionView(BaseEntityRelatedView):
         return {'entities': collection}
 
 
-class FormViewEntryPointGenerator(EntryPointGenerator):
-    pass
-
-
 class _template:
     __slots__ = ['name']
 
@@ -410,7 +412,7 @@ class RelationshipSelect:
 
 @implementer(IEntryPointGenerator)
 @adapter(IGeneratorContext)
-class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextFormContextMixin):
+class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
 
     def __init__(self, ctx: GeneratorContext) -> None:
         super().__init__(ctx)
@@ -473,7 +475,7 @@ class EntityFormViewEntryPointGenerator(FormViewEntryPointGenerator, ContextForm
 
         return self._form.as_html()
 
-    #FIXME delete
+    # FIXME delete
     def js_stmts(self):
         utility = self._request.registry.queryUtility(ICollector, 'js_stmts')
         if utility:
@@ -529,7 +531,7 @@ class EntityFormView(BaseEntityRelatedView[T]):
         root_namespace = NamespaceStore('root')
 
         entry_point.init_generator(self.request.registry, root_namespace, env)
-        
+
         generator = entry_point.generator
         gctx = GeneratorContext(entry_point.mapper_wrapper.get_one_mapper_info(), TemplateVars(), FormContext,
                                 root_namespace, env)
