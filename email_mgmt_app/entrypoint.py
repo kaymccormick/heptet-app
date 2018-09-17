@@ -316,6 +316,7 @@ def includeme(config: 'Configurator'):
         pass
         #config.registry.registerAdapter(MyCollector, [ICollectorContext], ICollector)
 
+    # FIXME rethink this directive?
     config.add_directive('register_entry_point', register_entry_point)
     register_entry_point(config, default_entry_point())
     config.action(None, do_action)

@@ -1,25 +1,14 @@
 import importlib
 import json
 import logging
-import sys
 from unittest.mock import MagicMock, Mock, PropertyMock
-
-import pytest
-from jinja2 import Environment, Template
-from pyramid.config import Configurator
-from pyramid.config.views import ViewDeriverInfo
-from pyramid.registry import Registry
-from pyramid.response import Response
-from pyramid_jinja2 import IJinja2Environment
-from pyramid_tm.tests import DummyRequest
-from zope.interface.registry import Components
 
 import email_mgmt_app
 import email_mgmt_app.myapp_config
-from email_mgmt_app.context import FormContext, GeneratorContext
-from db_dump import RelationshipSchema, ColumnInfo
-from db_dump.info import MapperInfo, TypeInfo
+import pytest
+import sys
 from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView
+from email_mgmt_app.context import FormContext, GeneratorContext
 from email_mgmt_app.entity import EntityFormViewEntryPointGenerator
 from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
 from email_mgmt_app.entrypoint import EntryPoint, EntryPointGenerator
@@ -29,6 +18,17 @@ from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
 from email_mgmt_app.process import load_process_struct, AssetManager, ProcessContext
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.viewderiver import entity_view
+from jinja2 import Environment, Template
+from pyramid.config import Configurator
+from pyramid.config.views import ViewDeriverInfo
+from pyramid.registry import Registry
+from pyramid.response import Response
+from pyramid_jinja2 import IJinja2Environment
+from pyramid_tm.tests import DummyRequest
+from zope.interface.registry import Components
+
+from db_dump import RelationshipSchema, ColumnInfo
+from db_dump.info import MapperInfo, TypeInfo
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ APP_PACKAGE = 'email_mgmt_app'
 #
 # DATA
 #
+# fixme pull passwords from external
 @pytest.fixture
 def webapp_settings():
     return {
@@ -53,6 +54,7 @@ def webapp_settings():
     }
 
 
+# what is this?
 _data = {'secondary': None, 'argument': 'email_mgmt_app.model.email_mgmt.Person', 'direction': 'MANYTOONE',
          'is_property': True, 'is_mapper': False, 'local_remote_pairs': [
         {'local': {'table': {'key': 'public_key'}, 'key': 'owner_id'},
@@ -117,11 +119,22 @@ def app_request(app_registry_mock):
 
 @pytest.fixture
 def app_registry():
+    """
+    See also app_registry_mock.
+    :return:
+    """
     return Components()
 
 
 @pytest.fixture
 def app_registry_mock(jinja2_env_mock):
+    """
+    This mocks the registry and provides the primary instance we need. We
+    could mock the registry and return a non-mock jinja2 env - that would be useful
+    too.
+    :param jinja2_env_mock:
+    :return:
+    """
     x = MagicMock(Registry)
 
     def _se(i, name):
@@ -135,12 +148,12 @@ def app_registry_mock(jinja2_env_mock):
 
 @pytest.fixture
 def entry_point_mock():
-    mock = Mock(EntryPoint, name='entry_point')
-    name = '_default'
-    p = PropertyMock(return_value=name)
-    type(mock).key = p
+    mock = Mock(EntryPoint, name='entry_point')  # do we need to name this??
+    # this is sort of a "hack" to get it to work (_default)
+    default = '_default'
+    type(mock).key = PropertyMock(return_value=default)
     type(mock).view_kwargs = PropertyMock(return_value=dict(view=lambda x, y: {}))
-    type(mock).discriminator = PropertyMock(return_value=['entry_point', Separator, name])
+    type(mock).discriminator = PropertyMock(return_value=['entry_point', Separator, default])
     return mock
 
 
@@ -163,11 +176,20 @@ def make_config():
 
 @pytest.fixture
 def config_mock():
+    """
+    Random configurator mock, I am not sure why this would be useful at all.
+    :return:
+    """
     return MagicMock(Configurator())
 
 
 @pytest.fixture
 def config_fixture():
+    """
+    This is our basic "config fixture" for the application. Includes "myapp_config" which
+    maybe hopefully provides all of our configuration? Part test, part experiment.
+    :return:
+    """
     config = Configurator(package="email_mgmt_app", root_package="email_mgmt_app")
     config.include(email_mgmt_app.myapp_config)
     logger.warning("config = %s", config)
@@ -181,7 +203,14 @@ def config_fixture():
 #
 @pytest.fixture
 def make_jinja2_env(make_config):
+    """
+    Factory fixture to make "jinja2 environments"
+    :param make_config:
+    :return:
+    """
+
     def _make_jinja2_env():
+        # FIXME move this somewhere else
         config = make_config(
             {'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\ntemplates\nemail_mgmt_apps\n."})
         config.include('.template')
@@ -200,6 +229,10 @@ def jinja2_env(make_jinja2_env, make_config):
 
 @pytest.fixture
 def jinja2_env_mock():
+    """
+    Mock the jinja2 env.
+    :return:
+    """
     mock = MagicMock(Environment, name='jinja2_env')
     # mock.mock_add_spec(Environment.__class__)
     # mock.mock_add_spec(['get_template'])
@@ -224,17 +257,16 @@ def jinja2_env_mock():
 #
 @pytest.fixture()
 def root_resource(app_request):
-    logger.critical("root resource fixture")
+    """
+    Call the root factory and return the root resource. The root factory is hard-coded
+    because it is always the same!
+    :param app_request:
+    :return:
+    """
     root = get_root(app_request)
     yield root
-    logger.critical("resetting app root")
     email_mgmt_app.reset_root(app_request)
     assert get_root(app_request) is not root
-
-
-@pytest.fixture
-def resource_operation(view_test):
-    return ResourceOperation('test_op', view_test, [])
 
 
 @pytest.fixture
@@ -243,6 +275,11 @@ def make_resource(entry_point_mock, resource_manager):
         return Resource(name, root_resource, entry_point_mock)
 
     return _make_resource
+
+
+@pytest.fixture
+def resource_operation(view_test):
+    return ResourceOperation('test_op', view_test, [])
 
 
 @pytest.fixture
@@ -349,7 +386,6 @@ def mapper_info_mock():
 
 @pytest.fixture
 def mapper_info_real(mappers_real):
-
     return mappers_real[0]
 
 
@@ -500,7 +536,7 @@ def entity_form_view_mock():
 
 @pytest.fixture
 def model_module():
-    pkg = 'model.email_mgmt'
+    pkg = 'email_mgmt_app.model.email_mgmt'
     if pkg in sys.modules:
         return sys.modules[pkg]
 
@@ -530,7 +566,7 @@ def make_asset_manager():
 
 @pytest.fixture
 def asset_manager_mock():
-    return Mock(AssetManager)
+    return MagicMock(AssetManager)
 
 
 @pytest.fixture
@@ -562,6 +598,7 @@ def make_entity_form_view_entry_point_generator():
 @pytest.fixture
 def resource_operation_mock():
     return MagicMock(ResourceOperation)
+
 
 # BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
 #

@@ -96,16 +96,19 @@ class Asset:
 
 
 class AssetManager:
-    def get(self, disc):
-
+    def get_path(self, disc):
         l = list()
         format_discriminator(l, *disc)
         p = Path(self._output_dir)
         p2 = p.joinpath(''.join(l))
+        return p2
+
+    def get(self, disc):
+        p2 = self.get_path()
         if not p2.parent.exists():
             p2.parent.mkdir(mode=0o0755, parents=True)
 
-        return open(p2, 'w')
+        return p2.open('w')
 
     def __init__(self, output_dir, mkdir=False) -> None:
         super().__init__()
@@ -198,7 +201,7 @@ class GenerateEntryPointProcess:
             content = self._context.template_env.get_template('entry_point.js.jinja2').render(
                 **data
             )
-            f.write(content)
+            f.write(str(content))
             f.close()
 
         # with open(fname, 'w') as f:

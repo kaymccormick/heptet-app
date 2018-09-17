@@ -5,19 +5,20 @@ import sys
 from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
-from email_mgmt_app.context import FormContextMixin, FormContext, GeneratorContext
 from email_mgmt_app import BaseView
+from email_mgmt_app.context import FormContextMixin, FormContext, GeneratorContext
 from email_mgmt_app.entrypoint import EntryPointGenerator, IEntryPointGenerator
-from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, FormOptionElement
+from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, \
+    FormOptionElement
 from email_mgmt_app.impl import NamespaceStore, EntityTypeMixin
 from email_mgmt_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView
-from lxml import html
 from email_mgmt_app.model import get_column_map
+from email_mgmt_app.tvars import TemplateVarsSchema, TemplateVars
+from lxml import html
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.ext.declarative import DeclarativeMeta
-from email_mgmt_app.tvars import TemplateVarsSchema, TemplateVars
 from zope.component import adapter
 from zope.interface import Interface, implementer
 
@@ -357,7 +358,8 @@ class RelationshipSelect:
             context2 = context.copy(nest=True)
             context2.namespace = sub_namespace
 
-            entity_form = _make_form_representation(context2)
+            m = MakeFormRepresentation(context2)
+            entity_form = m.make_form_representation()
 
             collapse = env.get_template(template.collapse.name).render(
                 collapse_id=collapse_id.get_id(),
@@ -424,7 +426,8 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
             raise ex
 
     def form_representation(self):
-        return _make_form_representation(self.form_context)
+        m = MakeFormRepresentation(self.form_context)
+        return m.make_form_representation()
 
     def generate(self):
         vars_ = ('js_imports', 'js_stmts', 'ready_stmts')
