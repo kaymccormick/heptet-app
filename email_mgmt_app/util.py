@@ -74,3 +74,4 @@ def format_discriminator(l, *elems):
             format_discriminator(l, *attr)
         else:
             l.append(str(elem))
+

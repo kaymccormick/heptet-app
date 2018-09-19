@@ -14,14 +14,14 @@ from email_mgmt_app.exceptions import MissingArgumentException
 from email_mgmt_app.impl import EntityTypeMixin, TemplateEnvMixin
 from email_mgmt_app.impl import Separator
 from email_mgmt_app.interfaces import IEntryPoint, IEntryPointGenerator
-from email_mgmt_app.interfaces import IResource
-from email_mgmt_app.manager import ResourceOperation
-from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.util import get_entry_point_key, get_exception_entry_point_key
 from email_mgmt_app.interfaces import IEntryPointView, IResourceManager
-from email_mgmt_app.manager import OperationArgument
+from email_mgmt_app.interfaces import IResource
+from email_mgmt_app.operation import OperationArgument
+from email_mgmt_app.operation import ResourceOperation
+from email_mgmt_app.tvars import TemplateVars
+from email_mgmt_app.util import get_exception_entry_point_key
+from interfaces import IEntryPointMapperAdapter
 from pyramid.config import Configurator
-from pyramid.interfaces import IRequestFactory
 from pyramid.request import Request
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.component import adapter
@@ -48,7 +48,11 @@ logger = logging.getLogger(__name__)
 lock = Lock()
 
 
-def get_root(request: Request):
+def get_root(request: Request = None):
+    return _get_root()
+
+
+def _get_root():
     lock.acquire()
     if hasattr(sys.modules[__name__], "_root"):
         root = getattr(sys.modules[__name__], "_root")
@@ -67,6 +71,10 @@ def reset_root(request: Request):
     if hasattr(sys.modules[__name__], "_root"):
         delattr(sys.modules[__name__], "_root")
     lock.release()
+
+
+class AppBase(object):
+    pass
 
 
 class ArgumentContext:
@@ -124,7 +132,7 @@ class EntryPointMixin:
 
 
 @implementer(IResource)
-class _Resource(EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
+class _Resource(AppBase, EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
     """
     Base resource type. Implements functionality common to all resource types.
     """
@@ -345,6 +353,10 @@ class ResourceManager:
         return self._ops_dict
 
     @property
+    def operations(self):
+        return self._ops
+
+    @property
     def entity_type(self):
         return self._entity_type
 
@@ -373,6 +385,9 @@ class ResourceManager:
         return self._mapper_key
 
 
+# EP-4
+
+
 def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     """
 
@@ -385,13 +400,13 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     op: ResourceOperation
 
     # sanity checks
-    assert manager._mapper_key, "No mapper key (%s)" % manager._mapper_key
+    assert manager.mapper_key, "No mapper key (%s)" % manager.mapper_key
 
     reg_view = False
     node_name = manager.node_name
-    request = config.registry.queryUtility(IRequestFactory, default=Request)({})
-    request.registry = config.registry
-    root_resource = get_root(request)
+
+    # alter interface to this?
+    root_resource = get_root()
     # assert root_resource is not None and isinstance(root_resource, RootResource), root_resource
     my_parent = root_resource
     assert my_parent is not None
@@ -407,36 +422,31 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     # Our parent is the "email_mgmt_app.resources" in our
     # app registry. That's the root resource!!
 
-    mapper_wrapper = manager.mapper_wrappers[manager._mapper_key]
-    assert mapper_wrapper, "no mapper wrapper %s in %s" % (manager._mapper_key, manager.mapper_wrappers)
-    # entity_type = mapper_wrapper.mapper_info.entity
+    # can we encapsulate this somehow?
+    mapper_wrapper = manager.mapper_wrappers[manager.mapper_key]
+    assert mapper_wrapper, "no mapper wrapper %s in %s" % (manager.mapper_key, manager.mapper_wrappers)
 
-    container_entry_point_configuration = EntryPointConfiguration(mapper=manager.mapper_wrapper.get_one_mapper_info(),
-                                                                  )
-    container_entry_point = EntryPoint(manager, manager.mapper_key,
-                                       request,
-                                       request.registry,
-                                       config=container_entry_point_configuration)
+    # container_entry_poic:nt_configuration = EntryPointConfiguration(mapper=manager.mapper_wrapper.get_one_mapper_info(),
+    #                                                               )
+
+    container_entry_point = EntryPoint(manager, manager.mapper_key, mapper=manager.mapper_wrapper.get_one_mapper_info())
+    IEntryPointMapperAdapter(container_entry_point).mapper = mapper_wrapper
 
     # our factory now returns dynamic classes - you get a unique class
     # back every time.
     resource = Resource(
-        name=node_name, title=manager._title,
+        name=node_name,
+        title=manager.title,
         parent=my_parent,
         entry_point=container_entry_point,
     )
     root_resource.__setitem__(node_name, resource)
     assert type(resource) is not Resource
 
-    request.context = resource
-    request.root = root_resource
-    request.subpath = ()
-    request.traversed = (node_name,)
-
     # this makes a direct mapping between operations, entry points, and views.
     extra = {}
 
-    for op in manager._ops:
+    for op in manager.operations:
         resource.add_name(op.name)
 
         d = extra.copy()
@@ -444,14 +454,10 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
         if op.renderer is not None:
             d['renderer'] = op.renderer
 
-        request.view_name = op.name
-
-        entry_point_key = get_entry_point_key(request, root_resource[node_name], op.name)
+        entry_point_key = '%s_%s' % (node_name, op.name)
         d['view'] = op.view
         entry_point = EntryPoint(manager, entry_point_key,
-                                 js=op.entry_point_js(request),
                                  # we shouldn't be calling into the "operation" for the entry point
-                                 view_kwargs=d,
                                  config=EntryPointConfiguration(mapper=mapper_wrapper.get_one_mapper_info())
                                  )
         logger.debug("spawning sub resource for op %s, %s", op.name, node_name)
@@ -631,30 +637,27 @@ class ResourceSchema(Schema):
 
 
 @interface.implementer(IEntryPoint)
-class EntryPoint:
+class EntryPoint(AppBase):
     """
-
+    Encapsulation of an "entry point" to the application; specifically used for javascript entry points
+    for bundling purposes (i.e. webpack).
     """
 
     def __init__(
             self,
-            manager: 'ResourceManager',
+            resource_manager: 'ResourceManager',
             key: AnyStr,
             generator=None,
-            js=None,
-            view_kwargs: dict = None,
             config: EntryPointConfiguration = None,
+            **kwargs,
     ) -> None:
-        # just to make sure we're sane
-        assert isinstance(key, str)
         self._key = key
         self._generator = generator
-        self._js = js
-        self._view_kwargs = view_kwargs  # view coupling !!! FIXME
         self._view = None
         self._vars = TemplateVars()
-        self._manager = manager
+        self._manager = resource_manager
         self._config = config
+        self._kwargs = kwargs
         try:
             x = repr(self)
         except Exception as ex:
@@ -663,13 +666,10 @@ class EntryPoint:
         logger.debug("Entry Point is %s", x)
 
     def __repr__(self):
-        return "EntryPoint(manager=%r, key=%r, generator=%r, \
-js=%r, view_kwargs=%r)" % (
+        return "EntryPoint(manager=%r, key=%r, generator=%r)" % (
             self._manager,
             self._key,
             self._generator,
-            self._js,
-            self._view_kwargs,
 
         )
 
@@ -692,22 +692,6 @@ js=%r, view_kwargs=%r)" % (
     @key.setter
     def key(self, new):
         self._key = new
-
-    @property
-    def view_kwargs(self) -> dict:
-        return self._view_kwargs
-
-    @view_kwargs.setter
-    def view_kwargs(self, new: dict):
-        self._view_kwargs = new
-
-    @property
-    def view(self):
-        return self._view
-
-    @view.setter
-    def view(self, new):
-        self._view = new
 
     # @property
     # def mapper_wrapper(self) -> MapperWrapper:
@@ -772,15 +756,10 @@ _default_manager = DefaultResourceManager()
 
 class DefaultEntryPoint(EntryPoint):
 
-    def __init__(self, manager):
+    def __init__(self, resource_manager):
         key = "_default"
-        registry = None
-        generator = None
-        js = None
-        view_kwargs = {}
-        mapper_wrapper = None
-        request = None
-        super().__init__(manager, key, generator, js, view_kwargs, mapper_wrapper)
+
+        super().__init__(resource_manager, key, None)
 
 
 _default_entry_point = DefaultEntryPoint(_default_manager)
@@ -793,7 +772,7 @@ class EntryPointConfiguration(dict):
 @adapter(IEntryPoint, IEntryPointView)
 @implementer(IEntryPointGenerator)
 class EntryPointGenerator(metaclass=abc.ABCMeta):
-    def __init__(self, ctx: GeneratorContext) -> None:
+    def __init__(self, ctx: 'GeneratorContext') -> None:
         """
 
         :param entry_point:
@@ -803,11 +782,11 @@ class EntryPointGenerator(metaclass=abc.ABCMeta):
         self._ctx = ctx
 
     @property
-    def ctx(self) -> GeneratorContext:
+    def ctx(self) -> 'GeneratorContext':
         return self._ctx
 
     @ctx.setter
-    def ctx(self, new: GeneratorContext) -> None:
+    def ctx(self, new: 'GeneratorContext') -> None:
         self._ctx = new
 
     @abc.abstractmethod

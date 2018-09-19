@@ -154,7 +154,7 @@ class GeneratorContext(
     # adding options here doesnt necessarily make things any clearer
 
     def __init__(self, entry_point, template_vars, form_context_factory: FormContextFactory,
-                 root_namespace: NamespaceStore, template_env=None, options: Mapping[AnyStr, object]=None) -> None:
+                 root_namespace: NamespaceStore, template_env=None, **kwargs) -> None:
         super().__init__()
         # if mapper_info is not None:
         #     assert isinstance(mapper_info, MapperInfo), "%s should be MapperInfo" % mapper_info
@@ -168,7 +168,10 @@ class GeneratorContext(
         self.template_vars = template_vars
         self.form_context_factory = form_context_factory
         self.root_namespace = root_namespace
-        self._options = options
+        for k, v in kwargs.items():
+            logger.critical("%r %r", k, v)
+            setattr(self, k, v)
+
         assert form_context_factory
 
     def form_context(self, **kwargs):
@@ -190,6 +193,7 @@ class GeneratorContext(
 
 FormContextArgs = ()
 
+# CODE SMELL FIXME
 FormContextFactory = Callable[[GeneratorContext,
                                TemplateEnvironment,
                                NamespaceStore, NamespaceStore, 'FormContextFactory',
@@ -305,6 +309,7 @@ class FormContext(
     def check_instance(self):
         super().check_instance()
         if self.form is None:
+            # FIXME this i think is now happening all the time ?
             logger.warning("form is not set, might be a bug")
 
     def __repr__(self):

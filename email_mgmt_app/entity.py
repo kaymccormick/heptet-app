@@ -7,7 +7,6 @@ from typing import Mapping, TypeVar, AnyStr
 import stringcase
 from email_mgmt_app import BaseView, EntryPointGenerator
 from email_mgmt_app.context import FormContextMixin, FormContext, GeneratorContext
-
 from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, \
     FormOptionElement
 from email_mgmt_app.impl import NamespaceStore, EntityTypeMixin
@@ -46,6 +45,7 @@ class MakeFormRepresentation(FormContextMixin):
         context = self.form_context
         # fix me - this is error prone!
         assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
+        # how do we extract our "mapper info"
         mapper = context.generator_context.mapper_info
 
         outer_form = False
@@ -124,15 +124,15 @@ class MakeFormRepresentation(FormContextMixin):
 
         return the_form
 
-
+# EP-6
 def _map_column(context, column):
     key = column.key
     logger.debug("Mapping column %s", key)
-    # FIXME we default to text because we're lazy
+    # we default to text because we're lazy
     form_contents = ''
     kind = 'text'
     camel_key = stringcase.camelcase("input_%s" % key).replace('_', '')
-    # FIXME figure this out ?not much of a key with the replacements.
+    # figure this out ?not much of a key with the replacements.
     assert '_' not in camel_key, "Bad key %s" % camel_key
     input_id = context.form.get_html_id(camel_key, True)
     input_name = stringcase.camelcase(key).replace('_', '')
@@ -303,7 +303,7 @@ class _templates:
 template = _templates()
 
 
-#  FIXME - separate concerns
+#  separate concerns
 @adapter(IFormContext)
 @implementer(IRelationshipSelect)
 class RelationshipSelect:
@@ -443,7 +443,7 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
             t_vars[var] = []
 
         ctx = self.ctx
-        mapper_info = ctx.options
+
         if ctx.mapper_info is None:
             # fixme - we get called here when we shouldn't and our fix is to bail out right now
             logger.critical("no mapper! probably not gonna work.")
@@ -484,19 +484,21 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
 
         return self._form.as_html()
 
-    # FIXME delete
+    # EP-7
     def js_stmts(self):
         utility = self._request.registry.queryUtility(ICollector, 'js_stmts')
         if utility:
             return utility.get_value()
         return []
 
+    # EP-7
     def js_imports(self):
         utility = self._request.registry.queryUtility(ICollector, 'js_imports')
         if utility:
             return utility.get_value()
         return []
 
+    # EP-7
     def ready_stmts(self):
         utility = self._request.registry.queryUtility(ICollector, 'ready_stmts')
         assert utility
@@ -537,12 +539,23 @@ class EntityFormView(BaseEntityRelatedView[T]):
         assert entry_point
 
         env = self.context.template_env
+        # fixme
         root_namespace = NamespaceStore('root')
 
-        gctx = GeneratorContext(entry_point, TemplateVars(), form_context_factory=FormContext, root_namespace=root_namespace,
-                                template_env=env, options=dict(entry_point_config=entry_point.config))
+        gctx = GeneratorContext(
+            entry_point,
+            TemplateVars(),
+            form_context_factory=FormContext,
+            root_namespace=root_namespace,
+            template_env=env)
+        entry_point.init_generator(self.request.registry, root_namespace, env, generator_context=gctx)
+        # init_generator:
+        # if cb:
+        #     generator = cb(registry, generator_context)
+        # else:
+        #     generator = registry.getAdapter(generator_context, IEntryPointGenerator)
 
-        entry_point.init_generator(self.request.registry, root_namespace, env, gctx)
+        # this pulls the generator from the entry point which I dont like
         generator = entry_point.generator
 
         assert generator, "Need generator to function"
@@ -554,6 +567,7 @@ class EntityFormView(BaseEntityRelatedView[T]):
             #     namespace = namespace()
             #
             # # we shouldn't need to crate this
+
 
             wrapper = generator.render_entity_form_wrapper(
                 gctx.form_context(relationship_field_mapper=FormRelationshipMapper))

@@ -255,7 +255,8 @@ def includeme(config):
     # config.registry['dbsession_factory'] = session_factory
 
     # make request.dbsession available for use in Pyramid
-    # FIXME    config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
+    #
+    # EP-5: config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
     config.add_request_method(
         # r.tm is the transaction manager used by pyramid_tm
         lambda r: get_tm_session(r.registry.getUtility(IFactory, 'sqlalchemy_session'), r.tm),

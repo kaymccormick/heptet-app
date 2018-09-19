@@ -101,16 +101,17 @@ def set_json_encoder(config, encoder):
 
 def includeme(config: Configurator):
     config.include('.template')
-    # FIXME should not need this
 
-    desc = 'request method template_env'
-    disc = ('add-request-method', 'template_env')
-    intr = config.introspectable('add-request-method', 'template_env', 'template_env request method',
-                                 'app request methods')
+    # we dont use this but its useful to remember how to do it
+    # desc = 'request method template_env'
+    # disc = ('add-request-method', 'template_env')
+    # intr = config.introspectable('add-request-method', 'template_env', 'template_env request method',
+    #                              'app request methods')
 
     config.add_request_method(lambda request: request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME),
                               'template_env')
 
+    # what is the difference between posting an action versus registering the viwe in the cofnig??\\
     config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
     #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
 

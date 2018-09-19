@@ -81,3 +81,7 @@ class IResourceManager(Interface):
 
 class IEntryPointGenerator(Interface):
     pass
+
+
+class IEntryPointMapperAdapter(Interface):
+    pass

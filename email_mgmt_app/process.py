@@ -6,20 +6,20 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
+from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action
 from email_mgmt_app.context import GeneratorContext, FormContext
-from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, get_root
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-from email_mgmt_app.manager import OperationArgument
+from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.myapp_config import logger
+from email_mgmt_app.tvars import TemplateVars
+from email_mgmt_app.util import format_discriminator
 from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
 from pyramid.request import Request
 from sqlalchemy import Column, String
 from sqlalchemy.exc import InvalidRequestError
-from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.util import format_discriminator
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
@@ -48,6 +48,7 @@ class IProcessContext(Interface):
     pass
 
 
+# This is confusing because it seems like it could be some other random objet
 @implementer(IProcessContext)
 class ProcessContext:
     def __init__(self, settings, template_env, asset_manager):
@@ -108,6 +109,8 @@ class AssetManager:
         if not p2.parent.exists():
             p2.parent.mkdir(mode=0o0755, parents=True)
 
+        self._assets[p2] = [list(disc)]
+
         return p2.open('w')
 
     def __init__(self, output_dir, mkdir=False) -> None:
@@ -124,10 +127,16 @@ class AssetManager:
                 logger.critical("Unable to create directory %s: %s", output_dir, sys.exc_info()[1])
 
         self._output_dir = output_dir
+        self._assets = {}
 
     @property
     def output_dir(self):
         return self._output_dir
+
+    @property
+    def assets(self):
+        return self._assets
+
 
 
 def setup_jsonencoder():
@@ -174,11 +183,15 @@ class GenerateEntryPointProcess:
         js_stmts = []
         ready_stmts = []
 
-        if ep.view_kwargs and 'view' in ep.view_kwargs:
-            view_arg = ep.view_kwargs['view']
-            logger.critical("PROCESS view_arg = %r", view_arg)
-            view = resolver.maybe_resolve(view_arg)
-            ep.view = view
+
+
+        # if ep.view_kwargs and 'view' in ep.view_kwargs:
+        #     view_arg = ep.view_kwargs['view']
+        #     logger.critical("PROCESS view_arg = %r", view_arg)
+        #     view = resolver.maybe_resolve(view_arg)
+        #     ep.view = view
+        #
+        #     # FIXME - some equiavalent of this is required for functionality
 
             # if generator:
             #     js_imports = generator.js_imports()
@@ -193,6 +206,7 @@ class GenerateEntryPointProcess:
             #
             #     ready_stmts = generator.ready_stmts()
 
+        # FIXME need to populate variables
         data = dict(js_imports=js_imports,
                     js_stmts=js_stmts,
                     ready_stmts=ready_stmts)
@@ -226,8 +240,7 @@ def config_process_struct(config: Configurator, process):
             mapper_wrapper=wrapper
         )
         # fixme code smell
-        entry_point = EntryPoint(manager, wrapper.key, None, None, None, wrapper,
-                                 )
+        entry_point = EntryPoint(manager, wrapper.key, None)
 
         manager.operation(name='form', view=EntityFormView,
                           args=[OperationArgument.SubpathArgument('action', String, default='create')])
@@ -238,19 +251,20 @@ def config_process_struct(config: Configurator, process):
                       args=(config, manager), order=PHASE3_CONFIG)
 
 
-def load_process_struct() -> ProcessStruct:
-    relpath = os.path.join(os.path.dirname(__file__), "email_db.json")
-    logger.critical("%s", __file__)
-    email_db_json = ''
-    # we need to find this?
-    with open(relpath, 'r') as f:
-        email_db_json = ''.join(f.readlines())
+def load_process_struct(json_file=None, json_str=None) -> ProcessStruct:
+    if not json_file and not json_str:
+        json_file = os.path.join(os.path.dirname(__file__), "email_db.json")
+
+    if json_file:
+        with open(json_file, 'r') as f:
+            json_str = ''.join(f.readlines())
+
     process_schema = get_process_schema()
     process = None  # type: ProcessStruct
 
     # logger.debug("json for db is %s", email_db_json)
     try:
-        process = process_schema.load(json.loads(email_db_json))
+        process = process_schema.load(json.loads(json_str))
         logger.debug("process = %s", repr(process))
     except InvalidRequestError as ex:
         logger.critical("Unable to load database json.")
@@ -282,11 +296,12 @@ def includeme(config: Configurator):
     config.action(None, do_action)
 
 
-def process_views(registry, template_env, proc_context, ep_iterable: Iterable[EntryPoint], request):
+def process_views(registry, template_env, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint], request):
     @dataclass
     class MyEvent:
         request: Request = field(default_factory=lambda: request)
 
+    # fixme extract dependncy
     root_namespace = NamespaceStore('root')
 
     entry_points_data = dict(list=[])
@@ -296,22 +311,33 @@ def process_views(registry, template_env, proc_context, ep_iterable: Iterable[En
         entry_points_data['list'].append(entry_point.key)
 
         # is this our most advantageous entry pint?
+
         mapper = entry_point.config and entry_point.config.get('mapper')
 
-        gctx = GeneratorContext(mapper, TemplateVars(),
-                                form_context_factory=FormContext, root_namespace=root_namespace,
-                                template_env=template_env)
+        gctx = GeneratorContext(
+            entry_point,
+            TemplateVars(),
+            form_context_factory=FormContext,
+            root_namespace=root_namespace,
+            template_env=template_env
+        )
+        # FIXME use of registry.queryAdapter - is this what we want?
         generator = registry.queryAdapter(gctx, IEntryPointGenerator)
         assert None is not generator
 
         process_view(gctx, entry_point, proc_context, registry, generator)
 
-    # we shoudldn't just dump in currecnt directory
+    # FIXME should we use asset manager for this also
+    # whoops hardcoded path
+
     with open('entry_points.json', 'w') as f:
         json.dump(entry_points_data, f)
         f.close()
 
 
+#
+# This is probably better renamed to something else.
+#
 def process_view(gctx, entry_point, proc_context, registry, generator):
     subscribers = registry.subscribers((proc_context, entry_point), IProcess)
     subscribers = [GenerateEntryPointProcess(proc_context, entry_point)]

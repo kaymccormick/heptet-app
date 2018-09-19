@@ -1,5 +1,6 @@
 import logging
 
+from email_mgmt_app import field_renderer
 from sqlalchemy import inspect
 
 import email_mgmt_app.field_renderer
@@ -14,13 +15,13 @@ def _map(what, *args, **kwargs):
     logger.critical("%s %s %s", what, args, kwargs)
 
 
-def test_form_config(my_gen_context, process_struct_real):
+def test_form_config(generator_context_mock, process_struct_real):
     for x in process_struct_real.mappers:
         c = EntityFormConfiguration(x.entity,
                                     field_renderers=[])
 
-    my_gen_context.entity_form_config = c
-    x = EntityFormViewEntryPointGenerator(my_gen_context)
+    generator_context_mock.entity_form_config = c
+    x = EntityFormViewEntryPointGenerator(generator_context_mock)
 
     organization = inspect(Domain).relationships.organization
     map_column(organization, field_renderer.Select)

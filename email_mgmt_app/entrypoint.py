@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from email_mgmt_app import default_entry_point, IEntryPoint
+from email_mgmt_app import default_entry_point, IEntryPoint, IEntryPointMapperAdapter
 from pyramid.config import Configurator
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,10 @@ def includeme(config: 'Configurator'):
         pass
         # config.registry.registerAdapter(MyCollector, [ICollectorContext], ICollector)
 
-    # FIXME rethink this directive?
     config.add_directive('register_entry_point', register_entry_point)
     register_entry_point(config, default_entry_point())
+
+    def func():
+        pass
+    config.registry.registerAdapter(func, [IEntryPoint], [IEntryPointMapperAdapter])
     config.action(None, do_action)

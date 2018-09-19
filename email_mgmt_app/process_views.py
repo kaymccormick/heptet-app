@@ -51,6 +51,8 @@ def main(input_args=None):
     setup = setup_jsonencoder()
     setup()
 
+    # this has the potential to be sticky because we aren't creating the wsgi app as it would be created at runtime
+    # FIXME
     config = Configurator(
         settings=settings,
         root_factory=get_root,
@@ -88,10 +90,16 @@ def main(input_args=None):
     asset_mgr = AssetManager("build/assets", mkdir=True)
     proc_context = ProcessContext(settings, template_env, asset_mgr)
     registry.registerUtility(proc_context)
+
+    # here we get our entry points
     l = list(registry.getUtilitiesFor(IEntryPoint))
 
     # generate a request
     request = get_request(Request, registry=registry)  # type: Request
     assert request
 
+    # we should be able to remove request and registry?
     process_views(registry, template_env, proc_context, l, request)
+    for k, v in asset_mgr.assets.items():
+        print("output file", k)
+

@@ -12,10 +12,9 @@ def entity_form_view(
         app_context,
         app_request,
         entry_point_mock,
-        entity_form_view_entry_point_generator,
         jinja2_env_mock,
         root_namespace_store,
-        my_gen_context
+
 ):
     app_context.entry_point = entry_point_mock
 

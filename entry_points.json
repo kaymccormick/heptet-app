@@ -1,1 +1,1 @@
-{"list": ["_default"]}
+{"list": ["_default", "app_entity_form", "app_property_form", "app_type_form", "public_key_form", "file_form", "file_upload_form", "organization_role_form", "organization_role_person_form", "organization_form", "role_form", "address_form", "person_form", "recipient_form", "domain_form", "service_entry_form", "host_form", "email_address_form"]}

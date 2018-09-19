@@ -1,6 +1,8 @@
 import logging
 from typing import AnyStr
 
+from email_mgmt_app.interfaces import *
+from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
 from jinja2 import TemplateNotFound, BaseLoader
 from pyramid.config import Configurator
 from pyramid.renderers import RendererHelper
@@ -8,11 +10,7 @@ from zope.component import adapter
 from zope.interface import implementer
 from zope.interface.registry import Components
 
-from email_mgmt_app.interfaces import *
-from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
-
 logger = logging.getLogger(__name__)
-
 
 class ComponentLoader(BaseLoader):
     def __init__(self, registry) -> None:
