@@ -6,14 +6,15 @@ from jinja2 import TemplateNotFound
 from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid.renderers import get_renderer
-from zope.component import IFactory
+from zope.component import IFactory, adapts, adapter
 from zope.component.factory import Factory
 
 from email_mgmt_app import Resource, RootResource
 from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import IResource, INamespaceStore
+from email_mgmt_app.interfaces import IResource, INamespaceStore, IEntryPoint, IEntryPointMapperAdapter, IObject
 from email_mgmt_app.util import _dump
 from email_mgmt_app.webapp_main import logger
+from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
 
@@ -99,8 +100,24 @@ def set_json_encoder(config, encoder):
     config.registry.json_encoder = encoder
 
 
+@adapter(IObject)
+@implementer(IEntryPointMapperAdapter)
+class MapperProperty:
+    def __init__(self, obj):
+        self._obj = obj
+        self._mapper = None
+
+    @property
+    def mapper(self):
+        return self._mapper
+
+    @mapper.setter
+    def mapper(self, new):
+        self._mapper = new
+
+
 def includeme(config: Configurator):
-    config.include('.template')
+    config.include('..template')
 
     # we dont use this but its useful to remember how to do it
     # desc = 'request method template_env'
@@ -115,10 +132,14 @@ def includeme(config: Configurator):
     config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
     #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
 
-    config.include('.entrypoint')
+    config.include('..entrypoint')
     factory = Factory(Resource, 'resource',
                       'ResourceFactory', (IResource,))
     config.registry.registerUtility(factory, IFactory, 'resource')
+
+    def func():
+        pass
+    config.registry.registerAdapter(MapperProperty, (IObject,), IEntryPointMapperAdapter)
 
     config.add_subscriber(on_context_found, ContextFound)
     config.add_subscriber(on_before_render, BeforeRender)

@@ -1,11 +1,13 @@
 import logging
 
+import pytest
 import sys
 from email_mgmt_app import get_root, ResourceManager
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.integration
 def test_rm_add_action(config_fixture, resource_manager, app_request):
     logger.warning("%s", resource_manager)
 

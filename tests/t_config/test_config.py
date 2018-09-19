@@ -21,10 +21,11 @@ def test_my_config(make_wsgi_app, webapp_settings):
 
 
 @pytest.mark.integration
-def test_my_config(make_wsgi_app, webapp_settings):
+def test_my_config_2(make_wsgi_app, webapp_settings):
     settings = copy.copy(webapp_settings)
     settings['model_package'] = email_mgmt
     app = make_wsgi_app({}, **settings)
     root = get_root(None)
     s = ResourceSchema()
     json.dump(s.dump(root), fp=sys.stderr)
+

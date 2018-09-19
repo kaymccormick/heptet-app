@@ -10,7 +10,7 @@ from email_mgmt_app.context import FormContextMixin, FormContext, GeneratorConte
 from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, \
     FormOptionElement
 from email_mgmt_app.impl import NamespaceStore, EntityTypeMixin
-from email_mgmt_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, ICollector, IEntryPointView, \
+from email_mgmt_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, IEntryPointView, \
     IEntryPointGenerator
 from email_mgmt_app.model import get_column_map
 from email_mgmt_app.tvars import TemplateVarsSchema, TemplateVars
@@ -123,6 +123,7 @@ class MakeFormRepresentation(FormContextMixin):
         the_form.element.append(html.fromstring(form_contents))
 
         return the_form
+
 
 # EP-6
 def _map_column(context, column):
@@ -433,6 +434,7 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
 
     def generate(self):
         """
+        Generate the entry point content associated with the instance.
 
         :return:
         """
@@ -460,17 +462,16 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
                 r[k] = get_data(d_v)
             return r
 
+        js_stmts = t_vars['js_stmts']
         data = get_data(root_namespace)
         # this is super random and generic.
-        x = t_vars['js_stmts']
-        s = json.dumps(data)
+        json_str = json.dumps(data)
         r1 = r'([\'\\])'
         r2 = r'\\\1'
-        y = re.sub(r1, r2, s)
+        y = re.sub(r1, r2, json_str)
         s_y = "const ns = JSON.parse('%s');" % y
-        logger.debug("adding %s to %s", s_y, x)
-
-        x.append(s_y)
+        logger.debug("adding %s to %s", s_y, js_stmts)
+        js_stmts.append(s_y)
 
     def render_entity_form_wrapper(self, context: FormContext):
         form = self.render_entity_form(context)
@@ -484,35 +485,9 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
 
         return self._form.as_html()
 
-    # EP-7
-    def js_stmts(self):
-        utility = self._request.registry.queryUtility(ICollector, 'js_stmts')
-        if utility:
-            return utility.get_value()
-        return []
-
-    # EP-7
-    def js_imports(self):
-        utility = self._request.registry.queryUtility(ICollector, 'js_imports')
-        if utility:
-            return utility.get_value()
-        return []
-
-    # EP-7
-    def ready_stmts(self):
-        utility = self._request.registry.queryUtility(ICollector, 'ready_stmts')
-        assert utility
-        if utility:
-            return utility.get_value()
-        return []
-
 
 class DesignViewEntryPointGenerator(EntryPointGenerator):
-    def js_imports(self):
-        return []  # "'../design.js'"]
-
-    def js_stmts(self):
-        return ['window.view_name = \'%s\';' % self._request.view_name]
+    pass
 
 
 class EntityDesignViewEntryPointGenerator(DesignViewEntryPointGenerator):
@@ -567,7 +542,6 @@ class EntityFormView(BaseEntityRelatedView[T]):
             #     namespace = namespace()
             #
             # # we shouldn't need to crate this
-
 
             wrapper = generator.render_entity_form_wrapper(
                 gctx.form_context(relationship_field_mapper=FormRelationshipMapper))

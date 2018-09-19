@@ -11,8 +11,8 @@ from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.myapp_config import logger
+from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.util import format_discriminator
 from pyramid.config import Configurator, PHASE3_CONFIG
@@ -138,7 +138,6 @@ class AssetManager:
         return self._assets
 
 
-
 def setup_jsonencoder():
     def do_setup():
         old_default = json.JSONEncoder.default
@@ -183,8 +182,6 @@ class GenerateEntryPointProcess:
         js_stmts = []
         ready_stmts = []
 
-
-
         # if ep.view_kwargs and 'view' in ep.view_kwargs:
         #     view_arg = ep.view_kwargs['view']
         #     logger.critical("PROCESS view_arg = %r", view_arg)
@@ -193,18 +190,18 @@ class GenerateEntryPointProcess:
         #
         #     # FIXME - some equiavalent of this is required for functionality
 
-            # if generator:
-            #     js_imports = generator.js_imports()
-            #     if js_imports:
-            #         for stmt in js_imports:
-            #             logger.debug("import: %s", stmt)
-            #
-            #     js_stmts = generator.js_stmts()
-            #     if js_stmts:
-            #         for stmt in js_stmts:
-            #             logger.debug("js: %s", stmt)
-            #
-            #     ready_stmts = generator.ready_stmts()
+        # if generator:
+        #     js_imports = generator.js_imports()
+        #     if js_imports:
+        #         for stmt in js_imports:
+        #             logger.debug("import: %s", stmt)
+        #
+        #     js_stmts = generator.js_stmts()
+        #     if js_stmts:
+        #         for stmt in js_stmts:
+        #             logger.debug("js: %s", stmt)
+        #
+        #     ready_stmts = generator.ready_stmts()
 
         # FIXME need to populate variables
         data = dict(js_imports=js_imports,
@@ -228,6 +225,7 @@ class GenerateEntryPointProcess:
 
 
 # how do we split the responsibility between this function and "config.add_resource_manager"!?!?!
+
 def config_process_struct(config: Configurator, process):
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)
@@ -249,6 +247,27 @@ def config_process_struct(config: Configurator, process):
                                      'resource manager')
         config.action(('resource manager', manager.mapper_key), _add_resmgr_action, introspectables=(intr,),
                       args=(config, manager), order=PHASE3_CONFIG)
+
+
+class JsonFileData:
+    def __init__(self, filename):
+        self._filename = filename
+
+    def get_data(self):
+        with open(self._filename, 'r') as f:
+            return json.load(f)
+
+
+class ProcessStructLoader:
+    def __init__(self, schema: 'ProcessSchema', dataGetter):
+        self._data = dataGetter
+        self._schema = schema
+        pass
+
+    def __call__(self):
+        data = self._schema.load(self._data.get_data())
+        logger.critical("data is %r", data)
+        return data
 
 
 def load_process_struct(json_file=None, json_str=None) -> ProcessStruct:
@@ -283,6 +302,7 @@ def includeme(config: Configurator):
         config.registry.registerSubscriptionAdapter(GenerateEntryPointProcess)
 
     # load our pre-processed info
+
     process = load_process_struct()  # type: ProcessStruct
     config.add_request_method(lambda r: process, 'process_struct')
     for mapper in process.mappers:
@@ -291,6 +311,12 @@ def includeme(config: Configurator):
 
     config.include('.viewderiver')
     config.include('.entity')
+
+    data = JsonFileData(os.path.join(os.path.dirname(__file__), "email_db.json"))
+    loader = ProcessStructLoader(get_process_schema(), data)
+    ps = loader()
+    logger.critical("ps = %r", ps)
+
     config_process_struct(config, process)
 
     config.action(None, do_action)

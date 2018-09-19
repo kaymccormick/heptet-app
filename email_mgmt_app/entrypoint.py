@@ -19,7 +19,4 @@ def includeme(config: 'Configurator'):
     config.add_directive('register_entry_point', register_entry_point)
     register_entry_point(config, default_entry_point())
 
-    def func():
-        pass
-    config.registry.registerAdapter(func, [IEntryPoint], [IEntryPointMapperAdapter])
     config.action(None, do_action)

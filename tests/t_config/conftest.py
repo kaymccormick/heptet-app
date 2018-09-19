@@ -1,3 +1,4 @@
+
 import pytest
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -6,7 +7,7 @@ from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCr
 from pyramid_ldap3 import groupfinder
 
 import email_mgmt_app
-import email_mgmt_app.myapp_config
+from email_mgmt_app import myapp_config
 from email_mgmt_app import get_root
 from email_mgmt_app.impl import NamespaceStore
 from email_mgmt_app.interfaces import INamespaceStore

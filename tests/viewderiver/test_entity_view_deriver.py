@@ -1,5 +1,7 @@
 import json
 import logging
+
+import pytest
 import sys
 
 from email_mgmt_app import BaseView, ResourceSchema
@@ -7,6 +9,13 @@ from email_mgmt_app import BaseView, ResourceSchema
 logger = logging.getLogger(__name__)
 
 
+#
+#
+# what is this testing, exactly??
+#
+# entity_view_deriver relies on the "resource_operation" fixture which is very generic
+
+@pytest.mark.integration
 def test_entity_view(entity_view_deriver, app_context, app_request, view_result):
     result = entity_view_deriver(app_context, app_request)
     logger.critical("result = %r", result)
@@ -15,6 +24,7 @@ def test_entity_view(entity_view_deriver, app_context, app_request, view_result)
     assert result is view_result
 
 
+@pytest.mark.integration
 def test_entity_view_deriver_baseview(
         make_entity_view_deriver,
         app_context,

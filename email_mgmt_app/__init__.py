@@ -20,7 +20,7 @@ from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.operation import ResourceOperation
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.util import get_exception_entry_point_key
-from interfaces import IEntryPointMapperAdapter
+from email_mgmt_app.interfaces import IEntryPointMapperAdapter
 from pyramid.config import Configurator
 from pyramid.request import Request
 from sqlalchemy.ext.declarative import DeclarativeMeta
@@ -272,16 +272,6 @@ class Resource(_Resource, metaclass=ResourceMeta):
     pass
 
 
-class HasRequestMixin:
-    @property
-    def request(self):
-        return self._request
-
-    @request.setter
-    def request(self, new):
-        self._request = new
-
-
 @implementer(IResourceManager)
 class ResourceManager:
     """
@@ -386,8 +376,9 @@ class ResourceManager:
 
 
 # EP-4
-
-
+# function to add a subtree to the resource tree to represent
+# the entity managed by the resource manager.
+#
 def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     """
 
@@ -400,9 +391,12 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     op: ResourceOperation
 
     # sanity checks
-    assert manager.mapper_key, "No mapper key (%s)" % manager.mapper_key
+    # # MANAGER.MAPPER_KEY
+    key = manager.mapper_key
+    assert key, "No mapper key (%s)" % key
 
     reg_view = False
+    # # MANAGER.NODE_NAME
     node_name = manager.node_name
 
     # alter interface to this?
@@ -423,14 +417,19 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     # app registry. That's the root resource!!
 
     # can we encapsulate this somehow?
-    mapper_wrapper = manager.mapper_wrappers[manager.mapper_key]
-    assert mapper_wrapper, "no mapper wrapper %s in %s" % (manager.mapper_key, manager.mapper_wrappers)
+    # MANAGER.MAPPER_WRAPPERS
+    # code smell
+    mapper_wrapper = manager.mapper_wrappers[key]
+    assert mapper_wrapper, "no mapper wrapper %s in %s" % (key, manager.mapper_wrappers)
 
     # container_entry_poic:nt_configuration = EntryPointConfiguration(mapper=manager.mapper_wrapper.get_one_mapper_info(),
     #                                                               )
 
-    container_entry_point = EntryPoint(manager, manager.mapper_key, mapper=manager.mapper_wrapper.get_one_mapper_info())
-    IEntryPointMapperAdapter(container_entry_point).mapper = mapper_wrapper
+    container_entry_point = EntryPoint(manager, key, mapper=manager.mapper_wrapper.get_one_mapper_info())
+    m = config.registry.getAdapter(container_entry_point, IEntryPointMapperAdapter)
+    m.mapper = mapper_wrapper
+
+    #IEntryPointMapperAdapter(container_entry_point).mapper = mapper_wrapper
 
     # our factory now returns dynamic classes - you get a unique class
     # back every time.
@@ -446,6 +445,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     # this makes a direct mapping between operations, entry points, and views.
     extra = {}
 
+    # # MANAGER.OPERATIONS
     for op in manager.operations:
         resource.add_name(op.name)
 

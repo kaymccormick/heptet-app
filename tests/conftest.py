@@ -15,19 +15,17 @@ from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
 from email_mgmt_app.form import Form
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper, Separator
 from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
-from email_mgmt_app.process import load_process_struct, AssetManager, ProcessContext
+from email_mgmt_app.process import AssetManager, ProcessContext
+from email_mgmt_app.process import load_process_struct
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.viewderiver import entity_view
 from jinja2 import Environment, Template
-from email_mgmt_app.process import load_process_struct
 from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.registry import Registry
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_tm.tests import DummyRequest
-from typing import Callable, AnyStr
-
 from tests.common import MakeEntryPoint
 from zope.interface.registry import Components
 
@@ -152,7 +150,11 @@ def app_registry_mock(jinja2_env_mock):
 
 @pytest.fixture
 def entry_point_mock():
-    mock = Mock(EntryPoint, name='entry_point')  # do we need to name this??
+    """
+    entry_point_mock pytest fixture
+    :return:
+    """
+    mock = Mock(EntryPoint)  # , name='entry_point')  # do we need to name this??
     # this is sort of a "hack" to get it to work (_default)
     default = '_default'
     type(mock).key = PropertyMock(return_value=default)
@@ -169,7 +171,7 @@ def app_context(request, root_resource, resource_manager, entry_point_mock):
 
 #
 # CONFIG
-#
+#  * make_config
 @pytest.fixture
 def make_config():
     def _make_config(settings):
@@ -178,6 +180,8 @@ def make_config():
     return _make_config
 
 
+# CONFIG
+#  * config_mock
 @pytest.fixture
 def config_mock():
     """
@@ -187,6 +191,8 @@ def config_mock():
     return MagicMock(Configurator())
 
 
+# CONFIG
+#  * config_fixture
 @pytest.fixture
 def config_fixture():
     """
@@ -198,7 +204,7 @@ def config_fixture():
     config.include(email_mgmt_app.myapp_config)
     logger.warning("config = %s", config)
     # _dump(config, name_prefix="config.", cb=lambda x, *args, **kwargs: print(x % args, file=sys.stderr))
-    # config.commit()
+    config.commit()
     return config
 
 
@@ -256,8 +262,7 @@ def jinja2_env_mock():
 
 
 #
-
-# Resource related fixtures
+# RESOURCES
 #
 @pytest.fixture()
 def root_resource(app_request):
@@ -282,6 +287,7 @@ def make_resource(entry_point_mock, resource_manager):
     return _make_resource
 
 
+# investigate this
 @pytest.fixture
 def resource_operation(view_test):
     return ResourceOperation('test_op', view_test, [])
@@ -362,6 +368,7 @@ def make_entity_view_deriver(resource_operation_mock, app_registry_mock):
     return _make_entity_view_deriver
 
 
+# what is this doing, exacltY?
 @pytest.fixture
 def entity_view_deriver(view_test, make_view_deriver_info, app_registry, resource_operation):
     options = {'operation': resource_operation}
@@ -434,6 +441,16 @@ def my_template_vars(make_template_vars):
     return make_template_vars(js_imports=[], js_stmts=[], ready_stmts=[])
 
 
+@pytest.fixture
+def template_vars_wrapped():
+    return TemplateVars()
+
+
+@pytest.fixture
+def template_vars_mock(template_vars_wrapped):
+    return MagicMock(wraps=template_vars_wrapped)
+
+
 #
 # GENERATOR
 #
@@ -447,16 +464,25 @@ def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store)
 
 
 @pytest.fixture
-def generator_context_mock(make_generator_context):
+def generator_context_mock(make_generator_context, jinja2_env_mock, template_vars_mock):
     mock = MagicMock('generator_context_mock')
     mock.mock_add_spec(make_generator_context(None))
+    type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
+    type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
+
     return mock
 
 
-# @pytest.fixture
-# def my_gen_context(make_generator_context, jinja2_env, mapper_info_real, my_template_vars, make_entry_point):
-#     entry_point = make_entry_point()
-#     return make_generator_context(entry_point, jinja2_env, my_template_vars)
+@pytest.fixture
+def my_gen_context(
+        make_generator_context,
+        jinja2_env,
+        mapper_info_real,
+        my_template_vars,
+        make_entry_point
+):
+    entry_point = make_entry_point()
+    return make_generator_context(entry_point, jinja2_env, my_template_vars)
 
 
 @pytest.fixture
@@ -487,8 +513,6 @@ def relationship_schema():
 @pytest.fixture
 def my_relationship_select():
     return RelationshipSelect()
-
-
 
 
 # this makes a form context from a geneerator context which is not what we want
@@ -523,7 +547,6 @@ def my_form_context(my_gen_context, my_relationship_select, root_namespace_store
                     outer_form=True)  # , form_action="./")
 
     return my_gen_context.form_context(relationship_field_mapper=FormRelationshipMapper, form=the_form)
-
 
 
 @pytest.fixture
@@ -583,8 +606,8 @@ def make_entry_point() -> MakeEntryPoint:
     Returns a function which takes arguments manager, key, generator, mapper_wrapper
     :return:
     """
+
     def _make_entry_point(manager, key, generator, mapper_wrapper):
-        # FIXME
         return EntryPoint(manager, key, generator, mapper_wrapper)
 
     return _make_entry_point
@@ -632,4 +655,10 @@ def entry_point_generator_mock():
 
 @pytest.fixture
 def process_struct_basic_model():
-    return load_process_struct(json_str="""{"tables": [], "mappers": [{"columns": [{"table": {"key": "test1"}, "name": "id", "foreign_keys": [], "key": "id", "type_": {"python_type": "builtins.int"}, "visit_name": "column"}, {"table": {"key": "test1"}, "name": "child_id", "foreign_keys": [{"visit_name": "foreign_key", "column": {"table": {"key": "child"}, "key": "id"}}], "key": "child_id", "type_": {"python_type": "builtins.int"}, "visit_name": "column"}], "entity": "db_dump.model.Test1", "primary_key": [{"type": {"python_type": "builtins.int"}, "table": "test1", "column": "id"}], "relationships": [{"is_attribute": false, "is_property": true, "secondary": null, "direction": "MANYTOONE", "mapper": {"local_table": {"key": "child"}}, "is_mapper": false, "argument": "db_dump.model.Child", "local_remote_pairs": [{"local": {"type_": {"python_type": "builtins.int"}, "table": {"key": "test1"}, "key": "child_id"}, "remote": {"type_": {"python_type": "builtins.int"}, "table": {"key": "child"}, "key": "id"}}], "key": "child"}], "local_table": {"key": "test1"}}, {"columns": [{"table": {"key": "child"}, "name": "id", "foreign_keys": [], "key": "id", "type_": {"python_type": "builtins.int"}, "visit_name": "column"}], "entity": "db_dump.model.Child", "primary_key": [{"type": {"python_type": "builtins.int"}, "table": "child", "column": "id"}], "relationships": [], "local_table": {"key": "child"}}], "generation": {"created": "2018-09-16T23:52:08.348156+00:00", "config_vars": {}, "python_version": "3.7.0", "system_alias": "('Windows', '10', '10.0.17134')"}}""")
+    return load_process_struct(
+        json_str="""{"tables": [], "mappers": [{"columns": [{"table": {"key": "test1"}, "name": "id", "foreign_keys": [], "key": "id", "type_": {"python_type": "builtins.int"}, "visit_name": "column"}, {"table": {"key": "test1"}, "name": "child_id", "foreign_keys": [{"visit_name": "foreign_key", "column": {"table": {"key": "child"}, "key": "id"}}], "key": "child_id", "type_": {"python_type": "builtins.int"}, "visit_name": "column"}], "entity": "db_dump.model.Test1", "primary_key": [{"type": {"python_type": "builtins.int"}, "table": "test1", "column": "id"}], "relationships": [{"is_attribute": false, "is_property": true, "secondary": null, "direction": "MANYTOONE", "mapper": {"local_table": {"key": "child"}}, "is_mapper": false, "argument": "db_dump.model.Child", "local_remote_pairs": [{"local": {"type_": {"python_type": "builtins.int"}, "table": {"key": "test1"}, "key": "child_id"}, "remote": {"type_": {"python_type": "builtins.int"}, "table": {"key": "child"}, "key": "id"}}], "key": "child"}], "local_table": {"key": "test1"}}, {"columns": [{"table": {"key": "child"}, "name": "id", "foreign_keys": [], "key": "id", "type_": {"python_type": "builtins.int"}, "visit_name": "column"}], "entity": "db_dump.model.Child", "primary_key": [{"type": {"python_type": "builtins.int"}, "table": "child", "column": "id"}], "relationships": [], "local_table": {"key": "child"}}], "generation": {"created": "2018-09-16T23:52:08.348156+00:00", "config_vars": {}, "python_version": "3.7.0", "system_alias": "('Windows', '10', '10.0.17134')"}}""")
+
+
+class MapperMock(MagicMock):
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)

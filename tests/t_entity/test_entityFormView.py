@@ -23,6 +23,7 @@ def entity_form_view(
 
 
 # what mock is used here ??
+@pytest.mark.integration
 def test_entity_form_view(app_request, app_context, entity_form_view, webapp_settings, jinja2_env, entry_point_mock):
     # code smell - would come from "context found."
     app_context.template_env = jinja2_env
