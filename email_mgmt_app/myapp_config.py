@@ -6,15 +6,15 @@ from jinja2 import TemplateNotFound
 from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid.renderers import get_renderer
-from zope.component import IFactory, adapts, adapter
+from zope.component import IFactory, adapter
 from zope.component.factory import Factory
+from zope.interface import implementer
 
 from email_mgmt_app import Resource, RootResource
 from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import IResource, INamespaceStore, IEntryPoint, IEntryPointMapperAdapter, IObject
+from email_mgmt_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject
 from email_mgmt_app.util import _dump
 from email_mgmt_app.webapp_main import logger
-from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +125,9 @@ def includeme(config: Configurator):
     # intr = config.introspectable('add-request-method', 'template_env', 'template_env request method',
     #                              'app request methods')
 
-    config.add_request_method(lambda request: request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME),
-                              'template_env')
+    config.add_request_method(
+        lambda request: request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME),
+        'template_env')
 
     # what is the difference between posting an action versus registering the viwe in the cofnig??\\
     config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
@@ -139,6 +140,7 @@ def includeme(config: Configurator):
 
     def func():
         pass
+
     config.registry.registerAdapter(MapperProperty, (IObject,), IEntryPointMapperAdapter)
 
     config.add_subscriber(on_context_found, ContextFound)

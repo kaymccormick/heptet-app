@@ -1,4 +1,6 @@
+import argparse
 import atexit
+import json
 import logging
 import sys
 from datetime import datetime
@@ -38,8 +40,7 @@ def main(input_args=None):
 
     atexit.register(do_at_exit)
 
-    # deal with parsing args
-    parser = db_dump.args.argument_parser()
+    parser = argparse.ArgumentParser(parents=[db_dump.args.argument_parser()])
     parser.add_argument('--test-app', '-t', help="Test the application", action="store_true")
     args = parser.parse_args(input_args)
 
@@ -100,6 +101,10 @@ def main(input_args=None):
 
     # we should be able to remove request and registry?
     process_views(registry, template_env, proc_context, l, request)
-    for k, v in asset_mgr.assets.items():
-        print("output file", k)
+    d = {}
+    for k, v in asset_mgr._assets2.items():
+        logger.critical("%r = %s", k[0].key, v)
+        d[k[0].key] = v.as_posix()
+
+    json.dump(d, fp=sys.stdout)
 

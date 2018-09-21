@@ -21,10 +21,9 @@ VALID_MODES = (DEV_MODE, PROD_MODE)
 
 logger = logging.getLogger(__name__)
 
-
 def wsgi_app(global_config, **settings):
     """
-    The main function or our pyramid application.
+    WSGI application factory.
     :param global_config:
     :param settings:
     :return: A WSGI application.

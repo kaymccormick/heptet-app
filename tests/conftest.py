@@ -465,8 +465,7 @@ def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store)
 
 @pytest.fixture
 def generator_context_mock(make_generator_context, jinja2_env_mock, template_vars_mock):
-    mock = MagicMock('generator_context_mock')
-    mock.mock_add_spec(make_generator_context(None))
+    mock = MagicMock(GeneratorContext)
     type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
     type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
 

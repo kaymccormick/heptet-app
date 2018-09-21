@@ -46,6 +46,7 @@ class MakeFormRepresentation(FormContextMixin):
         # fix me - this is error prone!
         assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
         # how do we extract our "mapper info"
+        
         mapper = context.generator_context.mapper_info
 
         outer_form = False

@@ -6,15 +6,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
-from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action
-from email_mgmt_app.context import GeneratorContext, FormContext
-from email_mgmt_app.entity import EntityFormView
-from email_mgmt_app.impl import MapperWrapper, NamespaceStore
-from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-from email_mgmt_app.myapp_config import logger
-from email_mgmt_app.operation import OperationArgument
-from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.util import format_discriminator
 from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
 from pyramid.request import Request
@@ -25,6 +16,15 @@ from zope.interface import implementer, Interface
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
+from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action
+from email_mgmt_app.context import GeneratorContext, FormContext
+from email_mgmt_app.entity import EntityFormView
+from email_mgmt_app.impl import MapperWrapper, NamespaceStore
+from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
+from email_mgmt_app.myapp_config import logger
+from email_mgmt_app.operation import OperationArgument
+from email_mgmt_app.tvars import TemplateVars
+from email_mgmt_app.util import format_discriminator
 from marshmallow import ValidationError
 
 logger = logging.getLogger(__name__)
@@ -97,22 +97,6 @@ class Asset:
 
 
 class AssetManager:
-    def get_path(self, disc):
-        l = list()
-        format_discriminator(l, *disc)
-        p = Path(self._output_dir)
-        p2 = p.joinpath(''.join(l))
-        return p2
-
-    def get(self, disc):
-        p2 = self.get_path(disc)
-        if not p2.parent.exists():
-            p2.parent.mkdir(mode=0o0755, parents=True)
-
-        self._assets[p2] = [list(disc)]
-
-        return p2.open('w')
-
     def __init__(self, output_dir, mkdir=False) -> None:
         super().__init__()
         p = Path(output_dir)
@@ -128,6 +112,24 @@ class AssetManager:
 
         self._output_dir = output_dir
         self._assets = {}
+        self._assets2 = {}
+
+    def get_path(self, disc):
+        l = list()
+        format_discriminator(l, *disc)
+        p = Path(self._output_dir)
+        p2 = p.joinpath(''.join(l))
+        return p2
+
+    def get(self, disc):
+        p2 = self.get_path(disc)
+        if not p2.parent.exists():
+            p2.parent.mkdir(mode=0o0755, parents=True)
+
+        self._assets[p2] = [list(disc)]
+        self._assets2[disc] = p2
+
+        return p2.open('w')
 
     @property
     def output_dir(self):

@@ -433,6 +433,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
     # our factory now returns dynamic classes - you get a unique class
     # back every time.
+    # should we call root_resource.subresource?
     resource = Resource(
         name=node_name,
         title=manager.title,

@@ -78,7 +78,8 @@ def test_view_deriver(view_callable, info):
 
 
 def includeme(config):
+    ## FIXME - create issue
     entity_view.options = ('operation', 'mapper_info', 'node_name', 'entry_point')
     config.add_view_deriver(entity_view, under=INGRESS)
-    config.add_view_deriver(munge_view, over='rendered_view')
-    config.add_view_deriver(test_view_deriver, over='mapped_view')
+    #config.add_view_deriver(munge_view, over='rendered_view')
+#    config.add_view_deriver(test_view_deriver, over='mapped_view')

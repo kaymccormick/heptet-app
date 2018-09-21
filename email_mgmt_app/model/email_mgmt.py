@@ -1,14 +1,15 @@
 import logging
 import sys
 
-from email_mgmt_app.interfaces import ISqlAlchemySession, IResource
-from email_mgmt_app.model.meta import Base
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship, configure_mappers, backref
-from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 from zope.component import IFactory
 from zope.component.factory import Factory
 from zope.interface import implementer
+
+from email_mgmt_app.interfaces import ISqlAlchemySession, IResource
+from email_mgmt_app.model.meta import Base
+from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 
 logger = logging.getLogger(__name__)
 mappers = {}

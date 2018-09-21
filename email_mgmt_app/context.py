@@ -151,6 +151,9 @@ class GeneratorContext(
     ContextRootNamespaceMixin,
     EntryPointMixin,
 ):
+    """
+    bundling up of all the dependencies required for entry point generation.
+    """
     # adding options here doesnt necessarily make things any clearer
 
     def __init__(self, entry_point, template_vars, form_context_factory: FormContextFactory,
