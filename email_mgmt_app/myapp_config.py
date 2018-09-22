@@ -44,6 +44,7 @@ def on_before_render(event):
     logger.critical("on_before_render: event=%s", event)
     val = event.rendering_val
     val['request'] = event['request']
+    # what happens if we clobber this? it also gets set for the form view
     val['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % event['context'].entry_point.key
     logger.debug("VAL=%s", val)
 

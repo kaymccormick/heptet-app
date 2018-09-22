@@ -10,17 +10,6 @@ from zope import interface
 
 import pyramid
 import stringcase
-from email_mgmt_app.exceptions import MissingArgumentException
-from email_mgmt_app.impl import EntityTypeMixin, TemplateEnvMixin
-from email_mgmt_app.impl import Separator
-from email_mgmt_app.interfaces import IEntryPoint, IEntryPointGenerator
-from email_mgmt_app.interfaces import IEntryPointView, IResourceManager
-from email_mgmt_app.interfaces import IResource
-from email_mgmt_app.operation import OperationArgument
-from email_mgmt_app.operation import ResourceOperation
-from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.util import get_exception_entry_point_key
-from email_mgmt_app.interfaces import IEntryPointMapperAdapter
 from pyramid.config import Configurator
 from pyramid.request import Request
 from sqlalchemy.ext.declarative import DeclarativeMeta
@@ -28,6 +17,17 @@ from zope.component import adapter
 from zope.interface import implementer, Interface
 
 from db_dump import TypeField
+from email_mgmt_app.exceptions import MissingArgumentException
+from email_mgmt_app.impl import EntityTypeMixin, TemplateEnvMixin
+from email_mgmt_app.impl import Separator
+from email_mgmt_app.interfaces import IEntryPoint, IEntryPointGenerator
+from email_mgmt_app.interfaces import IEntryPointMapperAdapter
+from email_mgmt_app.interfaces import IEntryPointView, IResourceManager
+from email_mgmt_app.interfaces import IResource
+from email_mgmt_app.operation import OperationArgument
+from email_mgmt_app.operation import ResourceOperation
+from email_mgmt_app.tvars import TemplateVars
+from email_mgmt_app.util import get_exception_entry_point_key
 from marshmallow import Schema, fields
 
 # class MapperInfosMixin:
@@ -148,7 +148,7 @@ class ResourceMagic(AppBase):
         return self._data.__contains__(item)
 
     def __format__(self, spec: AnyStr):
-        if spec == 'x':
+        if 'compact' in spec.split(','):
             return self.__class__.__name__
         return super().__format__(spec)
 
@@ -159,7 +159,6 @@ class ResourceMagic(AppBase):
                                        self._title)
         except:
             return repr(sys.exc_info()[1])
-
 
 
 @implementer(IResource)
@@ -247,7 +246,6 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
         assert self.entry_point is not None
         assert self.__name__
         assert self.__parent__ is not None
-
 
     @property
     def is_container(self) -> bool:
@@ -445,7 +443,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     m = config.registry.getAdapter(container_entry_point, IEntryPointMapperAdapter)
     m.mapper = mapper_wrapper
 
-    #IEntryPointMapperAdapter(container_entry_point).mapper = mapper_wrapper
+    # IEntryPointMapperAdapter(container_entry_point).mapper = mapper_wrapper
 
     # our factory now returns dynamic classes - you get a unique class
     # back every time.
@@ -521,7 +519,8 @@ class RootResource(Resource):
     def __repr__(self):
 
         items = self._data.items()
-        i = map(lambda item: "{0}={1:x}".format(*item), items)
+        # use of 'compact' format
+        i = map(lambda item: "{0}={1:compact}".format(*item), items)
         x = list(i)
         join = ", ".join(x)
         return 'RootResource(' + join + ')'
@@ -554,8 +553,8 @@ class BaseView(Generic[T]):
 
         # todo it might be super helpful to sanity check this value, because this generates errors
         # later that t+race to here
-        self._response_dict['entry_point_key'] = entry_point.key
-        self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % key
+        # self._response_dict['entry_point_key'] = entry_point.key
+        # self._response_dict['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % key
 
         return self._response_dict
 
@@ -735,7 +734,7 @@ class EntryPoint(AppBase):
 
     @property
     def discriminator(self):
-        return [self.__class__.__name__.lower(), Separator, self.key]
+        return self.__class__.__name__.lower(), self.key
 
     @property
     def config(self) -> EntryPointConfiguration:

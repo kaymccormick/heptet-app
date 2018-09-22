@@ -6,6 +6,9 @@ from typing import Callable, AnyStr
 from pyramid.renderers import get_renderer
 from zope.interface.registry import Components
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def render_template(request, template_name, d, nestlevel=0):
     # logging.critical("template = %s", template_name)
@@ -37,6 +40,7 @@ def _dump(v, line_prefix="", name_prefix="", depth=0, cb: Callable = None, recur
     if isinstance(v, types.ModuleType):
         vv = "<module '%s'>" % v.__name__
     if vv is None:
+        #vv = "{:compact}".format(v)
         vv = str(v)
     cb("%s%s = %s", line_prefix, name_prefix[0:-1], vv)
     if depth >= 5 or not recurse:
@@ -69,9 +73,20 @@ def get_template(env, name):
 
 def format_discriminator(l, *elems):
     for elem in elems:
-        attr = getattr(elem, "discriminator", None)
-        if attr:
-            format_discriminator(l, *attr)
+        if hasattr(elem, "discriminator"):
+            result = elem.discriminator
+            format_discriminator(l, *result)
+            #logger.debug("%s.discriminator = %r", elem, result)
         else:
-            l.append(str(elem))
+            prepend = False
+            logger.warning("%s", elem.__class__.__name__)
+            try:
+                prepend = elem.is_element_entry()
+            except AttributeError as ex:
+                logger.critical(ex)
+                pass
+            finally:
+                pass
+
+            l.append((prepend and '/' or '') + str(elem))
 

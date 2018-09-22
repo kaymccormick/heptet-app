@@ -77,11 +77,11 @@ def main(input_args=None):
         exit(1)
     registry = config.registry
 
-    _dump(
-        registry,
-        line_prefix="utils: ",
-        cb=lambda fmt, *args: logger.critical(fmt, *args),
-    )
+    # _dump(
+    #     registry,
+    #     line_prefix="utils: ",
+    #     cb=lambda fmt, *args: logger.critical(fmt, *args),
+    # )
 
     template_env = registry.queryUtility(IJinja2Environment, 'template-env')
     assert template_env
@@ -102,6 +102,7 @@ def main(input_args=None):
         logger.critical("%r = %s", k[0].key, v)
 
         d[k[0].key] = "./" + curdir.joinpath(v).as_posix()
+
 
     with open("entry_point.json", 'w') as f:
         json.dump(d, fp=f, indent=4, sort_keys=True)

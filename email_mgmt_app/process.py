@@ -2,13 +2,11 @@ import json
 import logging
 import os
 import sys
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
 from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
-from pyramid.request import Request
 from sqlalchemy import Column, String
 from sqlalchemy.exc import InvalidRequestError
 from zope.component import adapter
@@ -39,6 +37,9 @@ class FileType:
     @property
     def discriminator(self):
         return ['.' + self.ext]
+
+    def is_element_entry(self):
+        return False
 
 
 JavaScript = FileType('JavaScript', 'js')
@@ -114,20 +115,35 @@ class AssetManager:
         self._assets = {}
         self._assets2 = {}
 
-    def get_path(self, disc):
+    def get_path(self, *disc):
         l = list()
         format_discriminator(l, *disc)
         p = Path(self._output_dir)
         p2 = p.joinpath(''.join(l))
         return p2
 
-    def get(self, disc):
+    def get_node(self, disc):
+        o = self._assets3
+        for elem in disc:
+            if elem in o:
+                o = o[elem]
+            else:
+                break
+
+    def select(self, disc):
         p2 = self.get_path(disc)
+        self._assets[p2] = [list(disc)]
+        self._assets2[disc] = p2
+
+    def get(self, *disc):
+        p2 = self.get_path(*disc)
         if not p2.parent.exists():
             p2.parent.mkdir(mode=0o0755, parents=True)
 
         self._assets[p2] = [list(disc)]
         self._assets2[disc] = p2
+
+        # f = p2.open('w')
 
         return p2.open('w')
 
@@ -210,7 +226,10 @@ class GenerateEntryPointProcess:
                     js_stmts=js_stmts,
                     ready_stmts=ready_stmts)
 
-        with self._context.asset_manager.get((self._ep, JavaScript)) as f:
+        # need to generate path
+
+        with self._context.asset_manager.get(self._ep, JavaScript) as f:
+            # FIXME embedded template filename
             content = self._context.template_env.get_template('entry_point.js.jinja2').render(
                 **data
             )
@@ -268,7 +287,6 @@ class ProcessStructLoader:
 
     def __call__(self):
         data = self._schema.load(self._data.get_data())
-        logger.critical("data is %r", data)
         return data
 
 
@@ -317,7 +335,6 @@ def includeme(config: Configurator):
     data = JsonFileData(os.path.join(os.path.dirname(__file__), "email_db.json"))
     loader = ProcessStructLoader(get_process_schema(), data)
     ps = loader()
-    logger.critical("ps = %r", ps)
 
     config_process_struct(config, process)
 
@@ -325,7 +342,6 @@ def includeme(config: Configurator):
 
 
 def process_views(registry, template_env, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint]):
-
     # fixme extract dependncy
     root_namespace = NamespaceStore('root')
 

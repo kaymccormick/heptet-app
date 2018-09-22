@@ -548,6 +548,7 @@ class EntityFormView(BaseEntityRelatedView[T]):
                 gctx.form_context(relationship_field_mapper=FormRelationshipMapper))
             _vars = {
                 **rd,
+                # FIXME this is in too many places!!
                 'entry_point_template':
                     'build/templates/entry_point/%s.jinja2' % entry_point.key,
                 'form_content': wrapper,
