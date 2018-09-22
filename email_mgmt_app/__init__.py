@@ -131,16 +131,42 @@ class EntryPointMixin:
         self._entry_point = new
 
 
-@implementer(IResource)
-class _Resource(AppBase, EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
-    """
-    Base resource type. Implements functionality common to all resource types.
-    """
+class ResourceMagic(AppBase):
+    def __setitem__(self, key, value):
+        self._data.__setitem__(key, value)
+
+    def __getitem__(self, k):
+        if k in ('__parent__', '__name__', '_data', 'manager'):
+            raise AttributeError
+
+        return self._data.__getitem__(k)
+
+    def __len__(self):
+        return self._data.__len__()
+
+    def __contains__(self, item):
+        return self._data.__contains__(item)
 
     def __format__(self, spec: AnyStr):
         if spec == 'x':
             return self.__class__.__name__
         return super().__format__(spec)
+
+    def __repr__(self):
+        try:
+            return "%s(%r, %s, %r)" % (self.__class__.__name__, self.__name__,
+                                       self.__parent__ and "%s()" % self.__parent__.__class__.__name__ or None,
+                                       self._title)
+        except:
+            return repr(sys.exc_info()[1])
+
+
+
+@implementer(IResource)
+class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
+    """
+    Base resource type. Implements functionality common to all resource types.
+    """
 
     def __new__(
             cls,
@@ -150,6 +176,15 @@ class _Resource(AppBase, EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
             title: AnyStr = None,
             template_env=None,
     ):
+        """
+
+        :param name:
+        :param parent:
+        :param entry_point:
+        :param title:
+        :param template_env:
+        :return:
+        """
         # fixme not thread safe
         if cls is Resource:
             count = getattr(cls, "__count__", 0)
@@ -170,32 +205,16 @@ class _Resource(AppBase, EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
         x.__init__(name, parent, entry_point, title, template_env)
         return x
 
-    def __setitem__(self, key, value):
-        self._data.__setitem__(key, value)
-
-    def __getitem__(self, k):
-        if k in ('__parent__', '__name__', '_data', 'manager'):
-            raise AttributeError
-
-        return self._data.__getitem__(k)
-
-    def __len__(self):
-        return self._data.__len__()
-
-    def __contains__(self, item):
-        return self._data.__contains__(item)
-
     def __init__(self, name: AnyStr, parent: Resource, entry_point: EntryPoint, title: AnyStr = None,
                  template_env=None) -> None:
         """
 
-        :type parent: ContainerResource
-        :param name: The name as appropriate for a resource key. (confusing)
-        :param parent: Parent resources.
-        :param title: Defaults to name if not given.
+        :param name:
+        :param parent:
+        :param entry_point:
+        :param title:
+        :param template_env:
         """
-        # we dont check anything related to parent
-        # assert parent is not None or isinstance(self, RootResource), "invalid parent %s or self %s" % (parent, type(self))
         assert entry_point is not None, "Need entry point."
         assert entry_point.key
 
@@ -221,17 +240,14 @@ class _Resource(AppBase, EntityTypeMixin, TemplateEnvMixin, EntryPointMixin):
         self._subresource_type = self.__class__
 
     def validate(self):
+        """
+
+        :return:
+        """
         assert self.entry_point is not None
         assert self.__name__
         assert self.__parent__ is not None
 
-    def __repr__(self):
-        try:
-            return "%s(%r, %s, %r)" % (self.__class__.__name__, self.__name__,
-                                       self.__parent__ and "%s()" % self.__parent__.__class__.__name__ or None,
-                                       self._title)
-        except:
-            return repr(sys.exc_info()[1])
 
     @property
     def is_container(self) -> bool:

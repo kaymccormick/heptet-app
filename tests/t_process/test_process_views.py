@@ -11,8 +11,7 @@ def test_process_views(app_registry_mock, asset_manager_mock, process_context_mo
     # for name in 'abcdef':
     #     make_entry_point(
     ep_iterable = [(entry_point_mock.key, entry_point_mock)]
-    process_views(app_registry_mock, jinja2_env_mock, process_context_mock, ep_iterable,
-                  app_request)
+    process_views(app_registry_mock, jinja2_env_mock, process_context_mock, ep_iterable)
     logger.critical("%r", process_context_mock.mock_calls)
     logger.critical("%r", asset_manager_mock.mock_calls)
 

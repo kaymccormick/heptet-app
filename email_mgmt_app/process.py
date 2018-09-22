@@ -324,10 +324,7 @@ def includeme(config: Configurator):
     config.action(None, do_action)
 
 
-def process_views(registry, template_env, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint], request):
-    @dataclass
-    class MyEvent:
-        request: Request = field(default_factory=lambda: request)
+def process_views(registry, template_env, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint]):
 
     # fixme extract dependncy
     root_namespace = NamespaceStore('root')
@@ -358,9 +355,9 @@ def process_views(registry, template_env, proc_context: ProcessContext, ep_itera
     # FIXME should we use asset manager for this also
     # whoops hardcoded path
 
-    with open('entry_points.json', 'w') as f:
-        json.dump(entry_points_data, f)
-        f.close()
+    # with open('entry_points.json', 'w') as f:
+    #     json.dump(entry_points_data, f)
+    #     f.close()
 
 
 #

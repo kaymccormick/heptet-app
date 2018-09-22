@@ -5,19 +5,17 @@ import logging
 import sys
 from datetime import datetime
 from logging import Formatter
+from pathlib import PurePath
 
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationExecutionError
 from pyramid.paster import setup_logging, get_appsettings
-from pyramid.request import Request
 from pyramid_jinja2 import IJinja2Environment
 
 import db_dump.args
-import email_mgmt_app.model.email_mgmt
 from email_mgmt_app import get_root
 from email_mgmt_app.interfaces import IEntryPoint
 from email_mgmt_app.process import setup_jsonencoder, AssetManager, ProcessContext, process_views
-from test.util import get_request
 from email_mgmt_app.util import _dump
 
 logger = logging.getLogger()
@@ -95,16 +93,16 @@ def main(input_args=None):
     # here we get our entry points
     l = list(registry.getUtilitiesFor(IEntryPoint))
 
-    # generate a request
-    request = get_request(Request, registry=registry)  # type: Request
-    assert request
-
     # we should be able to remove request and registry?
-    process_views(registry, template_env, proc_context, l, request)
+    process_views(registry, template_env, proc_context, l)
     d = {}
+    v: PurePath
+    curdir = PurePath("./")
     for k, v in asset_mgr._assets2.items():
         logger.critical("%r = %s", k[0].key, v)
-        d[k[0].key] = v.as_posix()
 
-    json.dump(d, fp=sys.stdout)
+        d[k[0].key] = "./" + curdir.joinpath(v).as_posix()
 
+    with open("entry_point.json", 'w') as f:
+        json.dump(d, fp=f, indent=4, sort_keys=True)
+        f.close()
