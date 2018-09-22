@@ -43,7 +43,7 @@ for (var key in entry_points) {
             new HtmlWebpackPlugin({
                 title: '',
                 template: 'src/assets/entry_point_generic.html',
-                filename: path.resolve(__dirname, 'build/assets/entry_point/email_mgmt_app/build/templates/entry_point/' + key + '.jinja2'),
+                filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/' + key + '.jinja2'),
                 inject: false,
                 chunks: [key],
             })

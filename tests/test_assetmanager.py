@@ -13,6 +13,7 @@ def test_assetmanager(make_asset_manager):
     assert dir == am.output_dir
 
 
+@pytest.mark.integration
 def test_assetmanager_no_mkdir(make_asset_manager):
     dir = "test123"
     am = make_asset_manager(dir, False)
