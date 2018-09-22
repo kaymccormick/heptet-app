@@ -12,10 +12,11 @@ def local_remote_pair_info_mock():
     type(m).local = local
     remote = MagicMock(TableColumnSpecInfo)
     type(m).remote = remote
-    m.return_value = (local, remote)
+    m.__iter__.return_value = [local, remote]
+    return m
 
 @pytest.fixture
 def mock_relationship_info(local_remote_pair_info_mock):
     mock = MagicMock(RelationshipInfo)
-    type(mock).local_remote_pairs = local_remote_pair_info_mock
+    type(mock).local_remote_pairs = PropertyMock(return_value=[local_remote_pair_info_mock])
     return mock

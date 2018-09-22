@@ -300,11 +300,11 @@ class FormContext(
             form_context_factory = FormContext
         self.form_context_factory = form_context_factory
         self.resolver = resolver
-        self.form = form
+        self._form = form
         self._nest_level = nest_level
         self.do_modal = do_modal
         self.builders = builders
-        self.extra = extra
+        self._extra = extra
         self.template_vars = template_vars
         self.relationship_field_mapper = relationship_field_mapper
         self.form_action = form_action
@@ -341,6 +341,22 @@ class FormContext(
     @nest_level.setter
     def nest_level(self, new):
         self._nest_level = new
+
+    @property
+    def form(self):
+        return self._form
+
+    @form.setter
+    def form(self, new):
+        self._form = new
+
+    @property
+    def extra(self):
+        return self._extra
+
+    @extra.setter
+    def extra(self, new):
+        self._extra = new
 
         # new = self.form_context_factory(generator_context=self.generator_context,
         #                                 template_env=self.template_env,

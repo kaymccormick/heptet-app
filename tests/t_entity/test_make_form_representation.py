@@ -13,7 +13,7 @@ def test_make_form_representation_1(my_form_context):
     logger.critical("%r", type(form))
     logger.critical("%r", form)
     print(form.as_html(), file=sys.stderr)
-    assert 0
+
 #
 #
 # def test_form_representation_parse(my_form_context):

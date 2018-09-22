@@ -355,7 +355,7 @@ class RelationshipSelect:
         collapse_id = context.form.get_html_id(stringcase.camelcase('collapse_%s' % key), True)
 
         # control excessive nesting
-        if nest_level < 1:
+        if nest_level + 1 < 2:
             # this is bogus??
             # mapper2 = request.registry.queryUtility(IMapperInfo, remote.table)
 
@@ -379,8 +379,10 @@ class RelationshipSelect:
                     select_id=select_id.get_id()
                 ))
 
+            b_id = button_id.get_id()
+            logger.critical("%r (b_id)", b_id)
             button = FormButton('button',
-                                {'id': button_id.get_id(),
+                                {'id': b_id,
                                  'class': 'btn btn-primary'})
             button.element.text = 'Create New'
             buttons.append(button.as_html())

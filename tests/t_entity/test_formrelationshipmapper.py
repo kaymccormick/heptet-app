@@ -66,5 +66,5 @@ def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_e
     t = my_form_relationship_mapper
     my_form_context.current_element = my_relationship_info
     the_html = t.map_relationship(my_form_context)
-    root = html.fromstring(the_html)
-    logger.critical("%s", root)
+#    root = html.fromstring(the_html)
+    logger.critical("%s", the_html)

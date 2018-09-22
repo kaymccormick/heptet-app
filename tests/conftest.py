@@ -160,6 +160,7 @@ def entry_point_mock():
     type(mock).key = PropertyMock(return_value=default)
     type(mock).view_kwargs = PropertyMock(return_value=dict(view=lambda x, y: {}))
     type(mock).discriminator = PropertyMock(return_value=['entry_point', Separator, default])
+    type(mock).mapper = PropertyMock()
     return mock
 
 
@@ -530,12 +531,21 @@ def make_form_context():
 
     return _make_form_context
 
+@pytest.fixture
+def form_mock():
+    mock = MagicMock(Form)
+    mock.get_html_id().get_id.return_value = 'html_id'
+    mock.get_html_form_name().get_id.return_value = 'form_name'
+    return mock
 
 @pytest.fixture
-def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_env_mock, template_vars_mock):
+def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_env_mock, template_vars_mock, form_mock):
     mock = MagicMock(FormContext)
     type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
     type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
+    type(mock).nest_level = PropertyMock(return_value=0)
+    type(mock).form = PropertyMock(return_value=form_mock)
+    type(mock).extra = PropertyMock()
     #type(mock).
     #mock.mock_add_spec(make_form_context(generator_context_mock, root_namespace_store, my_form))
     return mock
@@ -548,12 +558,12 @@ def my_form(root_namespace_store):
 
 @pytest.fixture
 def my_form_context(make_generator_context, my_relationship_select, root_namespace_store, make_entry_point,
-                    resource_manager_mock):
+                    resource_manager_mock, entry_point_mock):
     # mapper = FormRelationshipMapper(my_relationship_select) # fixme
     # we need to factor this thing away with a partial
     manager = resource_manager_mock
     key = 'test1'
-    entry_point = make_entry_point(manager, key)
+    entry_point = entry_point_mock #make_entry_point(manager, key)
     my_gen_context = make_generator_context(entry_point)
     the_form = Form(namespace_id="test",
                     root_namespace=root_namespace_store,

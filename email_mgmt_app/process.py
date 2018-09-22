@@ -353,7 +353,8 @@ def process_views(registry, template_env, proc_context: ProcessContext, ep_itera
 
         # is this our most advantageous entry pint?
 
-        mapper = entry_point.config and entry_point.config.get('mapper')
+#        mapper = entry_point.mapper
+
 
         gctx = GeneratorContext(
             entry_point,
