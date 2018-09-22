@@ -19,7 +19,8 @@ requires = [
     'pyramid_ldap3',
     'lxml',
     'bcrypt', 'stringcase',
-    'kazoo'
+    'kazoo',
+    'wheel'
 ]
 
 tests_require = [
