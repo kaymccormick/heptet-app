@@ -118,7 +118,7 @@ class MapperProperty:
 
 
 def includeme(config: Configurator):
-    config.include('..template')
+    config.include('.template')
 
     # we dont use this but its useful to remember how to do it
     # desc = 'request method template_env'
@@ -134,7 +134,7 @@ def includeme(config: Configurator):
     config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
     #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
 
-    config.include('..entrypoint')
+    config.include('.entrypoint')
     factory = Factory(Resource, 'resource',
                       'ResourceFactory', (IResource,))
     config.registry.registerUtility(factory, IFactory, 'resource')

@@ -46,6 +46,7 @@ def wsgi_app(global_config, **settings):
 
     config = Configurator(
         package="email_mgmt_app",
+        root_package="email_mgmt_app",
         registry=global_reg,
         settings=settings,
         root_factory=get_root)
