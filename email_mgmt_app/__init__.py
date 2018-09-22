@@ -471,11 +471,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
         entry_point_key = '%s_%s' % (node_name, op.name)
         d['view'] = op.view
-        entry_point = EntryPoint(manager, entry_point_key,
-                                 # we shouldn't be calling into the "operation" for the entry point
-                                 mapper=mapper_wrapper.get_one_mapper_info()
-
-                                 )
+        entry_point = EntryPoint(manager, entry_point_key, mapper=mapper_wrapper.get_one_mapper_info())
         logger.debug("spawning sub resource for op %s, %s", op.name, node_name)
         op_resource = resource.sub_resource(op.name, entry_point)
         d['context'] = type(op_resource)
@@ -542,7 +538,7 @@ class BaseView(Generic[T]):
         self.collect_args(self.request)
         entry_point = None
         if isinstance(self.context, Exception):
-            entry_point = EntryPoint(None, get_exception_entry_point_key(self.context), self.request)
+            entry_point = EntryPoint(None, get_exception_entry_point_key(self.context))
         elif hasattr(self.context, 'entry_point'):
             logger.debug("%s", self.context)
             entry_point = self.context.entry_point
@@ -664,16 +660,19 @@ class EntryPoint(AppBase):
             self,
             resource_manager: 'ResourceManager',
             key: AnyStr,
-            generator=None,
-            config: EntryPointConfiguration = None,
             **kwargs,
     ) -> None:
+        """
+        Initialize the entry point
+        :param resource_manager: Associated resource manager
+        :param key: dictionary key to identify the entry point
+        :param kwargs: other keyword arguments, especially mapper
+        """
         self._key = key
-        self._generator = generator
+        self._generator = None
         self._view = None
         self._vars = TemplateVars()
         self._manager = resource_manager
-        self._config = config
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -685,24 +684,34 @@ class EntryPoint(AppBase):
         logger.debug("Entry Point is %s", x)
 
     def __repr__(self):
-        return "EntryPoint(manager=%r, key=%r, generator=%r)" % (
+        """
+        Return the value for the repr() of the object
+        :return: value for the repr() of the object
+        """
+        return "EntryPoint(manager=%r, key=%r)" % (
             self._manager,
             self._key,
-            self._generator,
-
         )
 
-    ## Fix me - this is fragile. inject dependency
+
     def init_generator(self, registry, root_namespace, template_env, cb=None, generator_context=None):
+        """
+        Initiailize the generator?
+        :param registry:
+        :param root_namespace:
+        :param template_env:
+        :param cb:
+        :param generator_context:
+        :return:
+        """
         if cb:
             generator = cb(registry, generator_context)
         else:
             generator = registry.getAdapter(generator_context, IEntryPointGenerator)
 
-        self.generator = generator
+        return generator
 
-    def __str__(self):
-        return repr(self.__dict__)
+
 
     @property
     def key(self):
@@ -712,16 +721,12 @@ class EntryPoint(AppBase):
     def key(self, new):
         self._key = new
 
-    # @property
-    # def mapper_wrapper(self) -> MapperWrapper:
-    #     return self._mapper_wrapper
-
     @property
     def generator(self):
         return self._generator
 
     @generator.setter
-    def generator(self, new):
+    def set_generator(self, new):
         # logger.debug("setting generator to %s", new)
         # import traceback
         # traceback.print_stack(file=sys.stderr)
@@ -738,10 +743,6 @@ class EntryPoint(AppBase):
     @property
     def discriminator(self):
         return self.__class__.__name__.lower(), self.key
-
-    @property
-    def config(self) -> EntryPointConfiguration:
-        return self._config
 
 
 def default_entry_point():
@@ -778,7 +779,7 @@ class DefaultEntryPoint(EntryPoint):
     def __init__(self, resource_manager):
         key = "_default"
 
-        super().__init__(resource_manager, key, None)
+        super().__init__(resource_manager, key)
 
 
 _default_entry_point = DefaultEntryPoint(_default_manager)

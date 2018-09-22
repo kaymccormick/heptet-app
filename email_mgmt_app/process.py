@@ -259,7 +259,7 @@ def config_process_struct(config: Configurator, process):
             mapper_wrapper=wrapper
         )
         # fixme code smell
-        entry_point = EntryPoint(manager, wrapper.key, None)
+        entry_point = EntryPoint(manager, wrapper.key)
 
         manager.operation(name='form', view=EntityFormView,
                           args=[OperationArgument.SubpathArgument('action', String, default='create')])

@@ -448,7 +448,10 @@ def template_vars_wrapped():
 
 @pytest.fixture
 def template_vars_mock(template_vars_wrapped):
-    return MagicMock(wraps=template_vars_wrapped)
+    mock = MagicMock(template_vars_wrapped, wraps=template_vars_wrapped)
+    mock.__setitem__ = MagicMock(TemplateVars.__setitem__, wraps=template_vars_wrapped.__setitem__)
+    logger.critical("%r", mock)
+    return mock
 
 
 #
@@ -464,10 +467,14 @@ def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store)
 
 
 @pytest.fixture
-def generator_context_mock(make_generator_context, jinja2_env_mock, template_vars_mock):
+def generator_context_mock(make_generator_context, jinja2_env_mock, template_vars_mock, mapper_info_mock, form_context_mock):
     mock = MagicMock(GeneratorContext)
     type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
     type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
+    type(mock).mapper = PropertyMock(return_value=mapper_info_mock)
+    logger.critical("%r", mock)
+    logger.critical("form_ctx_m = %r", form_context_mock)
+    mock.form_context().return_value = form_context_mock
 
     return mock
 
@@ -480,7 +487,7 @@ def my_gen_context(
         my_template_vars,
         make_entry_point
 ):
-    entry_point = make_entry_point()
+    entry_point = make_entry_point(manager, key, generator, mapper_info_real)
     return make_generator_context(entry_point, jinja2_env, my_template_vars)
 
 
@@ -525,9 +532,12 @@ def make_form_context():
 
 
 @pytest.fixture
-def form_context_mock(make_form_context, generator_context_mock, root_namespace_store, my_form):
-    mock = MagicMock('form_context_mock')
-    mock.mock_add_spec(make_form_context(generator_context_mock, root_namespace_store, my_form))
+def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_env_mock, template_vars_mock):
+    mock = MagicMock(FormContext)
+    type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
+    type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
+    #type(mock).
+    #mock.mock_add_spec(make_form_context(generator_context_mock, root_namespace_store, my_form))
     return mock
 
 
@@ -537,9 +547,14 @@ def my_form(root_namespace_store):
 
 
 @pytest.fixture
-def my_form_context(my_gen_context, my_relationship_select, root_namespace_store):
+def my_form_context(make_generator_context, my_relationship_select, root_namespace_store, make_entry_point,
+                    resource_manager_mock):
     # mapper = FormRelationshipMapper(my_relationship_select) # fixme
     # we need to factor this thing away with a partial
+    manager = resource_manager_mock
+    key = 'test1'
+    entry_point = make_entry_point(manager, key)
+    my_gen_context = make_generator_context(entry_point)
     the_form = Form(namespace_id="test",
                     root_namespace=root_namespace_store,
                     namespace=None,  # can be None
@@ -606,8 +621,8 @@ def make_entry_point() -> MakeEntryPoint:
     :return:
     """
 
-    def _make_entry_point(manager, key, generator, mapper_wrapper):
-        return EntryPoint(manager, key, generator, mapper_wrapper)
+    def _make_entry_point(manager, key, mapper_wrapper=None):
+        return EntryPoint(manager, key, mapper=mapper_wrapper)
 
     return _make_entry_point
 

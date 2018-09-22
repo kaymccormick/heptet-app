@@ -301,7 +301,7 @@ class FormContext(
         self.form_context_factory = form_context_factory
         self.resolver = resolver
         self.form = form
-        self.nest_level = nest_level
+        self._nest_level = nest_level
         self.do_modal = do_modal
         self.builders = builders
         self.extra = extra
@@ -333,6 +333,14 @@ class FormContext(
             new.extra = copy.deepcopy(self.extra)
 
         return new
+
+    @property
+    def nest_level(self) -> int:
+        return self._nest_level
+
+    @nest_level.setter
+    def nest_level(self, new):
+        self._nest_level = new
 
         # new = self.form_context_factory(generator_context=self.generator_context,
         #                                 template_env=self.template_env,

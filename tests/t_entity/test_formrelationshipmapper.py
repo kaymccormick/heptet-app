@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from typing import Mapping, AnyStr, Tuple
-from unittest.mock import MagicMock
 
 import pytest
 from lxml import html
@@ -43,18 +42,6 @@ def make_relationship_info():
 # @pytest.fixture
 # def my_relationship_info(make_relationship_info):
 #     return make_relationship_info()
-
-
-@pytest.fixture
-def mock_relationship_info():
-    mock = MagicMock('relationship_info')
-    mock.mock_add_spec(RelationshipInfo())
-    return mock
-
-
-@pytest.fixture
-def form_relationship_mapper(my_relationship_select):
-    return FormRelationshipMapper(my_relationship_select)
 
 
 @pytest.fixture

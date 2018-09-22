@@ -56,7 +56,8 @@ def test_generate_2(make_generator_context,
     logger.critical("%r", gctx.mock_calls)
     logger.critical("%r", new.mock_calls)
     logger.critical("%r", gctx.template_vars)
-    assert set(gctx.template_vars.keys()) == set(MY_JS_VARS)
+    keys = gctx.template_vars.keys()
+    assert set(keys) == set(MY_JS_VARS)
     logger.critical("%r", gctx)
 
 

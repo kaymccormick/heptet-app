@@ -53,11 +53,12 @@ class MakeFormRepresentation(FormContextMixin):
         if context.nest_level == 0:
             outer_form = True
 
+        assert mapper
         mapper_key = mapper.local_table.key  # ??
         namespace_id = stringcase.camelcase(mapper_key)
         logger.debug("in form_representation with namespace id of %s", namespace_id)
         # we should provide for initialize the form in another fashion for testability!!!
-        action = context.form_action
+#        action = context.form_action
         # assert action
         the_form = Form(namespace_id=namespace_id,
                         root_namespace=context.root_namespace,
@@ -441,6 +442,8 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
         """
         ctx = self.ctx
         t_vars = ctx.template_vars
+        logger.critical("%r", ctx)
+        logger.critical("t_vars = %r", ctx.template_vars)
 
         for var in JS_VARS:
             t_vars[var] = []
@@ -524,15 +527,13 @@ class EntityFormView(BaseEntityRelatedView[T]):
             form_context_factory=FormContext,
             root_namespace=root_namespace,
             template_env=env)
-        entry_point.init_generator(self.request.registry, root_namespace, env, generator_context=gctx)
+        # replace call to init_generator with something reasonable registry.getAdapter(generator_context, IEntryPointGenerator)
+        generator = entry_point.init_generator(self.request.registry, root_namespace, env, generator_context=gctx)
         # init_generator:
         # if cb:
         #     generator = cb(registry, generator_context)
         # else:
         #     generator = registry.getAdapter(generator_context, IEntryPointGenerator)
-
-        # this pulls the generator from the entry point which I dont like
-        generator = entry_point.generator
 
         assert generator, "Need generator to function"
         mapper_info = entry_point.mapper
