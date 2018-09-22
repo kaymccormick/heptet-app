@@ -473,7 +473,8 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
         d['view'] = op.view
         entry_point = EntryPoint(manager, entry_point_key,
                                  # we shouldn't be calling into the "operation" for the entry point
-                                 config=EntryPointConfiguration(mapper=mapper_wrapper.get_one_mapper_info())
+                                 mapper=mapper_wrapper.get_one_mapper_info()
+
                                  )
         logger.debug("spawning sub resource for op %s, %s", op.name, node_name)
         op_resource = resource.sub_resource(op.name, entry_point)
@@ -673,7 +674,9 @@ class EntryPoint(AppBase):
         self._vars = TemplateVars()
         self._manager = resource_manager
         self._config = config
-        self._kwargs = kwargs
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
         try:
             x = repr(self)
         except Exception as ex:

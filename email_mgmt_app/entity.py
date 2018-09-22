@@ -47,7 +47,7 @@ class MakeFormRepresentation(FormContextMixin):
         assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
         # how do we extract our "mapper info"
         
-        mapper = context.generator_context.mapper_info
+        mapper = context.generator_context.entry_point.mapper
 
         outer_form = False
         if context.nest_level == 0:
@@ -447,7 +447,7 @@ class EntityFormViewEntryPointGenerator(EntryPointGenerator, FormContextMixin):
 
         ctx = self.ctx
 
-        if ctx.mapper_info is None:
+        if ctx.mapper is None:
             # fixme - we get called here when we shouldn't and our fix is to bail out right now
             logger.critical("no mapper! probably not gonna work.")
             return
@@ -535,7 +535,7 @@ class EntityFormView(BaseEntityRelatedView[T]):
         generator = entry_point.generator
 
         assert generator, "Need generator to function"
-        mapper_info = entry_point.config.get('mapper')
+        mapper_info = entry_point.mapper
         assert mapper_info is not None
         if self.request.method == "GET":
             # namespace = resource.root_namespace
