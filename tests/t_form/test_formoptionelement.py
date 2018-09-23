@@ -43,7 +43,7 @@ def test_formoptionelement_init(
 
     assert 'option' == element.tag.lower()
     assert value == element.get('value')
-    assert element.text == 'test'
+    assert 'test' == element.text
     assert 0
 
 

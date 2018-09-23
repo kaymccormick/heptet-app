@@ -3,7 +3,6 @@ import sys
 
 import lxml
 from email_mgmt_app.entity import MakeFormRepresentation, FormRelationshipMapper
-from impl import MapperWrapper
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +17,8 @@ def test_make_form_representation_1(make_form_context, monkeypatch_html, monkeyp
     form = m.make_form_representation()
     logger.critical("%r", type(form))
     logger.critical("%r", form.mock_calls)
+    logger.critical("%r", form.element[0].mock_calls)
+
     print(form.as_html(), file=sys.stderr)
 
     assert 0

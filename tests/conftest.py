@@ -119,8 +119,11 @@ def app_request(app_registry_mock):
     # We'll use dummy request until we can't anymore
     request = DummyRequest()
     request.registry = app_registry_mock
-
-    return request
+    try:
+        yield request
+    except:
+        for x in app_registry_mock.mock_calls:
+            print(str(x), file=sys.stderr)
 
 
 @pytest.fixture
@@ -393,6 +396,7 @@ def entity_view_deriver_with_mocks(view_test, view_deriver_info_mock):
 def entity_type_mock():
     return MagicMock('entity_type')
 
+
 @pytest.fixture
 def element_mock():
     element = html.Element('elem')
@@ -402,26 +406,45 @@ def element_mock():
 
 @pytest.fixture
 def mapper_info_mock(local_remote_pair_info_mock):
-    mock = MagicMock(name='mapper_info')
-    mock.mock_add_spec(MapperInfo())
-    m = MagicMock(ColumnInfo)
-    type(m).key = PropertyMock(return_value='ref_id')
-    type(mock).columns = PropertyMock(list, return_value=[m])
-    magic_mock = MagicMock(name='x')
+    top_mock = MagicMock(MapperInfo, name='mapper_info')
+
+    type(top_mock).entity = PropertyMock()
+
+    col_info_mock = MagicMock(ColumnInfo, name='col_info')
+    type(col_info_mock).key = PropertyMock(name='key', return_value='child_id')
+    type(col_info_mock).name = PropertyMock(name='name', return_value='child_id')
+    type(col_info_mock).table = PropertyMock(name='table', return_value='table1')
+    type(col_info_mock).__visit_name__ = PropertyMock(return_value='column')
+    type_mock = MagicMock(name='type')
+
+
+    type(col_info_mock).type = PropertyMock(name='type', return_value=type_mock)
+
+    #type(m).type = PropertyMock(return_value=TypeInfo())
+    type(top_mock).columns = PropertyMock(list, return_value=[col_info_mock])
+
+    class LocalTableMock(MagicMock):
+        pass
+
+    magic_mock = MagicMock(name='local_table')
     type(magic_mock).key = PropertyMock(name='key', return_value='table1')
-    property_mock = PropertyMock(TableInfo, name='local_table', return_value=magic_mock)
-    type(mock).local_table = property_mock
+    property_mock = PropertyMock(TableInfo, return_value=magic_mock)
+    type(top_mock).local_table = property_mock
 
     rel_mock = MagicMock(RelationshipInfo, name='relationship_info')
     type(rel_mock).key = PropertyMock(return_value='key1')
     pair_mock = local_remote_pair_info_mock
     type(rel_mock).local_remote_pairs = PropertyMock(list, return_value=[pair_mock])
     type(rel_mock).direction = PropertyMock(return_value='MANYTOONE')
-    rel_prop_mock = PropertyMock(list, name='relationships', return_value=[rel_mock])
-    type(mock).relationships = rel_prop_mock
+    type(rel_mock).argument = PropertyMock()
+    type(rel_mock).secondary = PropertyMock(return_value=None)
+    type(rel_mock).mapper = PropertyMock()
 
-    #mock.local_table.key.side_effect = 'table1x'
-    return mock
+    rel_prop_mock = PropertyMock(list, name='relationships', return_value=[rel_mock])
+    type(top_mock).relationships = rel_prop_mock
+
+    # mock.local_table.key.side_effect = 'table1x'
+    return top_mock
 
 
 @pytest.fixture
@@ -582,7 +605,7 @@ def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_e
 
 
 @pytest.fixture
-def my_form(root_namespace_store):
+def my_form(root_namespace_store, monkeypatch_form):
     return Form('myform', root_namespace_store, outer_form=True)
 
 
@@ -659,10 +682,12 @@ def make_resource_manager():
     def _make_resource_manager(*args, **kwargs):
         return ResourceManager(*args, **kwargs)
 
+
 @pytest.fixture
 def mapper_wrapper_mock():
     mock = MagicMock(MapperWrapper)
     return mock
+
 
 @pytest.fixture
 def make_entry_point() -> MakeEntryPoint:
@@ -731,23 +756,37 @@ class MapperMock(MagicMock):
 
 @pytest.fixture
 def monkeypatch_form(monkeypatch):
-    form_orig = email_mgmt_app.form.Form.__new__
+    with monkeypatch.context() as mp:
+        form_orig = email_mgmt_app.form.Form.__new__
 
-    def _form(cls,
-              namespace_id,  # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
-              root_namespace,
-              namespace: NamespaceStore = None,
-              outer_form=False, attr={}) -> None:
-        form__ = form_orig(cls)
-        form__.__init__(namespace_id, root_namespace, namespace, outer_form, attr)
-        return MagicMock(wraps=form__)
+        def _form(cls,
+                  namespace_id,  # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
+                  root_namespace,
+                  namespace: NamespaceStore = None,
+                  outer_form=False, attr={}) -> None:
+            form__ = form_orig(cls)
+            form__.__init__(namespace_id, root_namespace, namespace, outer_form, attr)
+            return MagicMock(wraps=form__)
 
-    monkeypatch.setattr(email_mgmt_app.form.Form, "__new__", _form)
+        monkeypatch.setattr(email_mgmt_app.form.Form, "__new__", _form)
+        yield True
+
+
+
+class ElementMock(MagicMock):
+
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+
+    def __repr__(self):
+        return repr(html.tostring(self).decode('utf-8'))
+
 
 @pytest.fixture
 def make_element_mock():
     def _make_element_mock(element):
-        mock1 = MagicMock(wraps=element, name="<%s>" % element.tag)
+        mock1 = ElementMock(wraps=element, name="<%s>" % element.tag)
+
         mock1.append.return_value = None
         mock1.append.side_effect = lambda x: element.append(x._mock_wraps)
         property_any_str_ = Property[AnyStr](element, 'text')
@@ -756,6 +795,7 @@ def make_element_mock():
         return mock1
 
     return _make_element_mock
+
 
 @pytest.fixture
 def monkeypatch_html(monkeypatch, wrap_make_html, make_element_mock):
@@ -767,6 +807,7 @@ def monkeypatch_html(monkeypatch, wrap_make_html, make_element_mock):
         return orig_tostring(element._mock_wraps, **kwargs)
 
     orig_fromstring = html.fromstring
+
     def _fromstring(string, **kwargs):
         return make_element_mock(orig_fromstring(string, **kwargs))
 
