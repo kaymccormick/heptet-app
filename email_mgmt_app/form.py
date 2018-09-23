@@ -55,11 +55,8 @@ class FormOptionElement(FormElement):
         if value is not None:
             attrs['value'] = str(value)
         super().__init__('option', attrs)
-        logger.critical("element = %r", self.element)
-
-        logger.critical("content = %r", content)
         self.element.text = content
-        logger.critical("element = %r", self.element._mock_wraps.text)
+
 
 
 

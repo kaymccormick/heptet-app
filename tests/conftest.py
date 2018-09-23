@@ -1,12 +1,25 @@
 import importlib
 import json
 import logging
+import sys
+from typing import AnyStr
 from unittest.mock import MagicMock, Mock, PropertyMock
+
+import pytest
+from jinja2 import Environment, Template
+from lxml import html
+from pyramid.config import Configurator
+from pyramid.config.views import ViewDeriverInfo
+from pyramid.registry import Registry
+from pyramid.response import Response
+from pyramid_jinja2 import IJinja2Environment
+from pyramid_tm.tests import DummyRequest
+from zope.interface.registry import Components
 
 import email_mgmt_app
 import email_mgmt_app.myapp_config
-import pytest
-import sys
+from db_dump import RelationshipSchema, ColumnInfo, LocalRemotePairInfo, TableColumnSpecInfo
+from db_dump.info import MapperInfo, TypeInfo, TableInfo, RelationshipInfo
 from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
     EntryPointGenerator
 from email_mgmt_app.context import FormContext, GeneratorContext
@@ -16,23 +29,12 @@ from email_mgmt_app.form import Form
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper, Separator
 from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
 from email_mgmt_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
+from email_mgmt_app.process import VirtualAssetManager
 from email_mgmt_app.process import load_process_struct
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.viewderiver import entity_view
-from jinja2 import Environment, Template
-from pyramid.config import Configurator
-from pyramid.config.views import ViewDeriverInfo
-from pyramid.registry import Registry
-from pyramid.response import Response
-from pyramid_jinja2 import IJinja2Environment
-from pyramid_tm.tests import DummyRequest
-
-from email_mgmt_app.process import VirtualAssetManager
+from tests import Property
 from tests.common import MakeEntryPoint
-from zope.interface.registry import Components
-
-from db_dump import RelationshipSchema, ColumnInfo
-from db_dump.info import MapperInfo, TypeInfo
 
 logger = logging.getLogger(__name__)
 
@@ -391,11 +393,34 @@ def entity_view_deriver_with_mocks(view_test, view_deriver_info_mock):
 def entity_type_mock():
     return MagicMock('entity_type')
 
+@pytest.fixture
+def element_mock():
+    element = html.Element('elem')
+    m = MagicMock(element)
+    return m
+
 
 @pytest.fixture
-def mapper_info_mock():
-    mock = MagicMock('mapper_info')
+def mapper_info_mock(local_remote_pair_info_mock):
+    mock = MagicMock(name='mapper_info')
     mock.mock_add_spec(MapperInfo())
+    m = MagicMock(ColumnInfo)
+    type(m).key = PropertyMock(return_value='ref_id')
+    type(mock).columns = PropertyMock(list, return_value=[m])
+    magic_mock = MagicMock(name='x')
+    type(magic_mock).key = PropertyMock(name='key', return_value='table1')
+    property_mock = PropertyMock(TableInfo, name='local_table', return_value=magic_mock)
+    type(mock).local_table = property_mock
+
+    rel_mock = MagicMock(RelationshipInfo, name='relationship_info')
+    type(rel_mock).key = PropertyMock(return_value='key1')
+    pair_mock = local_remote_pair_info_mock
+    type(rel_mock).local_remote_pairs = PropertyMock(list, return_value=[pair_mock])
+    type(rel_mock).direction = PropertyMock(return_value='MANYTOONE')
+    rel_prop_mock = PropertyMock(list, name='relationships', return_value=[rel_mock])
+    type(mock).relationships = rel_prop_mock
+
+    #mock.local_table.key.side_effect = 'table1x'
     return mock
 
 
@@ -470,7 +495,8 @@ def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store)
 
 
 @pytest.fixture
-def generator_context_mock(make_generator_context, jinja2_env_mock, template_vars_mock, mapper_info_mock, form_context_mock):
+def generator_context_mock(make_generator_context, jinja2_env_mock, template_vars_mock, mapper_info_mock,
+                           form_context_mock):
     mock = MagicMock(GeneratorContext)
     type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
     type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
@@ -533,12 +559,14 @@ def make_form_context():
 
     return _make_form_context
 
+
 @pytest.fixture
 def form_mock():
     mock = MagicMock(Form)
     mock.get_html_id().get_id.return_value = 'html_id'
     mock.get_html_form_name().get_id.return_value = 'form_name'
     return mock
+
 
 @pytest.fixture
 def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_env_mock, template_vars_mock, form_mock):
@@ -548,8 +576,8 @@ def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_e
     type(mock).nest_level = PropertyMock(return_value=0)
     type(mock).form = PropertyMock(return_value=form_mock)
     type(mock).extra = PropertyMock()
-    #type(mock).
-    #mock.mock_add_spec(make_form_context(generator_context_mock, root_namespace_store, my_form))
+    # type(mock).
+    # mock.mock_add_spec(make_form_context(generator_context_mock, root_namespace_store, my_form))
     return mock
 
 
@@ -565,7 +593,7 @@ def my_form_context(make_generator_context, my_relationship_select, root_namespa
     # we need to factor this thing away with a partial
     manager = resource_manager_mock
     key = 'test1'
-    entry_point = entry_point_mock #make_entry_point(manager, key)
+    entry_point = entry_point_mock  # make_entry_point(manager, key)
     my_gen_context = make_generator_context(entry_point)
     the_form = Form(namespace_id="test",
                     root_namespace=root_namespace_store,
@@ -615,6 +643,7 @@ def make_asset_manager():
 def asset_manager_mock_wraps_virtual():
     return MagicMock(wraps=VirtualAssetManager())
 
+
 @pytest.fixture
 def asset_manager_mock():
     return MagicMock(AbstractAssetManager)
@@ -630,6 +659,10 @@ def make_resource_manager():
     def _make_resource_manager(*args, **kwargs):
         return ResourceManager(*args, **kwargs)
 
+@pytest.fixture
+def mapper_wrapper_mock():
+    mock = MagicMock(MapperWrapper)
+    return mock
 
 @pytest.fixture
 def make_entry_point() -> MakeEntryPoint:
@@ -638,9 +671,9 @@ def make_entry_point() -> MakeEntryPoint:
     :return:
     """
 
-    def _make_entry_point(key, manager=None, mapper_wrapper=None):
+    def _make_entry_point(key, manager=None, mapper=None):
         # i dont like having to pass manager!
-        return EntryPoint(key, manager, mapper=mapper_wrapper)
+        return EntryPoint(key, manager, mapper=mapper)
 
     return _make_entry_point
 
@@ -694,3 +727,73 @@ def process_struct_basic_model():
 class MapperMock(MagicMock):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
+
+
+@pytest.fixture
+def monkeypatch_form(monkeypatch):
+    form_orig = email_mgmt_app.form.Form.__new__
+
+    def _form(cls,
+              namespace_id,  # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
+              root_namespace,
+              namespace: NamespaceStore = None,
+              outer_form=False, attr={}) -> None:
+        form__ = form_orig(cls)
+        form__.__init__(namespace_id, root_namespace, namespace, outer_form, attr)
+        return MagicMock(wraps=form__)
+
+    monkeypatch.setattr(email_mgmt_app.form.Form, "__new__", _form)
+
+@pytest.fixture
+def make_element_mock():
+    def _make_element_mock(element):
+        mock1 = MagicMock(wraps=element, name="<%s>" % element.tag)
+        mock1.append.return_value = None
+        mock1.append.side_effect = lambda x: element.append(x._mock_wraps)
+        property_any_str_ = Property[AnyStr](element, 'text')
+        prop_mock = PropertyMock(wraps=property_any_str_)
+        type(mock1).text = prop_mock
+        return mock1
+
+    return _make_element_mock
+
+@pytest.fixture
+def monkeypatch_html(monkeypatch, wrap_make_html, make_element_mock):
+    monkeypatch.setattr(html, "Element", wrap_make_html)
+
+    orig_tostring = html.tostring
+
+    def _tostring(element, **kwargs):
+        return orig_tostring(element._mock_wraps, **kwargs)
+
+    orig_fromstring = html.fromstring
+    def _fromstring(string, **kwargs):
+        return make_element_mock(orig_fromstring(string, **kwargs))
+
+    monkeypatch.setattr(html, "tostring", _tostring)
+    monkeypatch.setattr(html, "fromstring", _fromstring)
+
+
+@pytest.fixture
+def wrap_make_html(make_element_mock):
+    factory = html.Element
+
+    def _wrap_make_html(*args, **kwargs):
+        elem = factory(*args, **kwargs)
+        return make_element_mock(elem)
+
+    return _wrap_make_html
+
+
+@pytest.fixture
+def local_remote_pair_info_mock():
+    m = MagicMock(LocalRemotePairInfo)
+    local = MagicMock(TableColumnSpecInfo, wraps=TableColumnSpecInfo(table='table1', column='child_id'))
+    type(local).table = PropertyMock(return_value='table1')
+    type(local).column = PropertyMock(return_value='child_id')
+
+    type(m).local = local
+    remote = MagicMock(TableColumnSpecInfo)
+    type(m).remote = remote
+    m.__iter__.return_value = [local, remote]
+    return m

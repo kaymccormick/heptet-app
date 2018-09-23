@@ -298,6 +298,7 @@ class GenerateEntryPointProcess(BaseProcessor):
 
         :param ep:
         """
+        super().__init__(context)
         self._ep = ep
         self._context = context
 

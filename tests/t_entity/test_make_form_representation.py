@@ -2,17 +2,25 @@ import logging
 import sys
 
 import lxml
-from email_mgmt_app.entity import MakeFormRepresentation
+from email_mgmt_app.entity import MakeFormRepresentation, FormRelationshipMapper
+from impl import MapperWrapper
 
 logger = logging.getLogger(__name__)
 
 
-def test_make_form_representation_1(my_form_context):
-    m = MakeFormRepresentation(my_form_context)
+def test_make_form_representation_1(make_form_context, monkeypatch_html, monkeypatch_form,
+                                    make_generator_context, make_entry_point, mapper_info_mock,
+                                    mapper_wrapper_mock, jinja2_env, element_mock):
+    entry_point = make_entry_point('test1', mapper=mapper_info_mock)
+    generator_context = make_generator_context(entry_point, env=jinja2_env)
+    form_context = generator_context.form_context(relationship_field_mapper=FormRelationshipMapper, form_action="./")
+    m = MakeFormRepresentation(form_context)
     form = m.make_form_representation()
     logger.critical("%r", type(form))
-    logger.critical("%r", form)
+    logger.critical("%r", form.mock_calls)
     print(form.as_html(), file=sys.stderr)
+
+    assert 0
 
 #
 #

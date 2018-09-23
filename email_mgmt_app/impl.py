@@ -134,27 +134,6 @@ class NamespaceStore(TemplateVars, metaclass=NamespaceMeta):
         return self._namespace
 
 
-# @adapter(ICollectorContext)
-# @implementer(ICollector)
-# class MyCollector:
-#     def __init__(self, context) -> None:
-#         self._context = context
-#         self._value = []
-#
-#     def add_value(self, instance):
-#         var = self._context.get_backing_var()
-#         if var:
-#             var.add_value(instance)
-#         else:
-#             self._value.append(instance)
-#
-#     def get_value(self):
-#         var = self._context.get_backing_var()
-#         if var:
-#             return var.get_value()
-#         return self._value
-
-
 class MixinBase:
     def check_instance(self):
         pass
@@ -180,34 +159,6 @@ class TemplateEnvMixin(MixinBase):
     def check_instance(self):
         super().check_instance()
         # assert self.template_env
-
-
-# class GetTemplateMixin(TemplateEnvMixin):
-#     def __init__(self) -> None:
-#         super().__init__()
-#
-#     def get_template(self, name):
-#         return self.template_env.get_template(name)
-#         # assert self.template_env
-#         #
-#         # @dataclass
-#         # class _info:
-#         #     name: AnyStr
-#         #     package: AnyStr = None
-#         #
-#         # class _template:
-#         #     def __init__(self, template_env, info):
-#         #         assert template_env
-#         #         self.template_env = template_env
-#         #         self.info = info
-#         #
-#         #     def render(self, **kwargs):
-#         #         assert self.template_env, "%r" % self
-#         #         x = self.template_env(self.info)
-#         #         logger.critical("x = %r", x)
-#         #         return x(dict(**kwargs), {})
-#         #
-#         # return _template(self.template_env, _info(name))
 
 
 class EntityTypeMixin(Generic[T], MixinBase):
