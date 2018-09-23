@@ -17,7 +17,7 @@ from zope.interface import implementer, Interface
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
-from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action
+from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, AppBase
 from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
@@ -52,27 +52,6 @@ class IProcessContext(Interface):
     pass
 
 
-# This is confusing because it seems like it could be some other random objet
-@implementer(IProcessContext)
-class ProcessContext:
-    def __init__(self, settings, template_env, asset_manager):
-        self._settings = settings
-        self._template_env = template_env
-        self._asset_manager = asset_manager
-
-    @property
-    def settings(self):
-        return self._settings
-
-    @property
-    def template_env(self):
-        return self._template_env
-
-    @property
-    def asset_manager(self):
-        return self._asset_manager
-
-
 class BaseProcessor:
     def __init__(self, pcontext):
         """
@@ -100,17 +79,42 @@ class Asset:
         super().__init__()
 
 
+class AbstractAsset(os.PathLike, metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        pass
+
+
+class FileAsset(AbstractAsset):
+    def __init__(self, obj, arg, mkdir=True) -> None:
+        super().__init__()
+        if isinstance(arg, os.PathLike):
+            self._file_path = arg
+        else:
+            self._file_path = Path(arg)
+
+        self._file_path.parents[0].mkdir(mode=0o755, parents=True, exist_ok=True)
+
+    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
+        logger.critical("opening %s", self._file_path)
+        return self._file_path.open(mode, buffering, encoding, errors, newline)
+
+    def __fspath__(self):
+        return self._file_path.__fspath__()
+
+
 class AbstractAssetManager(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def create_asset(self, obj: AppBase, name: AnyStr, type: FileType):
+        pass
+
     @abc.abstractmethod
     def get_path(self, *disc) -> os.PathLike:
         pass
 
     @abc.abstractmethod
     def get_node(self, disc):
-        pass
-
-    @abc.abstractmethod
-    def select(self, *disc):
         pass
 
     @abc.abstractmethod
@@ -125,6 +129,40 @@ class AbstractAssetManager(metaclass=abc.ABCMeta):
     def asset_content(self) -> Mapping[Tuple, AnyStr]:
         return self._asset_content
 
+    @property
+    def assets(self) -> Mapping[Tuple, AbstractAsset]:
+        return self._assets
+
+
+class VirtualAsset(AbstractAsset):
+
+    def __init__(self, obj, arg) -> None:
+        super().__init__()
+        self._file = None
+        self._content = None
+        self._obj = obj
+        self._arg = arg
+
+    def __repr__(self):
+
+        return 'VirtualAsset(%r, %r%s)' % (self._obj, self._arg, self._content and ', content=%r' % self._content or '')
+
+    @contextmanager
+    def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
+        self._file = StringIO()
+        try:
+            yield self._file
+        finally:
+            self._content = self._file.getvalue()
+            self._file = None
+
+    def __fspath__(self):
+        return 'virtual:' + os.fspath(self._obj)
+
+    @property
+    def content(self) -> AnyStr:
+        return self._content
+
 
 class VirtualAssetManager(AbstractAssetManager):
 
@@ -133,9 +171,16 @@ class VirtualAssetManager(AbstractAssetManager):
         self._io = {}
         self._asset_path = {}
         self._asset_content = {}
+        self._assets = {}
+
+
+    def create_asset(self, obj: AppBase, name: AnyStr, type: FileType):
+        asset = VirtualAsset(obj, None)
+        self._assets[obj, name] = asset
+        return asset
 
     def get_path(self, *disc) -> os.PathLike:
-        return 'virtual'
+        return 'virtual:'
 
     def get_node(self, disc):
         pass
@@ -155,10 +200,10 @@ class VirtualAssetManager(AbstractAssetManager):
             self.asset_content[disc] = s
 
 
-class AssetManager(AbstractAssetManager):
+class FileAssetManager(AbstractAssetManager):
     def __init__(self, output_dir, mkdir=False) -> None:
         super().__init__()
-        self.asset_path = {}
+        self._asset_path = {}
         p = Path(output_dir)
         if p.exists():
             if not p.is_dir():
@@ -173,6 +218,11 @@ class AssetManager(AbstractAssetManager):
         self._output_dir = output_dir
         self._assets = {}
         self._assets2 = {}
+
+    def create_asset(self, obj: AppBase, name: AnyStr, type_: FileType):
+        file_asset = FileAsset(obj, Path(self._output_dir).joinpath(os.fspath(obj) + '.' + type_.ext))
+        self._assets[obj, name] = file_asset
+        return file_asset
 
     def get_path(self, *disc):
         l = list()
@@ -214,6 +264,27 @@ class AssetManager(AbstractAssetManager):
     @property
     def assets(self):
         return self._assets
+
+
+# This is confusing because it seems like it could be some other random objet
+@implementer(IProcessContext)
+class ProcessContext:
+    def __init__(self, settings, template_env, asset_manager: AbstractAssetManager):
+        self._settings = settings
+        self._template_env = template_env
+        self._asset_manager = asset_manager
+
+    @property
+    def settings(self):
+        return self._settings
+
+    @property
+    def template_env(self):
+        return self._template_env
+
+    @property
+    def asset_manager(self) -> AbstractAssetManager:
+        return self._asset_manager
 
 
 def setup_jsonencoder():
@@ -288,21 +359,14 @@ class GenerateEntryPointProcess:
 
         # need to generate path
 
-        with self._context.asset_manager.get(self._ep, JavaScript) as f:
+        asset = self._context.asset_manager.create_asset(self._ep, None, JavaScript)
+        with asset.open('w') as f:
             # FIXME embedded template filename
             content = self._context.template_env.get_template('entry_point.js.jinja2').render(
                 **data
             )
 
             f.write(str(content))
-
-        # with open(fname, 'w') as f:
-        #     content = ep.get_template().render(
-        #         **data['vars']
-        #     )
-        #     f.write(content)
-        #     f.close()
-        #
 
 
 # how do we split the responsibility between this function and "config.add_resource_manager"!?!?!
@@ -319,7 +383,7 @@ def config_process_struct(config: Configurator, process):
             mapper_wrapper=wrapper
         )
         # fixme code smell
-        entry_point = EntryPoint(manager, wrapper.key)
+        entry_point = EntryPoint(wrapper.key, manager)
 
         manager.operation(name='form', view=EntityFormView,
                           args=[OperationArgument.SubpathArgument('action', String, default='create')])
@@ -445,6 +509,7 @@ def process_views(registry, template_env, proc_context: ProcessContext, ep_itera
 # This is probably better renamed to something else.
 #
 def process_view(gctx, entry_point, proc_context, registry, generator):
+    # abstract this away
     subscribers = registry.subscribers((proc_context, entry_point), IProcess)
     subscribers = [GenerateEntryPointProcess(proc_context, entry_point)]
     assert subscribers, "No subscribers for processing"

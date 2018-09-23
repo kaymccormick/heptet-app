@@ -15,7 +15,7 @@ from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
 from email_mgmt_app.form import Form
 from email_mgmt_app.impl import NamespaceStore, MapperWrapper, Separator
 from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
-from email_mgmt_app.process import AssetManager, ProcessContext
+from email_mgmt_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
 from email_mgmt_app.process import load_process_struct
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.viewderiver import entity_view
@@ -26,6 +26,8 @@ from pyramid.registry import Registry
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_tm.tests import DummyRequest
+
+from process import VirtualAssetManager
 from tests.common import MakeEntryPoint
 from zope.interface.registry import Components
 
@@ -449,7 +451,7 @@ def template_vars_wrapped():
 
 @pytest.fixture
 def template_vars_mock(template_vars_wrapped):
-    mock = MagicMock(template_vars_wrapped, wraps=template_vars_wrapped)
+    mock = MagicMock(wraps=template_vars_wrapped)
     mock.__setitem__ = MagicMock(TemplateVars.__setitem__, wraps=template_vars_wrapped.__setitem__)
     logger.critical("%r", mock)
     return mock
@@ -594,23 +596,28 @@ def my_column_info(request):
 
 @pytest.fixture
 def asset_manager():
-    return AssetManager("tmpdir", mkdir=True)
+    raise TypeError
+    return FileAssetManager("tmpdir", mkdir=True)
 
 
 @pytest.fixture
 def make_asset_manager():
     def _make_asset_manager(dir, mkdir=None):
         if mkdir is None:
-            return AssetManager(dir)
+            return FileAssetManager(dir)
         else:
-            return AssetManager(dir, mkdir)
+            return FileAssetManager(dir, mkdir)
 
     return _make_asset_manager
 
 
 @pytest.fixture
+def asset_manager_mock_wraps_virtual():
+    return MagicMock(wraps=VirtualAssetManager())
+
+@pytest.fixture
 def asset_manager_mock():
-    return MagicMock(AssetManager)
+    return MagicMock(AbstractAssetManager)
 
 
 @pytest.fixture
@@ -631,8 +638,9 @@ def make_entry_point() -> MakeEntryPoint:
     :return:
     """
 
-    def _make_entry_point(manager, key, mapper_wrapper=None):
-        return EntryPoint(manager, key, mapper=mapper_wrapper)
+    def _make_entry_point(key, manager=None, mapper_wrapper=None):
+        # i dont like having to pass manager!
+        return EntryPoint(key, manager, mapper=mapper_wrapper)
 
     return _make_entry_point
 

@@ -70,6 +70,8 @@ def test_webtest_urls(url, make_webtest):
 @pytest.mark.integration
 def test_webtest_domain_form(make_webtest):
     resp = make_webtest('/domain/form')
+    logger.critical(resp.text)
+    assert 0
     html = lxml.html.fromstring(resp.text)
     logger.critical("%s", resp.text)
     form_ = html.xpath("//form[@data-pyclass='Form']")

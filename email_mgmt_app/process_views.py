@@ -5,7 +5,7 @@ import logging
 import sys
 from datetime import datetime
 from logging import Formatter
-from pathlib import PurePath
+from pathlib import PurePath, Path
 
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationExecutionError
@@ -15,7 +15,7 @@ from pyramid_jinja2 import IJinja2Environment
 import db_dump.args
 from email_mgmt_app import get_root
 from email_mgmt_app.interfaces import IEntryPoint
-from email_mgmt_app.process import setup_jsonencoder, AssetManager, ProcessContext, process_views, process_view, \
+from email_mgmt_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, process_view, \
     AbstractAssetManager
 from email_mgmt_app.util import _dump
 from email_mgmt_app.process import VirtualAssetManager
@@ -97,7 +97,7 @@ def main(input_args=None):
     if args.virtual_assets:
         asset_mgr = VirtualAssetManager()
     else:
-        asset_mgr = AssetManager("build/assets", mkdir=True)
+        asset_mgr = FileAssetManager("build/assets", mkdir=True)
 
     proc_context = ProcessContext(settings, template_env, asset_mgr)
     registry.registerUtility(proc_context)
@@ -126,14 +126,17 @@ def main(input_args=None):
     d = {}
     v: PurePath
     curdir = PurePath("./")
-    vd = {}
-    for k, v in asset_mgr.asset_content.items():
-        vd[k[0].key] = { 'content': v }
-        d[k[0].key] = "./" + curdir.joinpath(v).as_posix()
 
     if args.virtual_assets:
+        vd = {}
+        for k, v in asset_mgr.asset_content.items():
+            vd[k[0].key] = {'content': v}
+            d[k[0].key] = "./" + curdir.joinpath(v).as_posix()
         json.dump(vd, fp=sys.stdout)
     else:
+        for k, v in asset_mgr.assets.items():
+            d[k[0].key] = "./" + Path(v).as_posix()
+
         with open("entry_point.json", 'w') as f:
             json.dump(d, fp=f, indent=4, sort_keys=True)
             f.close()

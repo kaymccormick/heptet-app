@@ -4,6 +4,7 @@ import abc
 import logging
 import sys
 from abc import ABCMeta
+from os import PathLike
 from threading import Lock
 from typing import AnyStr, Generic, TypeVar, Type
 from zope import interface
@@ -19,7 +20,6 @@ from zope.interface import implementer, Interface
 from db_dump import TypeField
 from email_mgmt_app.exceptions import MissingArgumentException
 from email_mgmt_app.impl import EntityTypeMixin, TemplateEnvMixin
-from email_mgmt_app.impl import Separator
 from email_mgmt_app.interfaces import IEntryPoint, IEntryPointGenerator
 from email_mgmt_app.interfaces import IEntryPointMapperAdapter
 from email_mgmt_app.interfaces import IEntryPointView, IResourceManager
@@ -439,7 +439,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     # container_entry_poic:nt_configuration = EntryPointConfiguration(mapper=manager.mapper_wrapper.get_one_mapper_info(),
     #                                                               )
 
-    container_entry_point = EntryPoint(manager, key, mapper=manager.mapper_wrapper.get_one_mapper_info())
+    container_entry_point = EntryPoint(key, manager, mapper=manager.mapper_wrapper.get_one_mapper_info())
     m = config.registry.getAdapter(container_entry_point, IEntryPointMapperAdapter)
     m.mapper = mapper_wrapper
 
@@ -471,7 +471,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
         entry_point_key = '%s_%s' % (node_name, op.name)
         d['view'] = op.view
-        entry_point = EntryPoint(manager, entry_point_key, mapper=mapper_wrapper.get_one_mapper_info())
+        entry_point = EntryPoint(entry_point_key, manager, mapper=mapper_wrapper.get_one_mapper_info())
         logger.debug("spawning sub resource for op %s, %s", op.name, node_name)
         op_resource = resource.sub_resource(op.name, entry_point)
         d['context'] = type(op_resource)
@@ -538,7 +538,7 @@ class BaseView(Generic[T]):
         self.collect_args(self.request)
         entry_point = None
         if isinstance(self.context, Exception):
-            entry_point = EntryPoint(None, get_exception_entry_point_key(self.context))
+            entry_point = EntryPoint(get_exception_entry_point_key(self.context))
         elif hasattr(self.context, 'entry_point'):
             logger.debug("%s", self.context)
             entry_point = self.context.entry_point
@@ -650,7 +650,7 @@ class ResourceSchema(Schema):
 
 
 @interface.implementer(IEntryPoint)
-class EntryPoint(AppBase):
+class EntryPoint(AppBase, PathLike):
     """
     Encapsulation of an "entry point" to the application; specifically used for javascript entry points
     for bundling purposes (i.e. webpack).
@@ -658,8 +658,8 @@ class EntryPoint(AppBase):
 
     def __init__(
             self,
-            resource_manager: 'ResourceManager',
             key: AnyStr,
+            resource_manager: 'ResourceManager' = None,
             **kwargs,
     ) -> None:
         """
@@ -693,6 +693,8 @@ class EntryPoint(AppBase):
             self._key,
         )
 
+    def __fspath__(self):
+        return 'entry_point/%s' % self.key
 
     def init_generator(self, registry, root_namespace, template_env, cb=None, generator_context=None):
         """
@@ -710,8 +712,6 @@ class EntryPoint(AppBase):
             generator = registry.getAdapter(generator_context, IEntryPointGenerator)
 
         return generator
-
-
 
     @property
     def key(self):
@@ -776,10 +776,10 @@ _default_manager = DefaultResourceManager()
 
 class DefaultEntryPoint(EntryPoint):
 
-    def __init__(self, resource_manager):
+    def __init__(self, resource_manager=None):
         key = "_default"
 
-        super().__init__(resource_manager, key)
+        super().__init__(key, resource_manager)
 
 
 _default_entry_point = DefaultEntryPoint(_default_manager)

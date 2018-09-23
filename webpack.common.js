@@ -6,19 +6,12 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const AppEntryPlugin = require('./AppEntryPlugin');
 
-const {
-    NodeJsInputFileSystem,
-    CachedInputFileSystem,
-    ResolverFactory
-} = require('enhanced-resolve');
-
 const webpack = require('webpack')
 const AppPlugin = require('./AppPlugin')
 
 const entry_points = require('./entry_point')
-const my_plugin = new AppPlugin({entry_points})
 const plugins = [
-    my_plugin,
+    new AppPlugin({entry_points}),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'
@@ -26,6 +19,7 @@ const plugins = [
 ];
 
 module.exports = {
+    //entry: entry_points,
     plugins,
     node: {
         fs: "empty" // avoids error messages
@@ -68,4 +62,3 @@ module.exports = {
     }
 
 };
-

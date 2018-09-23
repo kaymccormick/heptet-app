@@ -7,9 +7,14 @@ module.exports = class VirtualPlugin {
 
     apply(resolver) {
         const target = resolver.ensureHook(this.target);
+        console.log("!!! i am here");
         resolver.getHook(this.source).tapAsync("VirtualPlugin", (request, resolveContext, callback) => {
+            console.log("req: ", request.request);
             const innerRequest = request.request || request.path;
             if (!innerRequest) return callback();
+            if(innerRequest.startsWith("app_entry_point:")) {
+                console.log("yay " + innerRequest);
+            }
             for (const item of this.options) {
 
                 // if (innerRequest === item.name || (!item.onlyModule && startsWith(innerRequest, item.name + "/"))) {

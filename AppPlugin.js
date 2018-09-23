@@ -5,18 +5,18 @@ const AppEntryPlugin = require('./AppEntryPlugin')
 const AppVirtualFileSystem = require('./AppVirtualFileSystem')
 const VirtualPlugin = require('./VirtualPlugin')
 const {
-  NodeJsInputFileSystem,
-  CachedInputFileSystem,
-  ResolverFactory
+    NodeJsInputFileSystem,
+    CachedInputFileSystem,
+    ResolverFactory
 } = require('enhanced-resolve');
 
 
 // create a resolver
 const myResolver = ResolverFactory.createResolver({
-  // Typical usage will consume the `NodeJsInputFileSystem` + `CachedInputFileSystem`, which wraps the Node.js `fs` wrapper to add resilience + caching.
-  fileSystem: new AppVirtualFileSystem(),
-  extensions: ['.js', '.json']
-  /* any other resolver options here. Options/defaults can be seen below */
+    // Typical usage will consume the `NodeJsInputFileSystem` + `CachedInputFileSystem`, which wraps the Node.js `fs` wrapper to add resilience + caching.
+    fileSystem: new AppVirtualFileSystem(),
+    extensions: ['.js', '.json']
+    /* any other resolver options here. Options/defaults can be seen below */
 });
 
 
@@ -73,11 +73,16 @@ class AppPlugin {
         var plugin = {name: 'AppPlugin'};
         compiler.hooks.normalModuleFactory.tap(plugin, nmf => {
             nmf.hooks.beforeResolve.tap(plugin, result => {
-                new VirtualPlugin("resolve", {}, "parsed-resolve").apply()
-
-                console.log(result.request);
+                if (!result) return;
+                console.log("result is ", result);
+                return result;
             });
         });
+        //         new VirtualPlugin("resolve", {}, "parsed-resolve").apply()
+        //
+        //         console.log(result.request);
+        //     });
+        // });
         compiler.hooks.beforeRun.tapAsync(plugin, beforeRun);
         compiler.hooks.emit.tapAsync(plugin, emit);
         compiler.hooks.entryOption.tap(plugin, (context, entry) => {
@@ -86,14 +91,15 @@ class AppPlugin {
             for (var key in ep) {
 
                 if (ep.hasOwnProperty(key)) {
-                    new AppEntryPlugin(context, key, key).apply(compiler);
+                    new AppEntryPlugin(context, 'app_entry_point:' + key, key).apply(compiler);
                 }
             }
             return true;
         });
         compiler.hooks.afterResolvers.tap(plugin, compiler => {
-            compiler.resolverFactory.hooks.resolver.for("virtual").tap(plugin, resolver => {
-                new VirtualPlugin()
+            compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, resolver => {
+                console.log("herehere");
+                new VirtualPlugin("described-resolve", {}, "resolve").apply(resolver);
             })
         })
 
