@@ -107,18 +107,6 @@ class AbstractAssetManager(metaclass=abc.ABCMeta):
     def create_asset(self, obj: AppBase, name: AnyStr, type: FileType):
         pass
 
-    @abc.abstractmethod
-    def get_path(self, *disc) -> os.PathLike:
-        pass
-
-    @abc.abstractmethod
-    def get_node(self, disc):
-        pass
-
-    @abc.abstractmethod
-    def get(self, *disc) -> TextIOBase:
-        pass
-
     @property
     def asset_path(self) -> Mapping[Tuple, os.PathLike]:
         return self._asset_path
