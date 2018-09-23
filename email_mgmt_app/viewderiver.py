@@ -10,22 +10,6 @@ from email_mgmt_app import BaseView
 
 logger = logging.getLogger(__name__)
 
-
-def munge_view(view, info):
-    def wrapper_view(context, request):
-        original_view = info.original_view
-        response = view(context, request)
-
-        # if '__getattr__' in response.__dict__:
-        #     logger.critical("HERE!!")
-        #     response = response
-
-        return response
-
-    return wrapper_view
-
-
-# entity_view.options = ('operation','mapper_info','entry_point_key','node_name')
 # this function needs major help! TODO
 # i feel like we can replace this stuff with Contextfound stuff
 def entity_view(view, info):
@@ -81,5 +65,4 @@ def includeme(config):
     ## FIXME - create issue
     entity_view.options = ('operation', 'mapper_info', 'node_name', 'entry_point')
     config.add_view_deriver(entity_view, under=INGRESS)
-    #config.add_view_deriver(munge_view, over='rendered_view')
 #    config.add_view_deriver(test_view_deriver, over='mapped_view')

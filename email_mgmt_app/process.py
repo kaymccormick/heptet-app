@@ -25,14 +25,12 @@ from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntry
 from email_mgmt_app.myapp_config import logger
 from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.util import format_discriminator
 from marshmallow import ValidationError
 
 logger = logging.getLogger(__name__)
 
 
 class FileType:
-
     def __init__(self, name, ext) -> None:
         self.name = name
         self.ext = ext
@@ -224,12 +222,12 @@ class FileAssetManager(AbstractAssetManager):
         self._assets[obj, name] = file_asset
         return file_asset
 
-    def get_path(self, *disc):
-        l = list()
-        format_discriminator(l, *disc)
-        p = Path(self._output_dir)
-        p2 = p.joinpath(''.join(l))
-        return p2
+    # def get_path(self, *disc):
+    #     l = list()
+    #     format_discriminator(l, *disc)
+    #     p = Path(self._output_dir)
+    #     p2 = p.joinpath(''.join(l))
+    #     return p2
 
     def get_node(self, disc):
         o = self._assets3

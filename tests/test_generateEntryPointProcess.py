@@ -33,8 +33,13 @@ def make_process_context():
     return _make_process_context
 
 
-def test_generate_entry_point_process_process(make_process_context, jinja2_env,
-                                              asset_manager_mock_wraps_virtual, make_generate_entry_point_process, make_entry_point):
+def test_generate_entry_point_process_process(
+        make_process_context,
+        jinja2_env,
+        asset_manager_mock_wraps_virtual,
+        make_generate_entry_point_process,
+        make_entry_point
+):
     process_context = make_process_context({}, jinja2_env, asset_manager_mock_wraps_virtual)
     entry_point = make_entry_point('test1')
     generate_entry_point_process = make_generate_entry_point_process(process_context, entry_point)

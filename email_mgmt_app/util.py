@@ -10,11 +10,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def render_template(request, template_name, d, nestlevel=0):
-    # logging.critical("template = %s", template_name)
-    renderer = get_renderer(template_name).template_loader()
-    return renderer.render(d)
-
 
 def get_exception_entry_point_key(exception):
     x = getattr(exception, "__name__", None) or exception.__class__.__name__
@@ -62,31 +57,22 @@ def _dump(v, line_prefix="", name_prefix="", depth=0, cb: Callable = None, recur
         return
 
 
-def get_template(env, name):
-    @dataclass
-    class _info:
-        name: AnyStr
-        package: AnyStr=None
-
-    return env(_info(name))
-
-
-def format_discriminator(l, *elems):
-    for elem in elems:
-        if hasattr(elem, "discriminator"):
-            result = elem.discriminator
-            format_discriminator(l, *result)
-            #logger.debug("%s.discriminator = %r", elem, result)
-        else:
-            prepend = False
-#            logger.warning("%s", elem.__class__.__name__)
-            try:
-                prepend = elem.is_element_entry()
-            except AttributeError as ex:
-#                logger.critical(ex)
-                pass
-            finally:
-                pass
-
-            l.append((prepend and '/' or '') + str(elem))
-
+# def format_discriminator(l, *elems):
+#     for elem in elems:
+#         if hasattr(elem, "discriminator"):
+#             result = elem.discriminator
+#             format_discriminator(l, *result)
+#             #logger.debug("%s.discriminator = %r", elem, result)
+#         else:
+#             prepend = False
+# #            logger.warning("%s", elem.__class__.__name__)
+#             try:
+#                 prepend = elem.is_element_entry()
+#             except AttributeError as ex:
+# #                logger.critical(ex)
+#                 pass
+#             finally:
+#                 pass
+#
+#             l.append((prepend and '/' or '') + str(elem))
+#

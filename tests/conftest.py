@@ -27,7 +27,7 @@ from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_tm.tests import DummyRequest
 
-from process import VirtualAssetManager
+from email_mgmt_app.process import VirtualAssetManager
 from tests.common import MakeEntryPoint
 from zope.interface.registry import Components
 
