@@ -1,21 +1,31 @@
 import logging
 from os import path
+from pathlib import Path
 
 import pytest
 
 logger = logging.getLogger(__name__)
 
 
-def test_assetmanager(make_asset_manager):
-    dir = "test123"
-    am = make_asset_manager(dir, False)
+@pytest.fixture
+def test_dir_fixture():
+    import tempfile
+    with tempfile.TemporaryDirectory() as dirname:
+        yield dirname
+
+
+def test_assetmanager(make_asset_manager, test_dir_fixture):
+    dir = Path(test_dir_fixture)
+    dir = dir.joinpath("noexist")
+    am = make_asset_manager(dir, True)
     assert am.output_dir
     assert dir == am.output_dir
+    assert path.exists(am.output_dir)
 
 
-@pytest.mark.integration
-def test_assetmanager_no_mkdir(make_asset_manager):
-    dir = "test123"
+def test_assetmanager_no_mkdir(make_asset_manager, test_dir_fixture):
+    dir = Path(test_dir_fixture)
+    dir = dir.joinpath("noexist")
     am = make_asset_manager(dir, False)
     assert am.output_dir
     assert dir == am.output_dir
@@ -35,4 +45,3 @@ def disc_fixture(request):
 
 def test_assetmanager_get(asset_manager, disc_fixture):
     f = asset_manager.get(disc_fixture)
-

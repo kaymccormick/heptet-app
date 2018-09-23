@@ -49,3 +49,4 @@ def test_entrypoint_generate(
     x = generator.generate()
     print(x, file=sys.stderr)
     # TODO
+
