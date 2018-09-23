@@ -133,7 +133,7 @@ def main(input_args=None):
 
     if args.virtual_assets:
         json.dump(vd, fp=sys.stdout)
-
-    with open("entry_point.json", 'w') as f:
-        json.dump(d, fp=f, indent=4, sort_keys=True)
-        f.close()
+    else:
+        with open("entry_point.json", 'w') as f:
+            json.dump(d, fp=f, indent=4, sort_keys=True)
+            f.close()

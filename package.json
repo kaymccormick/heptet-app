@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-dev": "webpack --config webpack.dev.js --verbose",
+    "build-dev": "webpack --config webpack.dev.js --silent",
     "build-prod": "webpack --config webpack.prod.js"
   },
   "author": "",
@@ -42,6 +42,7 @@
     "bootstrap": "^4.1.3",
     "datatables.net-editor-bs4": "^1.6.3",
     "datatables.net-select-bs4": "^1.2.7",
+    "directory-named-webpack-plugin": "^4.0.0",
     "enhanced-resolve": "^4.1.0",
     "fine-uploader": "^5.16.2",
     "gulp": "^3.9.1",

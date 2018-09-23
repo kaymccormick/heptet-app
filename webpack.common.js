@@ -4,12 +4,19 @@ const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const webpack = require('webpack')
-const MyPlugin = require('./myplugin')
+const AppEntryPlugin = require('./AppEntryPlugin');
 
+const {
+    NodeJsInputFileSystem,
+    CachedInputFileSystem,
+    ResolverFactory
+} = require('enhanced-resolve');
+
+const webpack = require('webpack')
+const AppPlugin = require('./AppPlugin')
 
 const entry_points = require('./entry_point')
-const my_plugin = new MyPlugin({entry_points})
+const my_plugin = new AppPlugin({entry_points})
 const plugins = [
     my_plugin,
     new webpack.ProvidePlugin({
@@ -23,6 +30,7 @@ module.exports = {
     node: {
         fs: "empty" // avoids error messages
     },
+
     module: {
         rules: [
             //{parser: {amd: false}},
