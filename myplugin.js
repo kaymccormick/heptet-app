@@ -20,7 +20,6 @@ class MyPlugin {
                         inject: false,
                         chunks: [key],
                     });
-                    console.log(h);
                     h.apply(compiler);
                 }
             }
