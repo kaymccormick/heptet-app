@@ -21,5 +21,5 @@ def process_context(jinja2_env_mock, asset_manager_mock):
 
 def test_generate_entry_point_process_process(generate_entry_point_process, process_context):
     generate_entry_point_process.process()
-    assert 0
+
 
