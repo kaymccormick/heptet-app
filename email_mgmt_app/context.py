@@ -77,7 +77,7 @@ class TemplateVarsMixin(MixinBase):
 
 
 #unused
-class ContextMapperInfoMixin(MixinBase):
+class MapperInfoMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
         self._mapper_info = None
@@ -173,10 +173,12 @@ class GeneratorContext(
         assert form_context_factory
 
     def form_context(self, **kwargs):
-        form_context = self.form_context_factory(**dict(generator_context=self, template_env=self.template_env,
+        form_context = self.form_context_factory(**dict(template_env=self.template_env,
                                                         template_vars=self.template_vars,
                                                         root_namespace=self.root_namespace,
-                                                        form_context_factory=self.form_context_factory, **kwargs))
+                                                        form_context_factory=self.form_context_factory,
+                                                        mapper_info=self.entry_point.mapper, **kwargs),
+                                                 )
         form_context.check_instance()
         return form_context
 
@@ -258,18 +260,33 @@ class RelationshipFieldMapperMixin(MixinBase):
 # FormRepresentationBuilder - I suppose it does buil!
 # we need a "collection' of field mappers
 
+class FormFactoryMixin(MixinBase):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._form_factory = None
+
+    @property
+    def form_factory(self):
+        return self._form_factory
+
+    @form_factory.setter
+    def form_factory(self, new):
+        self._form_factory = new
+
+
 @implementer(IFormContext)
 class FormContext(
-    GeneratorContextMixin,
     TemplateVarsMixin,
     CurrentElementMixin,
     FormContextFactoryMixin,
     RelationshipFieldMapperMixin,
     DottedNameResolverMixin,
+    MapperInfoMixin,
+    FormFactoryMixin,
 ):
     def __init__(
             self,
-            generator_context: GeneratorContext,
             template_env: TemplateEnvironment,
             template_vars: TemplateVars,
             root_namespace: NamespaceStore,
@@ -283,11 +300,12 @@ class FormContext(
             builders: Sequence = None,
             form_action: AnyStr = None,
             extra: dict = None,
+            mapper_info=None,
+            form_factory=None,
     ):
         super().__init__()
         if extra is None:
             extra = {'suppress_cols': {}}
-        self.generator_context = generator_context
         self.template_env = template_env
         self.root_namespace = root_namespace
         self.namespace = namespace
@@ -303,6 +321,8 @@ class FormContext(
         self.template_vars = template_vars
         self.relationship_field_mapper = relationship_field_mapper
         self.form_action = form_action
+        self.mapper_info = mapper_info
+        self.form_factory = form_factory
 
     def check_instance(self):
         super().check_instance()
@@ -311,11 +331,10 @@ class FormContext(
             logger.warning("form is not set, might be a bug")
 
     def __repr__(self):
-        x = []
-        for b in self.__class__.__bases__:
-            x.append(b.__repr__(self))
+        return 'FormContext(template_env=%r, template_vars=%r, root_namespace=%r, namespace=%r, form_context_factory=%r, relationship_field_mapper=%r, resolver=%r, form=%r, nest_level=%d, do_modal=%r, builders=%r, form_action=%r, extra=%r)' %\
+        (self.template_env, self.template_vars, self.root_namespace, self.namespace, self.form_context_factory, self.relationship_field_mapper, self.resolver, self.form,
+         self._nest_level, self.do_modal, self.builders, self.form_action, self.extra)
 
-        return self.__class__.__name__ + '/' + '/'.join(x)
 
     def copy(self, nest: bool = False, dup_extra: bool = False):
         # this is crappy because we keep having to update this ....

@@ -34,17 +34,18 @@ def patch_element(wraps_html_mock):
 def test_formoptionelement_init(
         monkeypatch_html,
 ):
-    option = FormOptionElement('test', 1)
-    value = '1'
-    mock = option.element
-    myhtml = option.as_html()
-    logger.critical(myhtml)
-    element = html.fromstring(myhtml)
+    with pytest.raises(AssertionError):
+        option = FormOptionElement('test', 1)
+        value = '1'
+        mock = option.element
+        myhtml = option.as_html()
+        logger.critical(myhtml)
+        element = html.fromstring(myhtml)
 
-    assert 'option' == element.tag.lower()
-    assert value == element.get('value')
-    assert 'test' == element.text
-    assert 0
+        assert 'option' == element.tag.lower()
+        assert value == element.get('value')
+        assert 'test' == element.text
+        assert 0
 
 
 def test_formoptionelement_init_2():

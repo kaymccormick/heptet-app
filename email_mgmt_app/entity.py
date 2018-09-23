@@ -6,7 +6,7 @@ from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
 from email_mgmt_app import BaseView, EntryPointGenerator
-from email_mgmt_app.context import FormContextMixin, FormContext, GeneratorContext
+from email_mgmt_app.context import FormContextMixin, GeneratorContext, FormContext
 from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, \
     FormOptionElement
 from email_mgmt_app.impl import NamespaceStore, EntityTypeMixin
@@ -47,7 +47,7 @@ class MakeFormRepresentation(FormContextMixin):
         assert context.relationship_field_mapper, "Need dependency relationship field mapper (%s)." % context.relationship_field_mapper
         # how do we extract our "mapper info"
         
-        mapper = context.generator_context.entry_point.mapper
+        mapper = context.mapper_info
 
         outer_form = False
         if context.nest_level == 0:
@@ -60,7 +60,7 @@ class MakeFormRepresentation(FormContextMixin):
         # we should provide for initialize the form in another fashion for testability!!!
 #        action = context.form_action
         # assert action
-        the_form = Form(namespace_id=namespace_id,
+        the_form = context.form_factory(namespace_id=namespace_id,
                         root_namespace=context.root_namespace,
                         namespace=context.namespace,  # can be None
                         outer_form=outer_form,
@@ -203,17 +203,17 @@ class FormRelationshipMapper:
         rel = context.current_element
         assert rel is not None
 
-        t_vars = context.generator_context.template_vars
+        t_vars = context.template_vars
 
-        schema = TemplateVarsSchema()
-        try:
-            dump = schema.dump(t_vars)
-            json.dump(dump, fp=sys.stderr, indent=4, sort_keys=True)
-        except ValidationError as ex:
-            import traceback
-            logger.critical(ex)
-            traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
-            print(ex, file=sys.stderr)
+        # schema = TemplateVarsSchema()
+        # try:
+        #     dump = schema.dump(t_vars)
+        #     json.dump(dump, fp=sys.stderr, indent=4, sort_keys=True)
+        # except ValidationError as ex:
+        #     import traceback
+        #     logger.critical(ex)
+        #     traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
+        #     print(ex, file=sys.stderr)
 
         if 'js_stmts' not in t_vars:
             t_vars['js_stmts'] = ['// test']

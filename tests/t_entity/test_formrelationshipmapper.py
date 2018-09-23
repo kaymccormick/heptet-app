@@ -58,13 +58,16 @@ def my_form_relationship_mapper(make_form_relationship_mapper,
     return make_form_relationship_mapper(my_relationship_select)
 
 
-def test_map_relationship(my_form_context, my_form_relationship_mapper, jinja2_env, my_relationship_info):
-    fm = my_form_context
+def test_map_relationship(make_form_context, my_form_relationship_mapper, jinja2_env, my_relationship_info, form_mock, mapper_info_real,
+                          monkeypatch_html):
+    form_context = make_form_context(template_env=jinja2_env, form=form_mock, mapper_info=mapper_info_real)
+    fm = form_context
     # lame we have to initialize this here
     fm.extra['suppress_cols'] = {}
     logger.critical("%s", repr(fm))
     t = my_form_relationship_mapper
-    my_form_context.current_element = my_relationship_info
-    the_html = t.map_relationship(my_form_context)
+    form_context.current_element = my_relationship_info
+    the_html = t.map_relationship(form_context)
 #    root = html.fromstring(the_html)
     logger.critical("%s", the_html)
+

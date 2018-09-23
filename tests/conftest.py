@@ -22,7 +22,7 @@ from db_dump import RelationshipSchema, ColumnInfo, LocalRemotePairInfo, TableCo
 from db_dump.info import MapperInfo, TypeInfo, TableInfo, RelationshipInfo
 from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
     EntryPointGenerator
-from email_mgmt_app.context import FormContext, GeneratorContext
+from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.entity import EntityFormViewEntryPointGenerator
 from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
 from email_mgmt_app.form import Form
@@ -509,10 +509,18 @@ def template_vars_mock(template_vars_wrapped):
 # GENERATOR
 #
 @pytest.fixture
-def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store):
+def wrap_form_context_factory():
+    def _wrap_form_context_factory(*args, **kwargs):
+        c = FormContext(*args, **kwargs)
+        return MagicMock(wraps=c)
+
+    return _wrap_form_context_factory
+
+@pytest.fixture
+def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store, wrap_form_context_factory):
     def _make_generator_context(entry_point, mapper=None, env=jinja2_env_mock, tvars=template_vars,
                                 root=root_namespace_store):
-        return GeneratorContext(entry_point, tvars, FormContext, root, env, mapper_info=mapper)
+        return GeneratorContext(entry_point, tvars, wrap_form_context_factory, root, env, mapper_info=mapper)
 
     return _make_generator_context
 
@@ -572,13 +580,22 @@ def relationship_schema():
 def my_relationship_select():
     return RelationshipSelect()
 
+@pytest.fixture
+def wrap_form_factory():
+    def _wrap_form_factory(*args, **kwargs):
+        form = Form(*args, **kwargs)
+        mock = MagicMock(wraps=form)
+        return mock
+    return _wrap_form_factory
+
 
 # this makes a form context from a geneerator context which is not what we want
 @pytest.fixture
-def make_form_context():
-    def _make_form_context(generator_context, root_namespace_store, form):
-        generator_context.form_context_factory()
-        # return FormContext(generator_context, generator_context.template_env, root_namespace_store, form=form, relationship_field_mapper=FormRelationshipMapper)
+def make_form_context(jinja2_env_mock, template_vars_mock, root_namespace_store, wrap_form_factory):
+    def _make_form_context(template_env=jinja2_env_mock, template_vars=template_vars_mock, root_namespace=root_namespace_store,
+                           namespace=None, form=None, mapper_info=None):
+        return FormContext(template_env, template_vars, root_namespace, namespace, relationship_field_mapper=FormRelationshipMapper,
+                    form=form, mapper_info=mapper_info,form_factory=wrap_form_factory)
 
     return _make_form_context
 
@@ -605,7 +622,7 @@ def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_e
 
 
 @pytest.fixture
-def my_form(root_namespace_store, monkeypatch_form):
+def my_form(root_namespace_store):
     return Form('myform', root_namespace_store, outer_form=True)
 
 
@@ -820,7 +837,15 @@ def wrap_make_html(make_element_mock):
     factory = html.Element
 
     def _wrap_make_html(*args, **kwargs):
+        if len(args) >= 2:
+            attr = args[1]
+            keys = list(attr.keys())
+            for key in keys:
+                if not isinstance(attr[key], str):
+                    attr[key]= str(attr[key])
+
         elem = factory(*args, **kwargs)
+
         return make_element_mock(elem)
 
     return _wrap_make_html

@@ -7,10 +7,11 @@ from email_mgmt_app.entity import MakeFormRepresentation, FormRelationshipMapper
 logger = logging.getLogger(__name__)
 
 
-def test_make_form_representation_1(make_form_context, monkeypatch_html, monkeypatch_form,
-                                    make_generator_context, make_entry_point, mapper_info_mock,
+def test_make_form_representation_1(make_form_context, monkeypatch_html,
+                                    make_generator_context, make_entry_point, mapper_info_real,
                                     mapper_wrapper_mock, jinja2_env, element_mock):
-    entry_point = make_entry_point('test1', mapper=mapper_info_mock)
+    mapper_info = mapper_info_real
+    entry_point = make_entry_point('test1', mapper=mapper_info)
     generator_context = make_generator_context(entry_point, env=jinja2_env)
     form_context = generator_context.form_context(relationship_field_mapper=FormRelationshipMapper, form_action="./")
     m = MakeFormRepresentation(form_context)
@@ -21,7 +22,7 @@ def test_make_form_representation_1(make_form_context, monkeypatch_html, monkeyp
 
     print(form.as_html(), file=sys.stderr)
 
-    assert 0
+
 
 #
 #
