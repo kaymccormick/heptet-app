@@ -16,6 +16,6 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s"
 }
 
-print("In model.meta", file=sys.stderr)
+#print("In model.meta", file=sys.stderr)
 metadata = MetaData(naming_convention=NAMING_CONVENTION)
 Base = declarative_base(metadata=metadata)

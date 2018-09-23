@@ -79,11 +79,11 @@ def format_discriminator(l, *elems):
             #logger.debug("%s.discriminator = %r", elem, result)
         else:
             prepend = False
-            logger.warning("%s", elem.__class__.__name__)
+#            logger.warning("%s", elem.__class__.__name__)
             try:
                 prepend = elem.is_element_entry()
             except AttributeError as ex:
-                logger.critical(ex)
+#                logger.critical(ex)
                 pass
             finally:
                 pass

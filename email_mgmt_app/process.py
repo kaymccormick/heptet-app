@@ -1,9 +1,12 @@
+import abc
 import json
 import logging
 import os
 import sys
+from contextlib import contextmanager
+from io import TextIOBase, StringIO
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Tuple, Mapping, AnyStr
 
 from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
@@ -97,9 +100,65 @@ class Asset:
         super().__init__()
 
 
-class AssetManager:
+class AbstractAssetManager(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def get_path(self, *disc) -> os.PathLike:
+        pass
+
+    @abc.abstractmethod
+    def get_node(self, disc):
+        pass
+
+    @abc.abstractmethod
+    def select(self, *disc):
+        pass
+
+    @abc.abstractmethod
+    def get(self, *disc) -> TextIOBase:
+        pass
+
+    @property
+    def asset_path(self) -> Mapping[Tuple, os.PathLike]:
+        return self._asset_path
+
+    @property
+    def asset_content(self) -> Mapping[Tuple, AnyStr]:
+        return self._asset_content
+
+
+class VirtualAssetManager(AbstractAssetManager):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._io = {}
+        self._asset_path = {}
+        self._asset_content = {}
+
+    def get_path(self, *disc) -> os.PathLike:
+        return 'virtual'
+
+    def get_node(self, disc):
+        pass
+
+    def select(self, *disc):
+        pass
+
+    @contextmanager
+    def get(self, *disc) -> TextIOBase:
+        x = ""
+        self._io[disc] = StringIO()
+        self._asset_path[disc] = x
+        try:
+            yield self._io[disc]
+        finally:
+            s = self._io[disc].getvalue()
+            self.asset_content[disc] = s
+
+
+class AssetManager(AbstractAssetManager):
     def __init__(self, output_dir, mkdir=False) -> None:
         super().__init__()
+        self.asset_path = {}
         p = Path(output_dir)
         if p.exists():
             if not p.is_dir():
@@ -130,10 +189,10 @@ class AssetManager:
             else:
                 break
 
-    def select(self, disc):
-        p2 = self.get_path(disc)
-        self._assets[p2] = [list(disc)]
-        self._assets2[disc] = p2
+    # def select(self, disc):
+    #     p2 = self.get_path(disc)
+    #     self._assets[p2] = [list(disc)]
+    #     self._assets2[disc] = p2
 
     def get(self, *disc):
         p2 = self.get_path(*disc)
@@ -142,6 +201,7 @@ class AssetManager:
 
         self._assets[p2] = [list(disc)]
         self._assets2[disc] = p2
+        self.asset_path[disc] = p2
 
         # f = p2.open('w')
 
@@ -233,8 +293,8 @@ class GenerateEntryPointProcess:
             content = self._context.template_env.get_template('entry_point.js.jinja2').render(
                 **data
             )
+
             f.write(str(content))
-            f.close()
 
         # with open(fname, 'w') as f:
         #     content = ep.get_template().render(
@@ -341,6 +401,10 @@ def includeme(config: Configurator):
     config.action(None, do_action)
 
 
+def get_entry_point_generator(gctx: GeneratorContext, registry=None):
+    return registry.getAdapter(gctx, IEntryPointGenerator)
+
+
 def process_views(registry, template_env, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint]):
     # fixme extract dependncy
     root_namespace = NamespaceStore('root')
@@ -353,8 +417,7 @@ def process_views(registry, template_env, proc_context: ProcessContext, ep_itera
 
         # is this our most advantageous entry pint?
 
-#        mapper = entry_point.mapper
-
+        #        mapper = entry_point.mapper
 
         gctx = GeneratorContext(
             entry_point,
@@ -364,7 +427,8 @@ def process_views(registry, template_env, proc_context: ProcessContext, ep_itera
             template_env=template_env
         )
         # FIXME use of registry.queryAdapter - is this what we want?
-        generator = registry.queryAdapter(gctx, IEntryPointGenerator)
+        # abstract this
+        generator = get_entry_point_generator(gctx, registry)
         assert None is not generator
 
         process_view(gctx, entry_point, proc_context, registry, generator)

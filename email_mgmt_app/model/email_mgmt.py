@@ -14,7 +14,7 @@ from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_fa
 logger = logging.getLogger(__name__)
 mappers = {}
 
-print("In model.email_mgmt", file=sys.stderr)
+#print("In model.email_mgmt", file=sys.stderr)
 
 
 # marker class for objects which are "association tables"

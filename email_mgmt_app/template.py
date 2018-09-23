@@ -122,7 +122,7 @@ def includeme(config: Configurator):
     #                              'template-env renderer',
     #                              'template renderer')
 
-    logger.critical("inclusion of template")
+#    logger.critical("inclusion of template")
     config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='email_mgmt_app.jinja2.')
 
     # config.action(('email_mgmt_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)
