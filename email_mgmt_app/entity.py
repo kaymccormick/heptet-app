@@ -1,3 +1,4 @@
+import functools
 import json
 import logging
 import re
@@ -526,9 +527,10 @@ class EntityFormView(BaseEntityRelatedView[T]):
         gctx = GeneratorContext(
             entry_point,
             TemplateVars(),
-            form_context_factory=FormContext,
+            form_context_factory=functools.partial(FormContext, form_factory=Form),
             root_namespace=root_namespace,
-            template_env=env)
+            template_env=env,
+        )
         # replace call to init_generator with something reasonable registry.getAdapter(generator_context, IEntryPointGenerator)
         generator = entry_point.init_generator(self.request.registry, root_namespace, env, generator_context=gctx)
         # init_generator:
