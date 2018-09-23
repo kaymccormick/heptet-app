@@ -35,14 +35,6 @@ class FileType:
         self.name = name
         self.ext = ext
 
-    @property
-    def discriminator(self):
-        return ['.' + self.ext]
-
-    def is_element_entry(self):
-        return False
-
-
 JavaScript = FileType('JavaScript', 'js')
 
 
@@ -300,7 +292,7 @@ def setup_jsonencoder():
 
 @adapter(IProcessContext, IEntryPoint)
 @implementer(IProcess)
-class GenerateEntryPointProcess:
+class GenerateEntryPointProcess(BaseProcessor):
     def __init__(self, context: ProcessContext, ep: EntryPoint) -> None:
         """
 

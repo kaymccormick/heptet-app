@@ -1,9 +1,12 @@
 import json
 import logging
+from collections import Set
+from unittest.mock import call
 
 import pytest
 import sys
 
+from email_mgmt_app import viewderiver
 from email_mgmt_app import BaseView, ResourceSchema
 
 logger = logging.getLogger(__name__)
@@ -42,3 +45,8 @@ def test_entity_view_deriver_baseview(
 
     dump = schema.dump(context)
     logger.critical("%s", json.dumps(dump, indent=4, sort_keys=True))
+
+def test_viewderiver_include(config_mock):
+    viewderiver.includeme(config_mock)
+    config_mock.assert_has_calls([call.add_view_deriver(viewderiver.entity_view, under='INGRESS')])
+    assert set(('operation', 'mapper_info', 'node_name', 'entry_point')) == set(viewderiver.entity_view.options)

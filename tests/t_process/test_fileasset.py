@@ -25,4 +25,4 @@ def test_fileasset_open():
 
         mock.assert_has_calls([call().__enter__().write('test')])
 
-    assert 0
+
