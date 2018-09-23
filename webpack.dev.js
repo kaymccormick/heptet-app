@@ -5,6 +5,7 @@ const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 //const app = require('app.js')
 const entry = require('./entry_point')
+console.log(common);
 
 module.exports = merge(common, {
     mode: 'development', // https://webpack.js.org/concepts/mode/
@@ -27,3 +28,4 @@ module.exports = merge(common, {
     }
 });
 
+console.log(module.exports);

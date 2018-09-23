@@ -33,13 +33,6 @@ class FormContextMixin(MixinBase):
     def form_context(self, new: FormContext) -> None:
         self._form_context = new
 
-    def __repr__(self):
-        return self.form_context.__repr__()
-
-    def check_instance(self):
-        super().check_instance()
-        assert self.form_context
-
 
 class GeneratorContextMixin(MixinBase):
     def __init__(self) -> None:
@@ -83,6 +76,7 @@ class TemplateVarsMixin(MixinBase):
         assert self._template_vars is not None
 
 
+#unused
 class ContextMapperInfoMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
@@ -104,6 +98,7 @@ class ContextMapperInfoMixin(MixinBase):
         assert self.mapper_info
 
 
+# ditch this
 class FormContextFactoryMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()

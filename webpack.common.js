@@ -5,11 +5,13 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
-//const MyPlugin = require('./myplugin')
+const MyPlugin = require('./myplugin')
 
 
 entry_points = require('./entry_point')
+my_plugin = new MyPlugin({entry_points})
 plugins_ = [
+    my_plugin,
     //  new MyPlugin({}),
 //        new CleanWebpackPlugin(['email_mgmt_app/build/dist']),
     new CopyWebpackPlugin([
@@ -35,22 +37,22 @@ plugins_ = [
     }),
 ]
 
-for (var key in entry_points) {
-    if (entry_points.hasOwnProperty(key)) {
-        html_ =
-            // all of this data can be supplied by entry point
-            // if we wish!
-            new HtmlWebpackPlugin({
-                title: '',
-                template: 'src/assets/entry_point_generic.html',
-                filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/' + key + '.jinja2'),
-                inject: false,
-                chunks: [key],
-            })
-        plugins_.push(html_)
-    }
-}
-console.log(html_)
+// for (var key in entry_points) {
+//     if (entry_points.hasOwnProperty(key)) {
+//         html_ =
+//             // all of this data can be supplied by entry point
+//             // if we wish!
+//             new HtmlWebpackPlugin({
+//                 title: '',
+//                 template: 'src/assets/entry_point_generic.html',
+//                 filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/' + key + '.jinja2'),
+//                 inject: false,
+//                 chunks: [key],
+//             })
+//         plugins_.push(html_)
+//     }
+// }
+// console.log(html_)
 module.exports = {
     plugins: plugins_,
     node: {

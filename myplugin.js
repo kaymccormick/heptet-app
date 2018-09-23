@@ -1,62 +1,35 @@
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 class MyPlugin {
     constructor(options) {
 	this.options = options;
     }
 
     apply(compiler) {
-        console.log("i like food");
-        let context;
-                const emit = (compilation, cb) => {
-            debug('starting emit');
-            const callback = () => {
-                debug('finishing emit');
-                cb();
-            };
+        // console.log("i like food");
+        const beforeRun = (compiler, callback) => {
+            const ep = this.options.entry_points;
+            for (var key in ep) {
 
-            const globalRef = {
-                info,
-                debug,
-                warning,
-
-                compilation,
-                written,
-                context,
-                inputFileSystem: compiler.inputFileSystem,
-                output: compiler.options.output.path,
-                ignore: options.ignore || [],
-                concurrency: options.concurrency
-            };
-
-            if (globalRef.output === '/' &&
-                compiler.options.devServer &&
-                compiler.options.devServer.outputPath) {
-                globalRef.output = compiler.options.devServer.outputPath;
+                if (ep.hasOwnProperty(key)) {
+                    const h = new HtmlWebpackPlugin({
+                        title: '',
+                        template: 'src/assets/entry_point_generic.html',
+                        filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/' + key + '.jinja2'),
+                        inject: false,
+                        chunks: [key],
+                    });
+                    console.log(h);
+                    h.apply(compiler);
+                }
             }
-
-            const tasks = [];
-
-            patterns.forEach((pattern) => {
-                tasks.push(
-                    Promise.resolve()
-                    .then(() => preProcessPattern(globalRef, pattern))
-                    // Every source (from) is assumed to exist here
-                    .then((pattern) => processPattern(globalRef, pattern))
-                );
-            });
-
-            Promise.all(tasks)
-            .catch((err) => {
-                compilation.errors.push(err);
-            })
-            .then(() => callback());
+            return callback();
         };
-
-
+        //
+        // let context;
         var plugin = { name: 'MyPlugin' };
-        compiler.hooks.emit.tapAsync(plugin, emit)
-	compiler.hooks.shouldEmit.tap('MyPlugin', (compilation) => {
-	    return true;
-	});
+        compiler.hooks.beforeRun.tapAsync(plugin, beforeRun);
     }
 }
 module.exports = MyPlugin;
