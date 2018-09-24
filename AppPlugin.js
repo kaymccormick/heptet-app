@@ -35,13 +35,11 @@ class AppPlugin {
 
             const entry = JSON.parse(stdout);
 
-            this.entry = entry
-            console.log("here");
+            this.entry = entry;
 
         });
 
         const emit = (compilation, callback) => {
-            console.log("here");
             for (var key in this.entry) {
                 if (this.entry.hasOwnProperty(key)) {
                     this.addFileToAssets(this.entry[key].content, key, compilation)
@@ -86,10 +84,8 @@ class AppPlugin {
         compiler.hooks.beforeRun.tapAsync(plugin, beforeRun);
         compiler.hooks.emit.tapAsync(plugin, emit);
         compiler.hooks.entryOption.tap(plugin, (context, entry) => {
-            console.log(entry);
             const ep = this.options.entry_points;
             for (var key in ep) {
-
                 if (ep.hasOwnProperty(key)) {
                     new AppEntryPlugin(context, 'app_entry_point:' + key, key).apply(compiler);
                 }
@@ -98,8 +94,8 @@ class AppPlugin {
         });
         compiler.hooks.afterResolvers.tap(plugin, compiler => {
             compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, resolver => {
-                console.log("herehere");
-                new VirtualPlugin("described-resolve", {}, "resolve").apply(resolver);
+                console.log("making virtual plugin");
+                new VirtualPlugin("described-resolve", {entry_points: this.options.entry_points}, "resolve").apply(resolver);
             })
         })
 

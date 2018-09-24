@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import copy
 import logging
-from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr, Mapping
+from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr
 
-from email_mgmt_app import EntryPointMixin
 from jinja2 import Environment
 from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
+from email_mgmt_app import EntryPointMixin
 from email_mgmt_app.form import Form
 from email_mgmt_app.impl import NamespaceStore, TemplateEnvMixin, MixinBase
 from email_mgmt_app.interfaces import IFormContext, IGeneratorContext
@@ -76,7 +76,7 @@ class TemplateVarsMixin(MixinBase):
         assert self._template_vars is not None
 
 
-#unused
+# unused
 class MapperInfoMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
@@ -95,10 +95,8 @@ class MapperInfoMixin(MixinBase):
 
     def check_instance(self):
         super().check_instance()
-        assert self.mapper_info
 
 
-# ditch this
 class FormContextFactoryMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
@@ -149,6 +147,7 @@ class GeneratorContext(
     """
     bundling up of all the dependencies required for entry point generation.
     """
+
     # adding options here doesnt necessarily make things any clearer
 
     def __init__(self, entry_point, template_vars, form_context_factory: FormContextFactory,
@@ -177,7 +176,8 @@ class GeneratorContext(
                                                         template_vars=self.template_vars,
                                                         root_namespace=self.root_namespace,
                                                         form_context_factory=self.form_context_factory,
-                                                        mapper_info=self.entry_point.mapper, **kwargs),
+                                                        mapper_info=getattr(self.entry_point, 'mapper', None),
+                                                        **kwargs),
                                                  )
         form_context.check_instance()
         return form_context
@@ -331,10 +331,10 @@ class FormContext(
             logger.warning("form is not set, might be a bug")
 
     def __repr__(self):
-        return 'FormContext(template_env=%r, template_vars=%r, root_namespace=%r, namespace=%r, form_context_factory=%r, relationship_field_mapper=%r, resolver=%r, form=%r, nest_level=%d, do_modal=%r, builders=%r, form_action=%r, extra=%r)' %\
-        (self.template_env, self.template_vars, self.root_namespace, self.namespace, self.form_context_factory, self.relationship_field_mapper, self.resolver, self.form,
-         self._nest_level, self.do_modal, self.builders, self.form_action, self.extra)
-
+        return 'FormContext(template_env=%r, template_vars=%r, root_namespace=%r, namespace=%r, form_context_factory=%r, relationship_field_mapper=%r, resolver=%r, form=%r, nest_level=%d, do_modal=%r, builders=%r, form_action=%r, extra=%r)' % \
+               (self.template_env, self.template_vars, self.root_namespace, self.namespace, self.form_context_factory,
+                self.relationship_field_mapper, self.resolver, self.form,
+                self._nest_level, self.do_modal, self.builders, self.form_action, self.extra)
 
     def copy(self, nest: bool = False, dup_extra: bool = False):
         # this is crappy because we keep having to update this ....

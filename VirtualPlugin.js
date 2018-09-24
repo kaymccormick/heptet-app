@@ -6,15 +6,19 @@ module.exports = class VirtualPlugin {
     }
 
     apply(resolver) {
+        const plugin = 'VirtualPlugin'
         const target = resolver.ensureHook(this.target);
-        console.log("!!! i am here");
-        resolver.getHook(this.source).tapAsync("VirtualPlugin", (request, resolveContext, callback) => {
-            console.log("req: ", request.request);
+        console.log(plugin, ".apply");
+        resolver.getHook(this.source).tapAsync(plugin, (request, resolveContext, callback) => {
+            console.log(plugin, "123.", this.source, ": ", request.request);
             const innerRequest = request.request || request.path;
             if (!innerRequest) return callback();
-            if(innerRequest.startsWith("app_entry_point:")) {
-                console.log("yay " + innerRequest);
+            if (!innerRequest.startsWith("app_entry_point:")) {
+                return callback();
             }
+
+            console.log("123 yay " + innerRequest);
+
             for (const item of this.options) {
 
                 // if (innerRequest === item.name || (!item.onlyModule && startsWith(innerRequest, item.name + "/"))) {
@@ -33,7 +37,17 @@ module.exports = class VirtualPlugin {
                 //     }
                 // }
             }
-            return callback();
+            const obj = Object.assign({}, request, {
+                module: true,
+               // request: newRequestStr
+            });
+            resolver.doResolve(target, obj, "beep", resolveContext, (err, result) => {
+                if (err) return callback(err);
+
+                // Don't allow other aliasing or raw request
+                if (result === undefined) return callback(null, null);
+                callback(null, result);
+            });
         });
     }
 };

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-dev": "webpack --config webpack.dev.js --silent",
+    "build-dev": "webpack-cli --config webpack.dev.js -d --silent",
     "build-prod": "webpack --config webpack.prod.js"
   },
   "author": "",
@@ -34,7 +34,7 @@
     "twig-loader": "^0.4.1",
     "uglify-js": "^3.4.6",
     "webpack": "^4.16.3",
-    "webpack-cli": "^3.1.0",
+    "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.6",
     "webpack-merge": "^4.1.4"
   },
