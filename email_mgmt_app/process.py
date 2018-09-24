@@ -17,7 +17,8 @@ from zope.interface import implementer, Interface
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
-from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, AppBase
+from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, AppBase, TemplateEnvironment, \
+    TemplateEnvMixin
 from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
@@ -25,6 +26,7 @@ from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntry
 from email_mgmt_app.myapp_config import logger
 from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.tvars import TemplateVars
+from impl import MixinBase
 from marshmallow import ValidationError
 
 logger = logging.getLogger(__name__)
@@ -34,6 +36,7 @@ class FileType:
     def __init__(self, name, ext) -> None:
         self.name = name
         self.ext = ext
+
 
 JavaScript = FileType('JavaScript', 'js')
 
@@ -151,7 +154,6 @@ class VirtualAssetManager(AbstractAssetManager):
         self._asset_content = {}
         self._assets = {}
 
-
     def create_asset(self, obj: AppBase, name: AnyStr, type: FileType):
         asset = VirtualAsset(obj, None)
         self._assets[obj, name] = asset
@@ -245,20 +247,41 @@ class FileAssetManager(AbstractAssetManager):
 
 
 # This is confusing because it seems like it could be some other random objet
+class RootNamespaceMixin(MixinBase):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._root_namespace = None
+
+    @property
+    def root_namespace(self) -> NamespaceStore:
+        return self._root_namespace
+
+    @root_namespace.setter
+    def root_namespace(self, new: NamespaceStore):
+        self._root_namespace = new
+
+
 @implementer(IProcessContext)
-class ProcessContext:
-    def __init__(self, settings, template_env, asset_manager: AbstractAssetManager):
+class ProcessContext(RootNamespaceMixin, TemplateEnvMixin):
+    def __init__(self, settings, template_env: TemplateEnvironment, asset_manager: AbstractAssetManager,
+                 root_namespace: NamespaceStore):
+        super().__init__()
+
         self._settings = settings
-        self._template_env = template_env
+        self.template_env = template_env
+
         self._asset_manager = asset_manager
+        self._root_namespace = root_namespace
 
     @property
     def settings(self):
         return self._settings
 
-    @property
-    def template_env(self):
-        return self._template_env
+    def __repr__(self):
+        return 'ProcessContext)%r, %r, %r, %r)' % (self.settings, self.template_env, self.asset_manager, self.root_namespace)
+
+
 
     @property
     def asset_manager(self) -> AbstractAssetManager:
@@ -448,46 +471,34 @@ def get_entry_point_generator(gctx: GeneratorContext, registry=None):
     return registry.getAdapter(gctx, IEntryPointGenerator)
 
 
-def process_views(registry, template_env, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint]):
-    # fixme extract dependncy
-    root_namespace = NamespaceStore('root')
-
-    entry_points_data = dict(list=[])
+def process_views(registry, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint]):
     entry_point: EntryPoint
     for name, entry_point in ep_iterable:
         # this is random as fickle
-        entry_points_data['list'].append(entry_point.key)
+        process_view(registry, proc_context, entry_point)
 
-        # is this our most advantageous entry pint?
 
-        #        mapper = entry_point.mapper
-
-        gctx = GeneratorContext(
-            entry_point,
-            TemplateVars(),
-            form_context_factory=FormContext,
-            root_namespace=root_namespace,
-            template_env=template_env
-        )
-        # FIXME use of registry.queryAdapter - is this what we want?
-        # abstract this
-        generator = get_entry_point_generator(gctx, registry)
-        assert None is not generator
-
-        process_view(gctx, entry_point, proc_context, registry, generator)
-
-    # FIXME should we use asset manager for this also
-    # whoops hardcoded path
-
-    # with open('entry_points.json', 'w') as f:
-    #     json.dump(entry_points_data, f)
-    #     f.close()
+def make_generator_context(registry, entry_point, root_namespace, template_env):
+    gctx = GeneratorContext(
+        entry_point,
+        TemplateVars(),
+        form_context_factory=FormContext,
+        root_namespace=root_namespace,
+        template_env=template_env
+    )
+    return gctx
+    # FIXME use of registry.queryAdapter - is this what we want?
+    # abstract this
+    # generator = get_entry_point_generator(gctx, registry)
+    # assert None is not generator
+    # return gctx, generator
 
 
 #
 # This is probably better renamed to something else.
 #
-def process_view(gctx, entry_point, proc_context, registry, generator):
+def process_view(registry, proc_context: ProcessContext, entry_point: EntryPoint):
+    gctx = make_generator_context(registry, entry_point, proc_context.root_namespace, proc_context.template_env)
     # abstract this away
     subscribers = registry.subscribers((proc_context, entry_point), IProcess)
     subscribers = [GenerateEntryPointProcess(proc_context, entry_point)]

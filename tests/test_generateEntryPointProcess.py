@@ -21,8 +21,8 @@ def generate_entry_point_process(process_context, entry_point_mock):
 
 
 @pytest.fixture
-def process_context(jinja2_env_mock, asset_manager_mock):
-    return ProcessContext({}, jinja2_env_mock, asset_manager_mock)
+def process_context(jinja2_env, asset_manager_mock):
+    return ProcessContext({}, jinja2_env, asset_manager_mock)
 
 
 @pytest.fixture

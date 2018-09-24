@@ -693,6 +693,10 @@ def asset_manager_mock():
 def process_context_mock():
     return MagicMock(ProcessContext)
 
+@pytest.fixture
+def process_context(jinja2_env, asset_manager_mock_wraps_virtual):
+    return ProcessContext({}, jinja2_env, asset_manager_mock_wraps_virtual, None)
+
 
 @pytest.fixture
 def make_resource_manager():

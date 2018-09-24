@@ -4,17 +4,15 @@ import copy
 import logging
 from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr
 
-from jinja2 import Environment
 from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
-from email_mgmt_app import EntryPointMixin
+from email_mgmt_app import EntryPointMixin, TemplateEnvironment
 from email_mgmt_app.form import Form
 from email_mgmt_app.impl import NamespaceStore, TemplateEnvMixin, MixinBase
 from email_mgmt_app.interfaces import IFormContext, IGeneratorContext
 from email_mgmt_app.tvars import TemplateVars
 
-TemplateEnvironment = Environment
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T')

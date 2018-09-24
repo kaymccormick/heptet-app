@@ -1,7 +1,9 @@
 import argparse
 import atexit
+import functools
 import json
 import logging
+import re
 import sys
 from datetime import datetime
 from logging import Formatter
@@ -15,12 +17,33 @@ from pyramid_jinja2 import IJinja2Environment
 import db_dump.args
 from email_mgmt_app import get_root
 from email_mgmt_app.interfaces import IEntryPoint
-from email_mgmt_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, process_view, \
-    AbstractAssetManager
-from email_mgmt_app.util import _dump
 from email_mgmt_app.process import VirtualAssetManager
+from email_mgmt_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
+    AbstractAssetManager
 
 logger = logging.getLogger()
+
+
+def cmd_process_view(*args, fp, **kwargs):
+    pr = functools.partial(
+        print,
+        file=fp
+
+    )
+    pr("Process!")
+    pass
+
+
+cmds = dict(process_view=cmd_process_view)
+
+
+def exec_command(cmd_line):
+    logger.critical(cmd_line)
+    cmd_match = re.match("^(\S+)\s*", cmd_line)
+    cmd = cmd_match.group(1)
+    if cmd in cmds:
+        f = cmds[cmd]
+        f(fp=sys.stdout)
 
 
 def main(input_args=None):
@@ -45,6 +68,8 @@ def main(input_args=None):
     parser.add_argument('--entry-point', '-e', help="Specify entry point", action="store")
     parser.add_argument('--list-entry-points', '-l', help="List entry points", action="store_true")
     parser.add_argument('--virtual-assets', action="store_true")
+    parser.add_argument('--pipe', action="store_true")
+    parser.add_argument('--cmd', action="append")
 
     args = parser.parse_args(input_args)
 
@@ -83,46 +108,36 @@ def main(input_args=None):
         exit(1)
     registry = config.registry
 
-    # _dump(
-    #     registry,
-    #     line_prefix="utils: ",
-    #     cb=lambda fmt, *args: logger.critical(fmt, *args),
-    # )
-
-    template_env = registry.queryUtility(IJinja2Environment, 'template-env')
-    assert template_env
-
-    # specify path
-    asset_mgr: AbstractAssetManager
-    if args.virtual_assets:
-        asset_mgr = VirtualAssetManager()
-    else:
-        asset_mgr = FileAssetManager("build/assets", mkdir=True)
-
-    proc_context = ProcessContext(settings, template_env, asset_mgr)
-    registry.registerUtility(proc_context)
+    asset_mgr, proc_context, template_env = initialize(args, registry, settings)
 
     # here we get our entry points
-    l = list(registry.getUtilitiesFor(IEntryPoint))
+    entry_points = list(registry.getUtilitiesFor(IEntryPoint))
 
     if args.list_entry_points:
-        for name, ep in l:
+        for name, ep in entry_points:
             print(name)
         exit(0)
 
+    if args.cmd:
+        for cmd in args.cmd:
+            exec_command(cmd)
+        exit(0)
+
+    if args.pipe:
+        _run_pipe()
+
     if args.entry_point:
-        for name, ep in l:
+        for name, ep in entry_points:
             if name == args.entry_point:
-                process_views(registry, template_env, proc_context, [(name, ep)])
+                process_views(registry, proc_context, [(name, ep)])
 
         for k, v in asset_mgr.asset_path.items():
             logger.critical("%r = %s", k[0].key, v)
 
         exit(0)
 
-
     # we should be able to remove request and registry?
-    process_views(registry, template_env, proc_context, l)
+    process_views(registry, proc_context, entry_points)
     d = {}
     v: PurePath
     curdir = PurePath("./")
@@ -140,3 +155,23 @@ def main(input_args=None):
         with open("entry_point.json", 'w') as f:
             json.dump(d, fp=f, indent=4, sort_keys=True)
             f.close()
+
+
+def _run_pipe():
+    while True:
+        line = sys.stdin.readline()
+        exec_command(line)
+
+
+def initialize(args, registry, settings):
+    template_env = registry.queryUtility(IJinja2Environment, 'template-env')
+    assert template_env
+    # specify path
+    asset_mgr: AbstractAssetManager
+    if args.virtual_assets:
+        asset_mgr = VirtualAssetManager()
+    else:
+        asset_mgr = FileAssetManager("build/assets", mkdir=True)
+    proc_context = ProcessContext(settings, template_env, asset_mgr)
+    registry.registerUtility(proc_context)
+    return asset_mgr, proc_context, template_env

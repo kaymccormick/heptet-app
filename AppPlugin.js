@@ -1,6 +1,6 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const {exec} = require('child_process');
+const {exec, spawn} = require('child_process');
 const AppEntryPlugin = require('./AppEntryPlugin')
 const AppVirtualFileSystem = require('./AppVirtualFileSystem')
 const VirtualPlugin = require('./VirtualPlugin')
@@ -26,6 +26,7 @@ class AppPlugin {
     }
 
     apply(compiler) {
+        spwan()
 
         exec('process_views --virtual -c development.ini', (error, stdout, stderr) => {
             if (error) {

@@ -11,6 +11,7 @@ from zope import interface
 
 import pyramid
 import stringcase
+from jinja2 import Environment
 from pyramid.config import Configurator
 from pyramid.request import Request
 from sqlalchemy.ext.declarative import DeclarativeMeta
@@ -818,3 +819,6 @@ class EntryPointGenerator(metaclass=abc.ABCMeta):
 
     def js_imports(self):
         return []
+
+
+TemplateEnvironment = Environment
