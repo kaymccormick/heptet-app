@@ -7,14 +7,17 @@ T = TypeVar('T')
 
 
 class Property(Generic[T]):
-    def __init__(self, obj, name, init_value: T = None) -> None:
+    def __init__(self, obj, name, init_value: T = None, wraps=None) -> None:
         super().__init__()
         self._obj = obj
         self._name = name
         self._value = init_value
+        #self._wraps = wraps
 
     def __get__(self, instance, owner) -> T:
         assert self is instance
+        # if self._wraps:
+        #     return self._wraps.__get__(instance, owner)
         return self._value
 
     def __set__(self, instance, value: T):

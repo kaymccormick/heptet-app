@@ -17,33 +17,54 @@ from pyramid_jinja2 import IJinja2Environment
 import db_dump.args
 from email_mgmt_app import get_root
 from email_mgmt_app.interfaces import IEntryPoint
-from email_mgmt_app.process import VirtualAssetManager
+from email_mgmt_app.process import VirtualAssetManager, process_view
 from email_mgmt_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
     AbstractAssetManager
+from email_mgmt_app.process import ProcessViewsConfig
 
 logger = logging.getLogger()
 
 
-def cmd_process_view(*args, fp, **kwargs):
+class CommandContext:
+
+    def __init__(self, config   ) -> None:
+        super().__init__()
+        self._config = config
+
+    @property
+    def config(self) -> ProcessViewsConfig:
+        return self._config
+
+    @config.setter
+    def config(self, new: ProcessViewsConfig):
+        self._config = new
+
+
+def cmd_process_view(registry, proc_context: ProcessContext, line, *args,**kwargs):
     pr = functools.partial(
         print,
-        file=fp
 
     )
+    args = re.split("\s+", line)
+    ep_name = args[0]
     pr("Process!")
-    pass
+    ep = registry.getUtility(IEntryPoint, ep_name)
+
+    process_view(registry, proc_context.settings, proc_context, ep)
 
 
-cmds = dict(process_view=cmd_process_view)
+
+Commands = dict(process_view=cmd_process_view)
 
 
-def exec_command(cmd_line):
+def exec_command(registry, proc_context, cmd_line):
     logger.critical(cmd_line)
-    cmd_match = re.match("^(\S+)\s*", cmd_line)
+    cmd_match = re.search(r"^(\S+)\s*", cmd_line)
     cmd = cmd_match.group(1)
-    if cmd in cmds:
-        f = cmds[cmd]
-        f(fp=sys.stdout)
+    if cmd in Commands:
+        f = Commands[cmd]
+        span = cmd_match.span()
+        f(registry, proc_context, cmd_line[span[1]:])
 
 
 def main(input_args=None):
@@ -76,6 +97,7 @@ def main(input_args=None):
     config_uri = args.config_uri
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
+    config = ProcessViewsConfig(output_path=settings['email_mgmt_app.process_views_output_path'])
 
     # we need to do this automatically
     setup = setup_jsonencoder()
@@ -108,7 +130,7 @@ def main(input_args=None):
         exit(1)
     registry = config.registry
 
-    asset_mgr, proc_context, template_env = initialize(args, registry, settings)
+    asset_mgr, proc_context, template_env = initialize(args, registry, config, settings)
 
     # here we get our entry points
     entry_points = list(registry.getUtilitiesFor(IEntryPoint))
@@ -118,18 +140,20 @@ def main(input_args=None):
             print(name)
         exit(0)
 
+    #ctx = CommandContext(config)
+
     if args.cmd:
         for cmd in args.cmd:
-            exec_command(cmd)
+            exec_command(registry, proc_context, cmd)
         exit(0)
 
     if args.pipe:
-        _run_pipe()
+        _run_pipe(registry, proc_context)
 
     if args.entry_point:
         for name, ep in entry_points:
             if name == args.entry_point:
-                process_views(registry, proc_context, [(name, ep)])
+                process_views(registry, config, proc_context, [(name, ep)])
 
         for k, v in asset_mgr.asset_path.items():
             logger.critical("%r = %s", k[0].key, v)
@@ -137,7 +161,7 @@ def main(input_args=None):
         exit(0)
 
     # we should be able to remove request and registry?
-    process_views(registry, proc_context, entry_points)
+    process_views(registry, config, proc_context, entry_points)
     d = {}
     v: PurePath
     curdir = PurePath("./")
@@ -157,13 +181,13 @@ def main(input_args=None):
             f.close()
 
 
-def _run_pipe():
+def _run_pipe(registry, proc_context):
     while True:
         line = sys.stdin.readline()
-        exec_command(line)
+        exec_command(registry, proc_context, line)
 
 
-def initialize(args, registry, settings):
+def initialize(args, registry, config, settings):
     template_env = registry.queryUtility(IJinja2Environment, 'template-env')
     assert template_env
     # specify path
@@ -172,6 +196,6 @@ def initialize(args, registry, settings):
         asset_mgr = VirtualAssetManager()
     else:
         asset_mgr = FileAssetManager("build/assets", mkdir=True)
-    proc_context = ProcessContext(settings, template_env, asset_mgr)
+    proc_context = ProcessContext(config, template_env, asset_mgr)
     registry.registerUtility(proc_context)
     return asset_mgr, proc_context, template_env

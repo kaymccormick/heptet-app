@@ -1,8 +1,9 @@
 import importlib
+import inspect
 import json
 import logging
 import sys
-from typing import AnyStr
+from typing import AnyStr, Mapping
 from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
@@ -144,7 +145,7 @@ def app_registry_mock(jinja2_env_mock):
     :param jinja2_env_mock:
     :return:
     """
-    x = MagicMock(Registry)
+    x = MagicMock(Registry, name="app_registry_mock")
 
     def _se(i, name):
         if i is IJinja2Environment and name == TEMPLATE_ENV_NAME:
@@ -196,7 +197,7 @@ def config_mock():
     Random configurator mock, I am not sure why this would be useful at all.
     :return:
     """
-    return MagicMock(Configurator())
+    return MagicMock(Configurator(), name="config_mock")
 
 
 # CONFIG
@@ -400,7 +401,7 @@ def entity_type_mock():
 @pytest.fixture
 def element_mock():
     element = html.Element('elem')
-    m = MagicMock(element)
+    m = MagicMock(element, name="element_mock")
     return m
 
 
@@ -417,10 +418,9 @@ def mapper_info_mock(local_remote_pair_info_mock):
     type(col_info_mock).__visit_name__ = PropertyMock(return_value='column')
     type_mock = MagicMock(name='type')
 
-
     type(col_info_mock).type = PropertyMock(name='type', return_value=type_mock)
 
-    #type(m).type = PropertyMock(return_value=TypeInfo())
+    # type(m).type = PropertyMock(return_value=TypeInfo())
     type(top_mock).columns = PropertyMock(list, return_value=[col_info_mock])
 
     class LocalTableMock(MagicMock):
@@ -499,8 +499,9 @@ def template_vars_wrapped():
 
 @pytest.fixture
 def template_vars_mock(template_vars_wrapped):
-    mock = MagicMock(wraps=template_vars_wrapped)
-    mock.__setitem__ = MagicMock(TemplateVars.__setitem__, wraps=template_vars_wrapped.__setitem__)
+    mock = MagicMock(wraps=template_vars_wrapped, name="template_vars_mock")
+    mock.__setitem__ = MagicMock(TemplateVars.__setitem__, wraps=template_vars_wrapped.__setitem__,
+                                 name="template_vars_mock.__setitem__")
     logger.critical("%r", mock)
     return mock
 
@@ -512,9 +513,10 @@ def template_vars_mock(template_vars_wrapped):
 def wrap_form_context_factory():
     def _wrap_form_context_factory(*args, **kwargs):
         c = FormContext(*args, **kwargs)
-        return MagicMock(wraps=c)
+        return MagicMock(wraps=c, name="form_context_wrap_mock")
 
     return _wrap_form_context_factory
+
 
 @pytest.fixture
 def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store, wrap_form_context_factory):
@@ -528,7 +530,7 @@ def make_generator_context(jinja2_env_mock, template_vars, root_namespace_store,
 @pytest.fixture
 def generator_context_mock(make_generator_context, jinja2_env_mock, template_vars_mock, mapper_info_mock,
                            form_context_mock):
-    mock = MagicMock(GeneratorContext)
+    mock = MagicMock(GeneratorContext, "generator_context_mock")
     type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
     type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
     type(mock).mapper = PropertyMock(return_value=mapper_info_mock)
@@ -580,29 +582,33 @@ def relationship_schema():
 def my_relationship_select():
     return RelationshipSelect()
 
+
 @pytest.fixture
 def wrap_form_factory():
     def _wrap_form_factory(*args, **kwargs):
         form = Form(*args, **kwargs)
-        mock = MagicMock(wraps=form)
+        mock = MagicMock(wraps=form, name="form_mock")
         return mock
+
     return _wrap_form_factory
 
 
 # this makes a form context from a geneerator context which is not what we want
 @pytest.fixture
 def make_form_context(jinja2_env_mock, template_vars_mock, root_namespace_store, wrap_form_factory):
-    def _make_form_context(template_env=jinja2_env_mock, template_vars=template_vars_mock, root_namespace=root_namespace_store,
+    def _make_form_context(template_env=jinja2_env_mock, template_vars=template_vars_mock,
+                           root_namespace=root_namespace_store,
                            namespace=None, form=None, mapper_info=None):
-        return FormContext(template_env, template_vars, root_namespace, namespace, relationship_field_mapper=FormRelationshipMapper,
-                    form=form, mapper_info=mapper_info,form_factory=wrap_form_factory)
+        return FormContext(template_env, template_vars, root_namespace, namespace,
+                           relationship_field_mapper=FormRelationshipMapper,
+                           form=form, mapper_info=mapper_info, form_factory=wrap_form_factory)
 
     return _make_form_context
 
 
 @pytest.fixture
 def form_mock():
-    mock = MagicMock(Form)
+    mock = MagicMock(Form, name="form_mock_")
     mock.get_html_id().get_id.return_value = 'html_id'
     mock.get_html_form_name().get_id.return_value = 'form_name'
     return mock
@@ -610,7 +616,7 @@ def form_mock():
 
 @pytest.fixture
 def form_context_mock(make_form_context, root_namespace_store, my_form, jinja2_env_mock, template_vars_mock, form_mock):
-    mock = MagicMock(FormContext)
+    mock = MagicMock(FormContext, "form_context_mock")
     type(mock).template_env = PropertyMock(return_value=jinja2_env_mock)
     type(mock).template_vars = PropertyMock(return_value=template_vars_mock)
     type(mock).nest_level = PropertyMock(return_value=0)
@@ -645,7 +651,7 @@ def my_form_context(make_generator_context, my_relationship_select, root_namespa
 
 @pytest.fixture
 def entity_form_view_mock():
-    return MagicMock('entity_form_view')
+    return MagicMock(name='entity_form_view')
 
 
 @pytest.fixture
@@ -680,18 +686,43 @@ def make_asset_manager():
 
 
 @pytest.fixture
-def asset_manager_mock_wraps_virtual():
-    return MagicMock(wraps=VirtualAssetManager())
+def virtual_asset_manager():
+    v = VirtualAssetManager()
+    return v
+
+
+@pytest.fixture
+def asset_manager_mock_wraps_virtual(virtual_asset_manager):
+    class _AbstractManagerMock(MagicMock):
+
+        def __init__(self, *args, **kw):
+            if not 'spec' in kw:
+                kw['spec'] = AbstractAssetManager
+            super().__init__(*args, **kw)
+            if 'wraps' in kw and hasattr(kw['wraps'], 'asset_content'):
+                wraps = kw['wraps']
+                attr = inspect.getattr_static(wraps, 'asset_content')
+
+                prop = Property[Mapping[AnyStr, AnyStr]](attr, 'asset_content')
+
+
+            else:
+                logger.critical("not stuffing property mock")
+
+    mock = _AbstractManagerMock(spec=VirtualAssetManager, wraps=virtual_asset_manager, name="asset_manager_mock_wraps_virtual")
+    type(mock).asset_content = PropertyMock(wraps=inspect.getattr_static(virtual_asset_manager, 'asset_content'))
+    return mock
 
 
 @pytest.fixture
 def asset_manager_mock():
-    return MagicMock(AbstractAssetManager)
+    return MagicMock(AbstractAssetManager, name="asset_manager_mock")
 
 
 @pytest.fixture
 def process_context_mock():
     return MagicMock(ProcessContext)
+
 
 @pytest.fixture
 def process_context(jinja2_env, asset_manager_mock_wraps_virtual):
@@ -793,7 +824,6 @@ def monkeypatch_form(monkeypatch):
         yield True
 
 
-
 class ElementMock(MagicMock):
 
     def __init__(self, *args, **kw):
@@ -846,7 +876,7 @@ def wrap_make_html(make_element_mock):
             keys = list(attr.keys())
             for key in keys:
                 if not isinstance(attr[key], str):
-                    attr[key]= str(attr[key])
+                    attr[key] = str(attr[key])
 
         elem = factory(*args, **kwargs)
 

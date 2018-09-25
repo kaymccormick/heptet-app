@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import abc
 import logging
+import os
 import sys
 from abc import ABCMeta
-from os import PathLike
 from threading import Lock
 from typing import AnyStr, Generic, TypeVar, Type
 from zope import interface
@@ -31,17 +31,6 @@ from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.util import get_exception_entry_point_key
 from marshmallow import Schema, fields
 
-# class MapperInfosMixin:
-#     @property
-#     def mapper_infos(self) -> dict:
-#         return self._mapper_infos
-#
-#     def get_mapper_info(self, mapper_key: AnyStr) -> MapperInfo:
-#         assert mapper_key in self.mapper_infos
-#         return self.mapper_infos[mapper_key]
-#
-#     def set_mapper_info(self, mapper_key: AnyStr, mapper_info: MapperInfo) -> None:
-#         self.mapper_infos[mapper_key] = mapper_info
 T = TypeVar('T')
 
 logger = logging.getLogger(__name__)
@@ -118,20 +107,6 @@ class ResourceMeta(ABCMeta):
     # return new__
 
 
-class EntryPointMixin:
-    def __init__(self) -> None:
-        super().__init__()
-        self._entry_point = None  # type: EntryPoint
-
-    @property
-    def entry_point(self) -> EntryPoint:
-        return self._entry_point
-
-    @entry_point.setter
-    def entry_point(self, new: EntryPoint):
-        self._entry_point = new
-
-
 class ResourceMagic(AppBase):
     def __setitem__(self, key, value):
         self._data.__setitem__(key, value)
@@ -160,6 +135,20 @@ class ResourceMagic(AppBase):
                                        self._title)
         except:
             return repr(sys.exc_info()[1])
+
+
+class EntryPointMixin:
+    def __init__(self) -> None:
+        super().__init__()
+        self._entry_point = None  # type: EntryPoint
+
+    @property
+    def entry_point(self) -> EntryPoint:
+        return self._entry_point
+
+    @entry_point.setter
+    def entry_point(self, new: EntryPoint):
+        self._entry_point = new
 
 
 @implementer(IResource)
@@ -420,8 +409,6 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     my_parent = root_resource
     assert my_parent is not None
 
-    #        env = request.registry.getUtility(IJinja2Environment, 'app_env')
-
     #
     # Populate the root resource dictionary with our
     # { node_name, ContainerResource } pair.
@@ -433,22 +420,15 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
     # can we encapsulate this somehow?
     # MANAGER.MAPPER_WRAPPERS
+
     # code smell
     mapper_wrapper = manager.mapper_wrappers[key]
     assert mapper_wrapper, "no mapper wrapper %s in %s" % (key, manager.mapper_wrappers)
-
-    # container_entry_poic:nt_configuration = EntryPointConfiguration(mapper=manager.mapper_wrapper.get_one_mapper_info(),
-    #                                                               )
 
     container_entry_point = EntryPoint(key, manager, mapper=manager.mapper_wrapper.get_one_mapper_info())
     m = config.registry.getAdapter(container_entry_point, IEntryPointMapperAdapter)
     m.mapper = mapper_wrapper
 
-    # IEntryPointMapperAdapter(container_entry_point).mapper = mapper_wrapper
-
-    # our factory now returns dynamic classes - you get a unique class
-    # back every time.
-    # should we call root_resource.subresource?
     resource = Resource(
         name=node_name,
         title=manager.title,
@@ -461,7 +441,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     # this makes a direct mapping between operations, entry points, and views.
     extra = {}
 
-    # # MANAGER.OPERATIONS
+    # MANAGER.OPERATIONS
     for op in manager.operations:
         resource.add_name(op.name)
 
@@ -632,6 +612,21 @@ class OperationArgumentExceptionView(ExceptionView):
         request.override_renderer = "templates/args.jinja2"
 
 
+#
+# SCHEMA
+#
+class AppBaseSchema(Schema):
+    pass
+
+
+class AssetContentValue(Schema):
+    pass
+
+
+class AssetManagerSchema(Schema):
+    asset_content = fields.Dict()
+
+
 class ResourceManagerSchema(Schema):
     mapper_key = fields.String()
     title = fields.String()
@@ -650,8 +645,13 @@ class ResourceSchema(Schema):
     url = fields.Url(function=lambda x: x.url())
 
 
+class AssetEntity(AppBase, os.PathLike):
+    def __init__(self) -> None:
+        super().__init__()
+
+
 @interface.implementer(IEntryPoint)
-class EntryPoint(AppBase, PathLike):
+class EntryPoint(AssetEntity):
     """
     Encapsulation of an "entry point" to the application; specifically used for javascript entry points
     for bundling purposes (i.e. webpack).
@@ -669,9 +669,11 @@ class EntryPoint(AppBase, PathLike):
         :param key: dictionary key to identify the entry point
         :param kwargs: other keyword arguments, especially mapper
         """
+        super().__init__()
         self._key = key
         self._generator = None
         self._view = None
+        # code smell
         self._vars = TemplateVars()
         self._manager = resource_manager
         for k, v in kwargs.items():
@@ -689,13 +691,14 @@ class EntryPoint(AppBase, PathLike):
         Return the value for the repr() of the object
         :return: value for the repr() of the object
         """
-        return "EntryPoint(manager=%r, key=%r)" % (
-            self._manager,
-            self._key,
-        )
+        s = "EntryPoint(" + repr(self.key)
+        if self.manager:
+            s = s + ", manager=%r" % self.manager
+        s = s + ")"
+        return s
 
     def __fspath__(self):
-        return 'entry_point/%s' % self.key
+        return 'entry_point/%s.js' % self.key
 
     def init_generator(self, registry, root_namespace, template_env, cb=None, generator_context=None):
         """

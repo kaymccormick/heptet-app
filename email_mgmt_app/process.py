@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 from contextlib import contextmanager
+from dataclasses import dataclass
 from io import TextIOBase, StringIO
 from pathlib import Path
 from typing import Iterable, Tuple, Mapping, AnyStr
@@ -18,18 +19,23 @@ from zope.interface import implementer, Interface
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
 from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, AppBase, TemplateEnvironment, \
-    TemplateEnvMixin
+    TemplateEnvMixin, AssetEntity
 from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
+from email_mgmt_app.impl import MixinBase
 from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
 from email_mgmt_app.myapp_config import logger
 from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.tvars import TemplateVars
-from impl import MixinBase
 from marshmallow import ValidationError
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ProcessViewsConfig:
+    output_path: str = 'default_build'
 
 
 class FileType:
@@ -82,10 +88,7 @@ class AbstractAsset(os.PathLike, metaclass=abc.ABCMeta):
 class FileAsset(AbstractAsset):
     def __init__(self, obj, arg, mkdir=True) -> None:
         super().__init__()
-        if isinstance(arg, os.PathLike):
-            self._file_path = arg
-        else:
-            self._file_path = Path(arg)
+        self._file_path = Path(arg)
 
         self._file_path.parents[0].mkdir(mode=0o755, parents=True, exist_ok=True)
 
@@ -98,8 +101,14 @@ class FileAsset(AbstractAsset):
 
 
 class AbstractAssetManager(metaclass=abc.ABCMeta):
+    def __init__(self) -> None:
+        super().__init__()
+        self._asset_path = None
+        self._asset_content = dict()
+        self._assets = dict()
+
     @abc.abstractmethod
-    def create_asset(self, obj: AppBase, name: AnyStr, type: FileType):
+    def create_asset(self, obj: AssetEntity):
         pass
 
     @property
@@ -117,16 +126,15 @@ class AbstractAssetManager(metaclass=abc.ABCMeta):
 
 class VirtualAsset(AbstractAsset):
 
-    def __init__(self, obj, arg) -> None:
+    def __init__(self, obj) -> None:
         super().__init__()
         self._file = None
         self._content = None
         self._obj = obj
-        self._arg = arg
 
     def __repr__(self):
 
-        return 'VirtualAsset(%r, %r%s)' % (self._obj, self._arg, self._content and ', content=%r' % self._content or '')
+        return 'VirtualAsset(%r%s)' % (self._obj, self._content and ', content=%r' % self._content or '')
 
     @contextmanager
     def open(self, mode='r', buffering=-1, encoding=None, errors=None, newline=None):
@@ -154,9 +162,9 @@ class VirtualAssetManager(AbstractAssetManager):
         self._asset_content = {}
         self._assets = {}
 
-    def create_asset(self, obj: AppBase, name: AnyStr, type: FileType):
-        asset = VirtualAsset(obj, None)
-        self._assets[obj, name] = asset
+    def create_asset(self, asset_entity: AssetEntity):
+        asset = VirtualAsset(asset_entity)
+        self._assets[asset_entity] = asset
         return asset
 
     def get_path(self, *disc) -> os.PathLike:
@@ -169,15 +177,15 @@ class VirtualAssetManager(AbstractAssetManager):
         pass
 
     @contextmanager
-    def get(self, *disc) -> TextIOBase:
+    def get(self, asset_entity: AssetEntity) -> TextIOBase:
         x = ""
-        self._io[disc] = StringIO()
-        self._asset_path[disc] = x
+        self._io[asset_entity] = StringIO()
+        self._asset_path[asset_entity] = x
         try:
-            yield self._io[disc]
+            yield self._io[asset_entity]
         finally:
-            s = self._io[disc].getvalue()
-            self.asset_content[disc] = s
+            s = self._io[asset_entity].getvalue()
+            self.asset_content[asset_entity] = s
 
 
 class FileAssetManager(AbstractAssetManager):
@@ -199,9 +207,9 @@ class FileAssetManager(AbstractAssetManager):
         self._assets = {}
         self._assets2 = {}
 
-    def create_asset(self, obj: AppBase, name: AnyStr, type_: FileType):
-        file_asset = FileAsset(obj, Path(self._output_dir).joinpath(os.fspath(obj) + '.' + type_.ext))
-        self._assets[obj, name] = file_asset
+    def create_asset(self, obj: AssetEntity):
+        file_asset = FileAsset(obj, obj)
+        self._assets[obj] = file_asset
         return file_asset
 
     # def get_path(self, *disc):
@@ -265,7 +273,7 @@ class RootNamespaceMixin(MixinBase):
 @implementer(IProcessContext)
 class ProcessContext(RootNamespaceMixin, TemplateEnvMixin):
     def __init__(self, settings, template_env: TemplateEnvironment, asset_manager: AbstractAssetManager,
-                 root_namespace: NamespaceStore):
+                 root_namespace: NamespaceStore = None):
         super().__init__()
 
         self._settings = settings
@@ -279,9 +287,8 @@ class ProcessContext(RootNamespaceMixin, TemplateEnvMixin):
         return self._settings
 
     def __repr__(self):
-        return 'ProcessContext)%r, %r, %r, %r)' % (self.settings, self.template_env, self.asset_manager, self.root_namespace)
-
-
+        return 'ProcessContext)%r, %r, %r, %r)' % (
+            self.settings, self.template_env, self.asset_manager, self.root_namespace)
 
     @property
     def asset_manager(self) -> AbstractAssetManager:
@@ -361,7 +368,7 @@ class GenerateEntryPointProcess(BaseProcessor):
 
         # need to generate path
 
-        asset = self._context.asset_manager.create_asset(self._ep, None, JavaScript)
+        asset = self._context.asset_manager.create_asset(self._ep)
         with asset.open('w') as f:
             # FIXME embedded template filename
             content = self._context.template_env.get_template('entry_point.js.jinja2').render(
@@ -471,11 +478,12 @@ def get_entry_point_generator(gctx: GeneratorContext, registry=None):
     return registry.getAdapter(gctx, IEntryPointGenerator)
 
 
-def process_views(registry, proc_context: ProcessContext, ep_iterable: Iterable[EntryPoint]):
+def process_views(registry, config: ProcessViewsConfig, proc_context: ProcessContext,
+                  ep_iterable: Iterable[EntryPoint]):
     entry_point: EntryPoint
     for name, entry_point in ep_iterable:
         # this is random as fickle
-        process_view(registry, proc_context, entry_point)
+        process_view(registry, config, proc_context, entry_point)
 
 
 def make_generator_context(registry, entry_point, root_namespace, template_env):
@@ -497,9 +505,10 @@ def make_generator_context(registry, entry_point, root_namespace, template_env):
 #
 # This is probably better renamed to something else.
 #
-def process_view(registry, proc_context: ProcessContext, entry_point: EntryPoint):
+def process_view(registry, config: ProcessViewsConfig, proc_context: ProcessContext, entry_point: EntryPoint):
     gctx = make_generator_context(registry, entry_point, proc_context.root_namespace, proc_context.template_env)
     # abstract this away
+    assert entry_point
     subscribers = registry.subscribers((proc_context, entry_point), IProcess)
     subscribers = [GenerateEntryPointProcess(proc_context, entry_point)]
     assert subscribers, "No subscribers for processing"
