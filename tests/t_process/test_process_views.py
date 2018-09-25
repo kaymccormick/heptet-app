@@ -2,6 +2,7 @@ import logging
 
 from email_mgmt_app import AssetManagerSchema
 from email_mgmt_app.process import process_views, process_view
+from email_mgmt_app.process import ProcessViewsConfig
 from tests.common import MakeEntryPoint
 
 logger = logging.getLogger()
@@ -18,7 +19,8 @@ def test_(asset_manager_mock_wraps_virtual, make_entry_point):
 
 def test_process_views_new(app_registry_mock, process_context, entry_point_mock):
     ep_iterable = [(entry_point_mock.key, entry_point_mock)]
-    process_views(app_registry_mock, process_context, ep_iterable)
+    config = ProcessViewsConfig()
+    process_views(app_registry_mock, config, process_context, ep_iterable)
     logger.critical("%r", process_context.asset_manager.mock_calls)
     schema = AssetManagerSchema()
     logger.critical("x = %r", schema.dump(process_context.asset_manager))
@@ -37,5 +39,6 @@ def test_process_views(app_registry_mock, asset_manager_mock, process_context_mo
 
 def test_process_view(entry_point_mock, process_context_mock, app_registry_mock,
                       entry_point_generator_mock):
-    process_view(app_registry_mock, process_context_mock, entry_point_mock)
+    config = ProcessViewsConfig()
+    process_view(app_registry_mock, config, process_context_mock, entry_point_mock)
 

@@ -12,6 +12,7 @@ from lxml import html
 from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.registry import Registry
+from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_tm.tests import DummyRequest
@@ -117,14 +118,20 @@ def my_data(my_json):
 #
 @pytest.fixture
 def app_request(app_registry_mock):
+    class _RequestMock(MagicMock):
+        def __init__(self, *args, **kw):
+            super().__init__(*args, **kw)
+            type(self).registry = PropertyMock()
+
+    mock = _RequestMock(spec=Request, wraps=DummyRequest)
+
     # We'll use dummy request until we can't anymore
-    request = DummyRequest()
-    request.registry = app_registry_mock
+    request = mock
+    #request.registry = app_registry_mock
     try:
         yield request
     except:
-        for x in app_registry_mock.mock_calls:
-            print(str(x), file=sys.stderr)
+        pass
 
 
 @pytest.fixture
@@ -176,6 +183,15 @@ def entry_point_mock():
 def app_context(request, root_resource, resource_manager, entry_point_mock):
     # this template wont exist...
     return root_resource.sub_resource('app-context-%s' % request.param, entry_point_mock)
+
+
+@pytest.fixture()
+def app_context_mock():
+    class _AppContextMock(MagicMock):
+        def __init__(self, *args, **kw):
+            super().__init__(args, kw);
+
+    return _AppContextMock(spec=Resource)
 
 
 #
@@ -699,17 +715,21 @@ def asset_manager_mock_wraps_virtual(virtual_asset_manager):
             if not 'spec' in kw:
                 kw['spec'] = AbstractAssetManager
             super().__init__(*args, **kw)
+
             if 'wraps' in kw and hasattr(kw['wraps'], 'asset_content'):
                 wraps = kw['wraps']
                 attr = inspect.getattr_static(wraps, 'asset_content')
+                #prop = Property[Mapping[AnyStr, AnyStr]](attr, 'asset_content')
 
-                prop = Property[Mapping[AnyStr, AnyStr]](attr, 'asset_content')
+                assets_attr = inspect.getattr_static(wraps, 'assets')
+                #type(self).assets = PropertyMock(wraps=Property(wraps, 'assets', {}))
 
 
             else:
                 logger.critical("not stuffing property mock")
 
-    mock = _AbstractManagerMock(spec=VirtualAssetManager, wraps=virtual_asset_manager, name="asset_manager_mock_wraps_virtual")
+    mock = _AbstractManagerMock(spec=VirtualAssetManager, wraps=virtual_asset_manager,
+                                name="asset_manager_mock_wraps_virtual")
     type(mock).asset_content = PropertyMock(wraps=inspect.getattr_static(virtual_asset_manager, 'asset_content'))
     return mock
 

@@ -44,5 +44,7 @@ def test_generate_entry_point_process_process(
     entry_point = make_entry_point('test1')
     generate_entry_point_process = make_generate_entry_point_process(process_context, entry_point)
     generate_entry_point_process.process()
-    for k, v in process_context.asset_manager.assets.items():
+    assets = process_context.asset_manager.assets
+    assert 0, asset_manager_mock_wraps_virtual.mock_calls
+    for k, v in assets.items():
         assert v.content.lower().find('jquery') != -1

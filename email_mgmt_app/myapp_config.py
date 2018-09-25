@@ -143,9 +143,15 @@ def entry_point_content(context, request):
 
 def entry_points_json(context, request):
     utilities_for = request.registry.getUtilitiesFor(IEntryPoint)
-    ep = map(lambda x: x[1], utilities_for)
+    eps = list(map(lambda x: x[1], utilities_for))
+    vam = VirtualAssetManager()
+    for ep in eps:
+        process_view(request.registry, config=ProcessViewsConfig(), proc_context=ProcessContext({}, context.template_env, vam),
+                     entry_point=ep);
+        ep.content = vam.assets[ep].content
     s = EntryPointSchema()
-    return Response(json.dumps({'entry_points': s.dump(ep, many=True)}))
+
+    return Response(json.dumps({'entry_points': s.dump(eps, many=True)}))
 
 
 def includeme(config: Configurator):

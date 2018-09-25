@@ -192,7 +192,7 @@ def main(input_args=None):
         json.dump(vd, fp=sys.stdout)
     else:
         for k, v in asset_mgr.assets.items():
-            d[k[0].key] = "./" + Path(v).as_posix()
+            d[k.key] = "./" + Path(v).as_posix()
 
         with open("entry_point.json", 'w') as f:
             json.dump(d, fp=f, indent=4, sort_keys=True)

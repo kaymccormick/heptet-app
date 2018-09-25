@@ -122,6 +122,10 @@ class AbstractAssetManager(metaclass=abc.ABCMeta):
     def assets(self) -> Mapping[Tuple, AbstractAsset]:
         return self._assets
 
+    @assets.setter
+    def assets(self, new):
+        self._assets = new
+
 
 class VirtualAsset(AbstractAsset):
 

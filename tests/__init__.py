@@ -1,18 +1,20 @@
-from typing import TypeVar, Generic, AnyStr
-from unittest.mock import MagicMock, PropertyMock
-
-from lxml import html
+from typing import TypeVar, Generic
 
 T = TypeVar('T')
 
 
-class Property(Generic[T]):
+class AbstractProperty(Generic[T]):
+    def __init__(self):
+        pass
+
+
+class Property(AbstractProperty[T]):
     def __init__(self, obj, name, init_value: T = None, wraps=None) -> None:
         super().__init__()
         self._obj = obj
         self._name = name
         self._value = init_value
-        #self._wraps = wraps
+        # self._wraps = wraps
 
     def __get__(self, instance, owner) -> T:
         assert self is instance
@@ -31,4 +33,3 @@ class Property(Generic[T]):
             setattr(self._obj, self._name, args[0])
         else:
             return self._value
-

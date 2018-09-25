@@ -624,6 +624,7 @@ class EntryPointSchema(Schema):
     key = fields.String()
     fspath = fields.Function(lambda ep: ep.__fspath__())
     manager = fields.Nested("ResourceManagerSchema")
+    content = fields.String()
 
 
 class AssetManagerSchema(Schema):
@@ -679,6 +680,7 @@ class EntryPoint(AssetEntity):
         # code smell
         self._vars = TemplateVars()
         self._manager = resource_manager
+        self._content = None
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -750,6 +752,14 @@ class EntryPoint(AssetEntity):
     @property
     def discriminator(self):
         return self.__class__.__name__.lower(), self.key
+
+    @property
+    def content(self) -> AnyStr:
+        return self._content;
+
+    @content.setter
+    def content(self, new: AnyStr):
+        self._content = new
 
 
 def default_entry_point():
