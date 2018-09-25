@@ -204,8 +204,6 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
         :param title:
         :param template_env:
         """
-        assert entry_point is not None, "Need entry point."
-        assert entry_point.key
 
         if not title:
             self._title = stringcase.sentencecase(name)
@@ -216,7 +214,7 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
         self.__name__ = name
         self.__parent__ = parent
         self.entry_point = entry_point
-        assert entry_point is not None
+
         self._names = []
         self._data = {}
         self.__iter__ = lambda: self._data.__iter__()
@@ -225,7 +223,7 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
         self.keys = lambda: self._data.keys()
         self.values = lambda: self._data.values()
         self.get = lambda x: self._data.get(x)
-        self._entity_type = entry_point.manager.entity_type
+        self._entity_type = entry_point and entry_point.manager and entry_point.manager.entity_type
         self._subresource_type = self.__class__
 
     def validate(self):
@@ -262,7 +260,6 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
 
     def sub_resource(self, name: AnyStr, entry_point: EntryPoint, title=None):
         logger.debug("%r", self.__class__)
-        assert self.entry_point
         if not title:
             title = stringcase.sentencecase(name)
         logger.debug("%s", title)
@@ -621,6 +618,12 @@ class AppBaseSchema(Schema):
 
 class AssetContentValue(Schema):
     pass
+
+
+class EntryPointSchema(Schema):
+    key = fields.String()
+    fspath = fields.Function(lambda ep: ep.__fspath__())
+    manager = fields.Nested("ResourceManagerSchema")
 
 
 class AssetManagerSchema(Schema):

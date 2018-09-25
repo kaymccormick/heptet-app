@@ -1,16 +1,23 @@
 const AppEntryDependency = require("./AppEntryDependency");
+const AppModuleFactory = require("./AppModuleFactory");
 
 class AppEntryPlugin {
-    constructor(context, entry, name) {
+    constructor(context, resolverFactory, entry, name) {
         this.context = context;
         this.entry = entry;
         this.name = name;
+        this.resolverFactory = resolverFactory
+        this.appModuleFactory = new AppModuleFactory(this.context, this.resolverFactory,
+            {
+
+            })
     }
 
     apply(compiler) {
         const plugin = "AppEntryPlugin"
         compiler.hooks.compilation.tap(plugin, (compilation, {normalModuleFactory}) => {
-            compilation.dependencyFactories.set(AppEntryDependency, normalModuleFactory);
+
+            compilation.dependencyFactories.set(AppEntryDependency, normalModuleFactory);// this.appModuleFactory);
         });
         compiler.hooks.make.tapAsync(plugin, (compilation, callback) => {
                 const {entry, name, context} = this;

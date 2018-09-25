@@ -1,24 +1,18 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {exec, spawn} = require('child_process');
-const AppEntryPlugin = require('./AppEntryPlugin')
-const AppVirtualFileSystem = require('./AppVirtualFileSystem')
-const VirtualPlugin = require('./VirtualPlugin')
+const AppEntryPlugin = require('./AppEntryPlugin');
+const AppVirtualFileSystem = require('./AppVirtualFileSystem');
+const VirtualPlugin = require('./VirtualPlugin');
+const request = require('request');
+
+const axios = require('axios');
+
 const {
     NodeJsInputFileSystem,
     CachedInputFileSystem,
     ResolverFactory
 } = require('enhanced-resolve');
-
-
-// create a resolver
-const myResolver = ResolverFactory.createResolver({
-    // Typical usage will consume the `NodeJsInputFileSystem` + `CachedInputFileSystem`, which wraps the Node.js `fs` wrapper to add resilience + caching.
-    fileSystem: new AppVirtualFileSystem(),
-    extensions: ['.js', '.json']
-    /* any other resolver options here. Options/defaults can be seen below */
-});
-
 
 class AppPlugin {
     constructor(options) {
@@ -26,79 +20,100 @@ class AppPlugin {
     }
 
     apply(compiler) {
-        spwan()
+        const me = this;
 
-        exec('process_views --virtual -c development.ini', (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                return;
-            }
+        // exec('venv/scripts/pserve.cmd', 'development.ini', (err, stdout, stderr) => {
+        //     console.log(err);
+        //     });
+        //this.process_child = spawn('venv/scripts/pserve.cmd', ['development.ini']);
 
-            const entry = JSON.parse(stdout);
+        // this.process_child = spwan('venv/scripts/process_views',['--virtual','-c','development.ini', '--pipe']);
+        // #this.process_child.stdin.write('entry_points_json')
+        //
+        //
+        //
+        // exec('process_views --virtual -c development.ini', (error, stdout, stderr) => {
+        //     if (error) {
+        //         console.error(`exec error: ${error}`);
+        //         return;
+        //     }
+        //
+        //     const entry = JSON.parse(stdout);
+        //
+        //     this.entry = entry;
+        //
+        // });
+        const entryOption = (context, entry) => {
+            return new Promise(function (resolve, reject) {
+                axios.get('http://localhost:6643/entry_points_json', {
+                    transform_response: function (response) {
+                        return JSON.parse(response);
+                    }
+                }).then(function (data) {
+                    const entry_points = data.data.entry_points;
+                    for (let i = 0; i < entry_points.length; i++) {
+                        const ep = entry_points[i];
+                        console.log(ep);
+                        new AppEntryPlugin(context, compiler.resolverFactory, ep.fspath, ep.key).apply(compiler)
+                    }
+                    me.entry_points = entry_points;
+                    resolve()
+                });
+            });
 
-            this.entry = entry;
-
-        });
+            // const ep = this.options.entry_points;
+            // for (var key in ep) {
+            //     if (ep.hasOwnProperty(key)) {
+            //         new AppEntryPlugin(context, 'app_entry_point:' + key, key).apply(compiler);
+            //     }
+            // }
+            // return true;
+        };
 
         const emit = (compilation, callback) => {
-            for (var key in this.entry) {
-                if (this.entry.hasOwnProperty(key)) {
-                    this.addFileToAssets(this.entry[key].content, key, compilation)
-                }
+            const entry_points = me.entry_points;
+            for (let i = 0; i < entry_points.length; i++) {
+                const ep = entry_points[i];
+                this.addFileToAssets(ep.content, ep.key, compilation)
+                const h = new HtmlWebpackPlugin({
+                    title: '',
+                    template: 'src/assets/entry_point_generic.html',
+                    filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/' + key + '.jinja2'),
+                    inject: false,
+                    chunks: [key],
+                });
+                h.apply(compiler);
             }
-
             return callback()
         };
 
-        const beforeRun = (compiler, callback) => {
-            const ep = this.options.entry_points;
-            for (var key in ep) {
+        // const beforeRun = (compiler, callback) => {
+        // }
+        //
+        // const beforeCompile = (compiler, callback) => {
+        // }
 
-                if (ep.hasOwnProperty(key)) {
-                    const h = new HtmlWebpackPlugin({
-                        title: '',
-                        template: 'src/assets/entry_point_generic.html',
-                        filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/' + key + '.jinja2'),
-                        inject: false,
-                        chunks: [key],
-                    });
-                    h.apply(compiler);
-                }
-            }
-            return callback();
-        };
         //
         // let context;
         var plugin = {name: 'AppPlugin'};
         compiler.hooks.normalModuleFactory.tap(plugin, nmf => {
             nmf.hooks.beforeResolve.tap(plugin, result => {
                 if (!result) return;
-                console.log("result is ", result);
                 return result;
             });
         });
-        //         new VirtualPlugin("resolve", {}, "parsed-resolve").apply()
-        //
-        //         console.log(result.request);
-        //     });
-        // });
-        compiler.hooks.beforeRun.tapAsync(plugin, beforeRun);
+        //compiler.hooks.beforeRun.tapAsync(plugin, beforeRun);
         compiler.hooks.emit.tapAsync(plugin, emit);
-        compiler.hooks.entryOption.tap(plugin, (context, entry) => {
-            const ep = this.options.entry_points;
-            for (var key in ep) {
-                if (ep.hasOwnProperty(key)) {
-                    new AppEntryPlugin(context, 'app_entry_point:' + key, key).apply(compiler);
-                }
-            }
-            return true;
-        });
+
+        compiler.hooks.entryOption.tap(plugin, entryOption);
         compiler.hooks.afterResolvers.tap(plugin, compiler => {
             compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, resolver => {
                 console.log("making virtual plugin");
                 new VirtualPlugin("described-resolve", {entry_points: this.options.entry_points}, "resolve").apply(resolver);
             })
         })
+        //compiler.hooks.beforeCompile.tap(plugin, beforeCompile);
+        //compiler.hooks.done.tap(plugin, done);
 
     }
 
@@ -112,4 +127,5 @@ class AppPlugin {
 
 }
 
-module.exports = AppPlugin;
+module
+    .exports = AppPlugin;

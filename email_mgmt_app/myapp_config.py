@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 
@@ -6,15 +7,18 @@ from jinja2 import TemplateNotFound
 from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid.renderers import get_renderer
+from pyramid.response import Response
 from zope.component import IFactory, adapter
 from zope.component.factory import Factory
 from zope.interface import implementer
 
-from email_mgmt_app import Resource, RootResource
+from email_mgmt_app import Resource, RootResource, _get_root, EntryPointSchema
 from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject
+from email_mgmt_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
+from email_mgmt_app.process import process_view, ProcessContext, VirtualAssetManager
 from email_mgmt_app.util import _dump
 from email_mgmt_app.webapp_main import logger
+from email_mgmt_app.process import ProcessViewsConfig
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +47,12 @@ def on_application_created(event):
 def on_before_render(event):
     logger.critical("on_before_render: event=%s", event)
     val = event.rendering_val
-    val['request'] = event['request']
+    request = val['request'] = event['request']
+    #    logger.critical("renderer = %s", request.renderer)
     # what happens if we clobber this? it also gets set for the form view
-    val['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % event['context'].entry_point.key
+    entry_point = event['context'].entry_point
+    if entry_point:
+        val['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % entry_point.key
     logger.debug("VAL=%s", val)
 
 
@@ -117,6 +124,30 @@ class MapperProperty:
         self._mapper = new
 
 
+def entry_point_content(context, request):
+    entry_point = request.registry.getUtility(IEntryPoint, request.subpath[0])
+    vam = VirtualAssetManager()
+    process_view(request.registry,
+                 config=ProcessViewsConfig(),
+                 proc_context=ProcessContext({}, context.template_env,
+
+                                             vam),
+
+                 entry_point=entry_point)
+
+    logger.critical("v = %r", vam.assets[entry_point].content)
+    #(v,) = vam.asset_content.values()
+
+    return Response(vam.assets[entry_point].content)
+
+
+def entry_points_json(context, request):
+    utilities_for = request.registry.getUtilitiesFor(IEntryPoint)
+    ep = map(lambda x: x[1], utilities_for)
+    s = EntryPointSchema()
+    return Response(json.dumps({'entry_points': s.dump(ep, many=True)}))
+
+
 def includeme(config: Configurator):
     config.include('.template')
 
@@ -134,13 +165,16 @@ def includeme(config: Configurator):
     config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
     #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
 
+    epj = _get_root().sub_resource('entry_points_json', None)
+    config.add_view(entry_points_json, context=type(epj), renderer='json')
+    _get_root().sub_resource('entry_points', None)
+    config.add_view(entry_point_content, name='content', context=type(_get_root().sub_resource('entry_point', None)),
+                    renderer='json')
+
     config.include('.entrypoint')
     factory = Factory(Resource, 'resource',
                       'ResourceFactory', (IResource,))
     config.registry.registerUtility(factory, IFactory, 'resource')
-
-    def func():
-        pass
 
     config.registry.registerAdapter(MapperProperty, (IObject,), IEntryPointMapperAdapter)
 

@@ -21,6 +21,7 @@ VALID_MODES = (DEV_MODE, PROD_MODE)
 
 logger = logging.getLogger(__name__)
 
+
 def wsgi_app(global_config, **settings):
     """
     WSGI application factory.
@@ -76,7 +77,6 @@ def wsgi_app(global_config, **settings):
     #    config.add_view_predicate('entity_name', EntityNamePredicate)
 
     config.include('.routes')
-
 
     config.set_authentication_policy(
         AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],

@@ -15,19 +15,20 @@ from pyramid.paster import setup_logging, get_appsettings
 from pyramid_jinja2 import IJinja2Environment
 
 import db_dump.args
-from email_mgmt_app import get_root
+from email_mgmt_app import get_root, ResourceManagerSchema, EntryPointSchema
 from email_mgmt_app.interfaces import IEntryPoint
+from email_mgmt_app.process import ProcessViewsConfig
 from email_mgmt_app.process import VirtualAssetManager, process_view
 from email_mgmt_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
     AbstractAssetManager
-from email_mgmt_app.process import ProcessViewsConfig
+from marshmallow import Schema, fields
 
 logger = logging.getLogger()
 
 
 class CommandContext:
 
-    def __init__(self, config   ) -> None:
+    def __init__(self, config) -> None:
         super().__init__()
         self._config = config
 
@@ -40,7 +41,24 @@ class CommandContext:
         self._config = new
 
 
-def cmd_process_view(registry, proc_context: ProcessContext, line, *args,**kwargs):
+def cmd_entry_points_json(registry, proc_context, line):
+    class EntryPointsSchema(Schema):
+        entry_points = fields.Dict()
+
+    s = EntryPointSchema()
+    entry_points = list(registry.getUtilitiesFor(IEntryPoint))
+    eps = map(lambda x: x[1], entry_points)
+    s1 = EntryPointSchema()
+    json.dump(s1.dump(eps,many=True), fp=sys.stdout)
+    exit(0)
+    out = []
+    for name, ep in entry_points:
+        out.append(s.dump(ep))
+
+    json.dump(out,fp=sys.stdout)
+
+
+def cmd_process_view(registry, proc_context: ProcessContext, line, *args, **kwargs):
     pr = functools.partial(
         print,
 
@@ -53,8 +71,8 @@ def cmd_process_view(registry, proc_context: ProcessContext, line, *args,**kwarg
     process_view(registry, proc_context.settings, proc_context, ep)
 
 
-
-Commands = dict(process_view=cmd_process_view)
+Commands = dict(process_view=cmd_process_view,
+                entry_points_json=cmd_entry_points_json)
 
 
 def exec_command(registry, proc_context, cmd_line):
@@ -140,7 +158,7 @@ def main(input_args=None):
             print(name)
         exit(0)
 
-    #ctx = CommandContext(config)
+    # ctx = CommandContext(config)
 
     if args.cmd:
         for cmd in args.cmd:

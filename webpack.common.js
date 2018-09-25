@@ -10,8 +10,9 @@ const webpack = require('webpack')
 const AppPlugin = require('./AppPlugin')
 
 const entry_points = require('./entry_point')
+const context =  path.resolve(__dirname, "src");
 const plugins = [
-    new AppPlugin({entry_points}),
+    new AppPlugin({entry_points, context }),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'

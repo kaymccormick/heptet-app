@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-dev": "webpack-cli --config webpack.dev.js -d --silent",
+    "build-dev": "webpack-cli --config webpack.dev.js -d",
     "build-prod": "webpack --config webpack.prod.js"
   },
   "author": "",
@@ -39,6 +39,7 @@
     "webpack-merge": "^4.1.4"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "bootstrap": "^4.1.3",
     "datatables.net-editor-bs4": "^1.6.3",
     "datatables.net-select-bs4": "^1.2.7",
@@ -49,10 +50,12 @@
     "interactjs": "^1.3.4",
     "jquery": "^3.3.1",
     "konva": "^2.2.2",
+    "loader-utils": "^1.1.0",
     "popper.js": "^1.14.3",
     "quill": "^1.3.6",
     "react": "^16.4.2",
     "react-autocomplete": "^1.8.1",
-    "react-dom": "^16.4.2"
+    "react-dom": "^16.4.2",
+    "request": "^2.88.0"
   }
 }

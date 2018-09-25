@@ -25,7 +25,6 @@ from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.impl import MixinBase
 from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-from email_mgmt_app.myapp_config import logger
 from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.tvars import TemplateVars
 from marshmallow import ValidationError
