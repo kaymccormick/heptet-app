@@ -4,15 +4,18 @@ const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const AppEntryPlugin = require('./AppEntryPlugin');
-
+const AppPlugin = require('./js/AppPlugin')
+const App = require('./js/App');
 const webpack = require('webpack')
-const AppPlugin = require('./AppPlugin')
+
+
+const app = new App({});
+
 
 const entry_points = require('./entry_point')
 const context =  path.resolve(__dirname, "src");
 const plugins = [
-    new AppPlugin({entry_points, context }),
+    new AppPlugin({app: new App({}), entry_points, context }),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'
