@@ -25,7 +25,12 @@ const devConfig = {
 
 module.exports = new Promise((resolve, reject) => {
     common.then(commonConfig => {
-        resolve(merge(commonConfig, devConfig));
+        return merge(commonConfig, devConfig);
+    }).then(config => {
+        console.log("config = ", config);
+        return config;
+
     })
+        .then(resolve)
 });
 

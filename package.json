@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-dev": "webpack-cli --config webpack.dev.js -d",
+    "build-dev": "webpack-cli --config webpack.dev.js -d --display verbose",
     "build-prod": "webpack --config webpack.prod.js"
   },
   "author": "",
