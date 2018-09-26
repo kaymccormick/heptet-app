@@ -10,7 +10,7 @@ const webpack = require('webpack')
 const merge = require('webpack-merge');
 
 const app = new App({});
-const context = path.resolve(__dirname, "src");
+const context = __dirname
 const plugins = [
     new AppPlugin({app: app, context}),
     new webpack.ProvidePlugin({
@@ -63,9 +63,10 @@ const commonConfig = {
 
 module.exports = new Promise((resolve, reject) => {
     app.get_entry_points().then(entry_points => {
+    }).then(entry_points => {})
         const entry = Object.create(null);
-        for(var i = 0; i < entry_points.length; i++) {
-            entry[entry_points[i].key] = entry_points[i].fspath;
+        for(const ep of entry_points) {}
+            entry[ep.key] = ep.fspath;
         }
         resolve(merge(commonConfig, { entry }));
     }).catch(reject);

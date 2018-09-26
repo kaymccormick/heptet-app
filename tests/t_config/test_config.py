@@ -12,7 +12,7 @@ from email_mgmt_app.model import email_mgmt
 
 
 # make_wsgi_app is a fixture, not our application!!
-
+# not sure what we are testing here
 @pytest.mark.integration
 def test_my_config(make_wsgi_app, webapp_settings):
     settings = copy.copy(webapp_settings)
