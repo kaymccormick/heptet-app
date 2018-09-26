@@ -10,7 +10,7 @@ module.exports = class VirtualPlugin {
         const target = resolver.ensureHook(this.target);
         console.log(plugin, ".apply");
         resolver.getHook(this.source).tapAsync(plugin, (request, resolveContext, callback) => {
-            console.log(plugin, "123.", this.source, ": ", request.request);
+            //console.log(plugin, "123.", this.source, ": ", request.request);
             const innerRequest = request.request || request.path;
             if (!innerRequest) return callback();
             if (!innerRequest.startsWith("app_entry_point:")) {

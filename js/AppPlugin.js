@@ -101,7 +101,7 @@ class AppPlugin {
                 return result;
             });
             nmf.hooks.createModule.tap(plugin, ( data ) => {
-                console.log("i have data ", data.userRequest);
+                console.log("createModule: ", data.userRequest);
                 return;
 
             });
@@ -112,8 +112,10 @@ class AppPlugin {
 
         compiler.hooks.entryOption.tap(plugin, entryOption);
         compiler.hooks.afterResolvers.tap(plugin, compiler => {
-            compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, resolver => {
-                console.log("making virtual plugin");
+            // not sure exactly how this interacts with the other things
+            // i think we want to change "normal" to "app"
+            compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, (resolver, resolveOptions) => {
+                console.log("making virtual plugin ", resolveOptions);
                 new VirtualPlugin("described-resolve", {entry_points: this.options.entry_points}, "resolve").apply(resolver);
             })
         });
