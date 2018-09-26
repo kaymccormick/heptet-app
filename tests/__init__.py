@@ -2,6 +2,8 @@ import logging
 from typing import TypeVar, Generic
 from unittest.mock import MagicMock, PropertyMock
 
+from pyramid.registry import Registry
+
 logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
@@ -52,10 +54,21 @@ def dump_mock_calls(mock, calls):
 
 
 def mock_wrap_config(config, registry):
+    class RegistryMock(MagicMock):
+        pass
+
     class ConfigMock(MagicMock):
         def __init__(self, *args, **kw):
             super().__init__(*args, **kw)
-            type(self).registry = PropertyMock(return_value=registry)
+            #type(self).registry = PropertyMock(return_value=registry)
+
+        def _get_child_mock(self, **kw):
+            logger.critical("kw =%r", kw)
+            if kw['name'] == 'registry':
+                kw['spec'] = Registry
+                registry_mock = RegistryMock(**kw)
+                return registry_mock
+            return super()._get_child_mock(**kw)
 
     mock = ConfigMock(spec=config, wraps=config)
     return mock
