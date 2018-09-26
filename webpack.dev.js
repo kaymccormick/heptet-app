@@ -4,7 +4,7 @@ const path = require('path');
 const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 
-module.exports = merge(common, {
+const devConfig = {
     mode: 'development', // https://webpack.js.org/concepts/mode/
     devtool: 'inline-source-map',
     output: {
@@ -21,4 +21,11 @@ module.exports = merge(common, {
             }
         }
     }
+};
+
+module.exports = new Promise((resolve, reject) => {
+    common.then(commonConfig => {
+        resolve(merge(commonConfig, devConfig));
+    })
 });
+

@@ -7,28 +7,23 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const AppPlugin = require('./js/AppPlugin')
 const App = require('./js/App');
 const webpack = require('webpack')
-
+const merge = require('webpack-merge');
 
 const app = new App({});
-
-
-const entry_points = require('./entry_point')
-const context =  path.resolve(__dirname, "src");
+const context = path.resolve(__dirname, "src");
 const plugins = [
-    new AppPlugin({app: new App({}), entry_points, context }),
+    new AppPlugin({app: app, context}),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'
     }),
 ];
 
-module.exports = {
-    //entry: entry_points,
+const commonConfig = {
     plugins,
     node: {
         fs: "empty" // avoids error messages
     },
-
     module: {
         rules: [
             //{parser: {amd: false}},
@@ -64,5 +59,14 @@ module.exports = {
         ]
 
     }
-
 };
+
+module.exports = new Promise((resolve, reject) => {
+    app.get_entry_points().then(entry_points => {
+        const entry = Object.create(null);
+        for(var i = 0; i < entry_points.length; i++) {
+            entry[entry_points[i].key] = entry_points[i].fspath;
+        }
+        resolve(merge(commonConfig, { entry }));
+    }).catch(reject);
+});

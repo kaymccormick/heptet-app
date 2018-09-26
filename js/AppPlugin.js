@@ -115,7 +115,7 @@ class AppPlugin {
             // not sure exactly how this interacts with the other things
             // i think we want to change "normal" to "app"
             compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, (resolver, resolveOptions) => {
-                console.log("making virtual plugin ", resolveOptions);
+                console.log("making virtual plugin ");
                 new VirtualPlugin("described-resolve", {entry_points: this.options.entry_points}, "resolve").apply(resolver);
             })
         });
