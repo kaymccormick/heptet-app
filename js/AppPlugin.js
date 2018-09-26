@@ -25,6 +25,7 @@ class AppPlugin {
         const appPlugin = this;
 
         const entryOption = (context, entry) => {
+            console.log(plugin, "[1] entryOption: ", context, ", ", entry);
             // apply entry plugin here?
         };
 

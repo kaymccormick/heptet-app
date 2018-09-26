@@ -19,13 +19,12 @@ from zope.interface import implementer, Interface
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
 from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, AppBase, TemplateEnvironment, \
-    TemplateEnvMixin, AssetEntity
+    TemplateEnvMixin, AssetEntity, OperationArgument
 from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.impl import MapperWrapper, NamespaceStore
 from email_mgmt_app.impl import MixinBase
 from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-from email_mgmt_app.operation import OperationArgument
 from email_mgmt_app.tvars import TemplateVars
 from marshmallow import ValidationError
 
@@ -382,21 +381,27 @@ class GenerateEntryPointProcess(BaseProcessor):
 
 
 # how do we split the responsibility between this function and "config.add_resource_manager"!?!?!
-
+# currently called from .includeme
 def config_process_struct(config: Configurator, process):
     for mapper in process.mappers:
+        # code smell, EP-19
         wrapper = MapperWrapper(mapper)
         logger.debug("Registering mapper_wrapper %s", mapper)
+        # code smell - registry use. EP-20
         config.registry.registerUtility(wrapper, IMapperInfo, wrapper.key)
         node_name = mapper.local_table.key
+        # EP-19
         manager = ResourceManager(
             mapper_key=wrapper.key,
             node_name=node_name,
             mapper_wrapper=wrapper
         )
         # fixme code smell
+        # EP-19
         entry_point = EntryPoint(wrapper.key, manager)
 
+        # more code smell
+        # ??
         manager.operation(name='form', view=EntityFormView,
                           args=[OperationArgument.SubpathArgument('action', String, default='create')])
 

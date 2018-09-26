@@ -1,5 +1,8 @@
+import logging
 from typing import TypeVar, Generic
+from unittest.mock import MagicMock, PropertyMock
 
+logger = logging.getLogger(__name__)
 T = TypeVar('T')
 
 
@@ -33,3 +36,26 @@ class Property(AbstractProperty[T]):
             setattr(self._obj, self._name, args[0])
         else:
             return self._value
+
+
+def dump_mock_calls(mock, calls):
+    logger.critical("Mock: %r", mock)
+    if calls:
+        logger.critical("Calls:")
+        i = 0
+        for call in calls:
+            logger.critical("    [%02d] %r", i, call)
+            i = i + 1
+
+    else:
+        logger.critical("No calls.")
+
+
+def mock_wrap_config(config, registry):
+    class ConfigMock(MagicMock):
+        def __init__(self, *args, **kw):
+            super().__init__(*args, **kw)
+            type(self).registry = PropertyMock(return_value=registry)
+
+    mock = ConfigMock(spec=config, wraps=config)
+    return mock

@@ -3,7 +3,7 @@ import inspect
 import json
 import logging
 import sys
-from typing import AnyStr, Mapping
+from typing import AnyStr
 from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
@@ -35,7 +35,7 @@ from email_mgmt_app.process import VirtualAssetManager
 from email_mgmt_app.process import load_process_struct
 from email_mgmt_app.tvars import TemplateVars
 from email_mgmt_app.viewderiver import entity_view
-from tests import Property
+from tests import Property, dump_mock_calls, mock_wrap_config
 from tests.common import MakeEntryPoint
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ def app_request(app_registry_mock):
 
     # We'll use dummy request until we can't anymore
     request = mock
-    #request.registry = app_registry_mock
+    # request.registry = app_registry_mock
     try:
         yield request
     except:
@@ -231,6 +231,17 @@ def config_fixture():
     # _dump(config, name_prefix="config.", cb=lambda x, *args, **kwargs: print(x % args, file=sys.stderr))
     config.commit()
     return config
+
+
+@pytest.fixture
+def config_mock_wrap(app_registry_mock):
+    config = Configurator()
+    mock = mock_wrap_config(config, app_registry_mock)
+    yield mock
+    dump_mock_calls(mock, mock.mock_calls)
+    for x, y in mock._mock_children.items():
+        logger.critical("key is %r", x)
+        dump_mock_calls(y, y.mock_calls)
 
 
 #
@@ -719,10 +730,10 @@ def asset_manager_mock_wraps_virtual(virtual_asset_manager):
             if 'wraps' in kw and hasattr(kw['wraps'], 'asset_content'):
                 wraps = kw['wraps']
                 attr = inspect.getattr_static(wraps, 'asset_content')
-                #prop = Property[Mapping[AnyStr, AnyStr]](attr, 'asset_content')
+                # prop = Property[Mapping[AnyStr, AnyStr]](attr, 'asset_content')
 
                 assets_attr = inspect.getattr_static(wraps, 'assets')
-                #type(self).assets = PropertyMock(wraps=Property(wraps, 'assets', {}))
+                # type(self).assets = PropertyMock(wraps=Property(wraps, 'assets', {}))
 
 
             else:
