@@ -8,15 +8,13 @@ class AppEntryPlugin {
         this.name = name;
         this.resolverFactory = resolverFactory
         this.appModuleFactory = new AppModuleFactory(this.context, this.resolverFactory,
-            {
-
-            })
+            {})
     }
 
     apply(compiler) {
         const plugin = "AppEntryPlugin"
         compiler.hooks.compilation.tap(plugin, (compilation, {normalModuleFactory}) => {
-
+            // experiment with supplying our own factory here eventually
             compilation.dependencyFactories.set(AppEntryDependency, normalModuleFactory);// this.appModuleFactory);
         });
         compiler.hooks.make.tapAsync(plugin, (compilation, callback) => {

@@ -22,38 +22,29 @@ class AppPlugin {
     }
 
     apply(compiler) {
-        const me = this;
+        const appPlugin = this;
 
         const entryOption = (context, entry) => {
-            console.log("in entry option");
-            const entry_points = me.entry_points;
-            if (entry_points) {
-
-                for (let i = 0; i < entry_points.length; i++) {
-                    const ep = entry_points[i];
-                    new AppEntryPlugin(context, compiler.resolverFactory, ep.fspath, ep.key).apply(compiler)
-                }
-            }
-            console.log("setting me entry points");
+            // apply entry plugin here?
         };
 
         const make = (compilation, callback) => {
             return this.app.get_entry_points().then(entry_points => {
-                console.log("ep is ", entry_points);
+//                console.log("123 ep is ", entry_points);
                 for (let i = 0; i < entry_points.length; i++) {
                     const ep = entry_points[i];
-                    appPlugin.addFileToAssets(ep.content, ep.key, compilation)
+                    // this is random and from html webpack plugin, we dont know if it works
+                    //appPlugin.addFileToAssets(ep.content, ep.key, compilation)
                 }
             }).then(callback());
         };
 
-        const appPlugin = this;
         const emit = (compilation, callback) => {
             return this.app.get_entry_points().then(entry_points => {
-                console.log("ep is ", entry_points);
+                console.log("456 ep is ", entry_points);
                 for (let i = 0; i < entry_points.length; i++) {
                     const ep = entry_points[i];
-                    appPlugin.addFileToAssets(ep.content, ep.key, compilation)
+//                    appPlugin.addFileToAssets(ep.content, ep.key, compilation)
                     const h = new HtmlWebpackPlugin({
                         title: '',
                         template: 'src/assets/entry_point_generic.html',
@@ -70,9 +61,14 @@ class AppPlugin {
         };
 
         const beforeRun = (compilation, callback) => {
-            console.log('beforerun');
-            return callback();
-        }
+            // this is the first point where we have non async
+            appPlugin.app.get_entry_points().then(entry_points => {
+                for(var i = 0; i < entry_points.length; i++) {
+                    const ep = entry_points[i];
+                    new AppEntryPlugin(compilation.context, compilation.resolverFactory, ep.fspath, ep.key).apply(compilation);
+                }
+            }).catch(err => callback()).then((...args) => callback());
+        };
 
         const afterPlugins = (compiler) => {
 //             get_entry_points().then(entry_points => {
@@ -104,7 +100,13 @@ class AppPlugin {
                 if (!result) return;
                 return result;
             });
+            nmf.hooks.createModule.tap(plugin, ( data ) => {
+                console.log("i have data ", data.userRequest);
+                return;
+
+            });
         });
+        //compiler.hooks.compilation.tap(plugin, handleCompilation);
         compiler.hooks.afterPlugins.tap(plugin, afterPlugins);
         compiler.hooks.emit.tapAsync(plugin, emit);
 
