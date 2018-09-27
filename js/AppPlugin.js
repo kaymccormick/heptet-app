@@ -16,21 +16,22 @@ const {
 } = require('enhanced-resolve');
 
 class AppPlugin {
-    constructor(options) {
+    constructor(options, app) {
         this.options = options;
-        this.app = new App();
+        this.app = app
+        this.options.build_template_dir = "email_mgmt_app/build/templates";
     }
 
     apply(compiler) {
         const appPlugin = this;
 
         const entryOption = (context, entry) => {
-            console.log(plugin, "[1] entryOption: ", context, ", ", entry);
+            //console.log(plugin, "[1] entryOption: ", context, ", ", entry);
             // apply entry plugin here?
         };
 
         const make = (compilation, callback) => {
-            return this.app.get_entry_points().then(entry_points => {
+            return appPlugin.app.get_entry_points().then(entry_points => {
 //                console.log("123 ep is ", entry_points);
                 for (let i = 0; i < entry_points.length; i++) {
                     const ep = entry_points[i];
@@ -41,30 +42,13 @@ class AppPlugin {
         };
 
         const emit = (compilation, callback) => {
-            return this.app.get_entry_points().then(entry_points => {
-                console.log("456 ep is ", entry_points);
-                for (let i = 0; i < entry_points.length; i++) {
-                    const ep = entry_points[i];
-//                    appPlugin.addFileToAssets(ep.content, ep.key, compilation)
-                    const h = new HtmlWebpackPlugin({
-                        title: '',
-                        template: 'src/assets/entry_point_generic.html',
-                        filename: path.resolve(__dirname, 'email_mgmt_app/build/templates/entry_point/' + ep.key + '.jinja2'),
-                        inject: false,
-                        chunks: [ep.key],
-                    });
-                    h.apply(compiler);
-                }
-            }).then(callback());
-
-
-//            return callback();
+            return callback();
         };
 
         const beforeRun = (compilation, callback) => {
             // this is the first point where we have non async
             appPlugin.app.get_entry_points().then(entry_points => {
-                for(var i = 0; i < entry_points.length; i++) {
+                for (var i = 0; i < entry_points.length; i++) {
                     const ep = entry_points[i];
                     new AppEntryPlugin(compilation.context, compilation.resolverFactory, ep.fspath, ep.key).apply(compilation);
                 }
@@ -72,6 +56,24 @@ class AppPlugin {
         };
 
         const afterPlugins = (compiler) => {
+            const entry_points = appPlugin.app.entry_points
+            if (entry_points) {
+                for (let ep of entry_points) {
+                    const h = new HtmlWebpackPlugin({
+                        title: '',
+                        template: 'src/assets/entry_point_generic.html',
+                        filename: path.resolve(this.options.context, 'email_mgmt_app/build/templates/entry_point/' + ep.key + '.jinja2'),
+                        inject: false,
+                        chunks: [ep.key],
+                    });
+                    console.log(h.options.filename);
+                    h.apply(compiler);
+                }
+            }
+        };
+
+//            return callback();
+
 //             get_entry_points().then(entry_points => {
 //                 console.log("ep is ", entry_points);
 //                 for (let i = 0; i < entry_points.length; i++) {
@@ -86,9 +88,9 @@ class AppPlugin {
 //                     });
 //                     h.apply(compiler);
 //                 }
-            //}
-            //return callback();
-        };
+        //}
+        //return callback();
+
 //
 // const beforeCompile = (compiler, callback) => {
 // }
@@ -101,8 +103,8 @@ class AppPlugin {
                 if (!result) return;
                 return result;
             });
-            nmf.hooks.createModule.tap(plugin, ( data ) => {
-                console.log("createModule: ", data.userRequest);
+            nmf.hooks.createModule.tap(plugin, (data) => {
+                //console.log("createModule: ", data.userRequest);
                 return;
 
             });
@@ -112,16 +114,18 @@ class AppPlugin {
         compiler.hooks.emit.tapAsync(plugin, emit);
 
         compiler.hooks.entryOption.tap(plugin, entryOption);
-        compiler.hooks.afterResolvers.tap(plugin, compiler => {
-            // not sure exactly how this interacts with the other things
-            // i think we want to change "normal" to "app"
-            compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, (resolver, resolveOptions) => {
-                console.log("making virtual plugin ");
-                new VirtualPlugin("described-resolve", {entry_points: this.options.entry_points}, "resolve").apply(resolver);
-            })
-        });
-        compiler.hooks.make.tapAsync(plugin, make);
-        compiler.hooks.beforeRun.tapAsync(plugin, beforeRun);
+        // compiler.hooks.afterResolvers.tap(plugin, compiler => {
+        //     // not sure exactly how this interacts with the other things
+        //     // i think we want to change "normal" to "app"
+        //     compiler.resolverFactory.hooks.resolver.for("normal").tap(plugin, (resolver, resolveOptions) => {
+        //         console.log("making virtual plugin ");
+        //         new VirtualPlugin("described-resolve", {entry_points: this.options.entry_points}, "resolve").apply(resolver);
+        //     })
+        // });
+
+//        compiler.hooks.make.tapAsync(plugin, make);
+//        compiler.hooks.beforeRun.tapAsync(plugin, beforeRun);
+
 //compiler.hooks.beforeCompile.tap(plugin, beforeCompile);
 //compiler.hooks.done.tap(plugin, done);
 

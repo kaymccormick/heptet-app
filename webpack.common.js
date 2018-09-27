@@ -12,7 +12,7 @@ const merge = require('webpack-merge');
 const app = new App({});
 const context = __dirname
 const plugins = [
-    new AppPlugin({app: app, context}),
+    new AppPlugin({context}, app),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'
@@ -20,7 +20,7 @@ const plugins = [
 ];
 
 const commonConfig = {
-    resolve: { modules: ['.', 'node_modules'] },
+    resolve: {modules: ['.', 'node_modules']},
     plugins,
     node: {
         fs: "empty" // avoids error messages
@@ -63,13 +63,13 @@ const commonConfig = {
 };
 
 module.exports =
-        Promise.all([
-            Promise.resolve(commonConfig),
-            app.get_entry_points().then(entry_points => {
-                const entry = Object.create(null);
-                for (const ep of entry_points) {
-                    entry[ep.key] = ep.fspath;
-                }
-                return {entry};
-            })]).then(configs => merge(...configs));
+    Promise.all([
+        Promise.resolve(commonConfig),
+        app.get_entry_points().then(entry_points => {
+            const entry = Object.create(null);
+            for (const ep of entry_points) {
+                entry[ep.key] = ep.fspath;
+            }
+            return {entry};
+        })]).then(configs => merge(...configs));
 
