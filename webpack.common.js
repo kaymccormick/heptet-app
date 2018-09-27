@@ -20,6 +20,7 @@ const plugins = [
 ];
 
 const commonConfig = {
+    resolve: { modules: ['.', 'node_modules'] },
     plugins,
     node: {
         fs: "empty" // avoids error messages
