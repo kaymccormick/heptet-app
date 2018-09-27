@@ -61,13 +61,14 @@ const commonConfig = {
     }
 };
 
-module.exports = new Promise((resolve, reject) => {
-    app.get_entry_points().then(entry_points => {
-    }).then(entry_points => {})
-        const entry = Object.create(null);
-        for(const ep of entry_points) {}
-            entry[ep.key] = ep.fspath;
-        }
-        resolve(merge(commonConfig, { entry }));
-    }).catch(reject);
-});
+module.exports =
+        Promise.all([
+            Promise.resolve(commonConfig),
+            app.get_entry_points().then(entry_points => {
+                const entry = Object.create(null);
+                for (const ep of entry_points) {
+                    entry[ep.key] = ep.fspath;
+                }
+                return {entry};
+            })]).then(configs => merge(...configs));
+
