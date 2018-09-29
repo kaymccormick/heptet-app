@@ -16,6 +16,7 @@ def test_rm_add_action(config_fixture, resource_manager, app_request):
     for k, v in root.items():
         print("k, v is %s = %s" % (k, v), file=sys.stderr)
     # logger.warning("%s", root.items())
+    assert 0
 
 
 def test_resource_manager_init_1():

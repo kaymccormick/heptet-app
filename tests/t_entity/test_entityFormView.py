@@ -4,6 +4,9 @@ import pytest
 
 from email_mgmt_app.entity import EntityFormView
 from email_mgmt_app.util import _dump
+from email_mgmt_app.myapp_config import on_context_found
+from pyramid.events import ContextFound
+from tests import dump_mock_calls
 
 
 @pytest.fixture
@@ -26,11 +29,18 @@ def entity_form_view(
 @pytest.mark.integration
 def test_entity_form_view(app_request, app_context, entity_form_view, webapp_settings, jinja2_env, entry_point_mock):
     # code smell - would come from "context found."
-    app_context.template_env = jinja2_env
+    # we miss everything that comes from context found ...
+
+    #app_context.template_env = jinja2_env
+    # function to set these thingers?
+    app_request.context = app_context
+    on_context_found(ContextFound(app_request))
 
     view = entity_form_view()
-    _dump(entry_point_mock.mock_calls, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr), line_prefix='calls: ')
+    dump_mock_calls(entry_point_mock, entry_point_mock.mock_calls)
+    #_dump(entry_point_mock.mock_calls, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr), line_prefix='calls: ')
     # entry_point_mock.assert_has_calls([
     #     call.init_generator()
     # ])
     assert view
+    assert 0

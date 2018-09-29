@@ -16,6 +16,7 @@ from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_tm.tests import DummyRequest
+from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.interface.registry import Components
 
 import email_mgmt_app
@@ -118,20 +119,24 @@ def my_data(my_json):
 #
 @pytest.fixture
 def app_request(app_registry_mock):
-    class _RequestMock(MagicMock):
-        def __init__(self, *args, **kw):
-            super().__init__(*args, **kw)
-            type(self).registry = PropertyMock()
-
-    mock = _RequestMock(spec=Request, wraps=DummyRequest)
-
-    # We'll use dummy request until we can't anymore
-    request = mock
-    # request.registry = app_registry_mock
-    try:
-        yield request
-    except:
-        pass
+    request = DummyRequest()
+    request.registry = app_registry_mock
+    return request
+    # class _RequestMock(MagicMock):
+    #     def __init__(self, *args, **kw):
+    #         super().__init__(*args, **kw)
+    #         type(self).registry = PropertyMock()
+    #         type(self).context = PropertyMock(spec=Resource)
+    #
+    # mock = _RequestMock(spec=Request, wraps=DummyRequest())
+    #
+    # # We'll use dummy request until we can't anymore
+    # request = mock
+    # # request.registry = app_registry_mock
+    # try:
+    #     yield request
+    # except:
+    #     pass
 
 
 @pytest.fixture
@@ -422,7 +427,7 @@ def entity_view_deriver_with_mocks(view_test, view_deriver_info_mock):
 #
 @pytest.fixture
 def entity_type_mock():
-    return MagicMock('entity_type')
+    return MagicMock(spec=DeclarativeMeta,name='entity_type_mock')
 
 
 @pytest.fixture

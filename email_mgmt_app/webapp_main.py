@@ -3,16 +3,15 @@ import logging
 import os
 import sys
 
+from email_mgmt_app import get_root
+from email_mgmt_app.exceptions import InvalidMode
+from email_mgmt_app.impl import NamespaceStore
+from email_mgmt_app.interfaces import INamespaceStore
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid_ldap3 import groupfinder
 from zope.component import getGlobalSiteManager
-
-from email_mgmt_app import get_root
-from email_mgmt_app.exceptions import InvalidMode
-from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import INamespaceStore
 
 DEV_MODE = 'development'
 PROD_MODE = 'production'
@@ -45,6 +44,7 @@ def wsgi_app(global_config, **settings):
     if use_global_reg:
         global_reg = getGlobalSiteManager()
 
+    # validate settings
     config = Configurator(
         package="email_mgmt_app",
         root_package="email_mgmt_app",
@@ -67,25 +67,34 @@ def wsgi_app(global_config, **settings):
         model_mod = importlib.import_module(pkg)
     config.include(model_mod)
 
-    config.include('.viewderiver')
+    # config.include('.viewderiver')
     config.include('.process')
     config.include('.view')
 
     renderer_pkg = 'pyramid_jinja2.renderer_factory'
     config.add_renderer(None, renderer_pkg)
 
-    #    config.add_view_predicate('entity_name', EntityNamePredicate)
-
     config.include('.routes')
 
-    config.set_authentication_policy(
-        AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
-                                    callback=groupfinder)
-    )
-    config.set_authorization_policy(
-        ACLAuthorizationPolicy()
-    )
+    # config.set_authentication_policy(
+    #     AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
+    #                                 callback=groupfinder)
+    # )
+    # config.set_authorization_policy(
+    #     ACLAuthorizationPolicy()
+    # )
 
     config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
     return config.make_wsgi_app()
+
+
+def __main__(argv):
+    from waitress import serve
+    from random import randint
+    port = randint(1024, 65565)
+    serve(wsgi_app({}, **{'sqlalchemy.url': 'sqlite:///:memory:'}), listen='127.0.0.1:%d' % port)
+
+
+if __name__ == '__main__':
+    exit(__main__(sys.argv))

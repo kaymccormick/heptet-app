@@ -1,6 +1,7 @@
 import logging
 from typing import TypeVar, Generic
 from unittest.mock import MagicMock, PropertyMock
+import json
 
 from pyramid.registry import Registry
 
@@ -65,6 +66,7 @@ def mock_wrap_config(config, registry):
         def _get_child_mock(self, **kw):
             logger.critical("kw =%r", kw)
             if kw['name'] == 'registry':
+                logger.critical("kw is %r", kw)
                 kw['spec'] = Registry
                 registry_mock = RegistryMock(**kw)
                 return registry_mock

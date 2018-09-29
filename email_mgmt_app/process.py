@@ -18,7 +18,7 @@ from zope.interface import implementer, Interface
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
-from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, AppBase, TemplateEnvironment, \
+from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, TemplateEnvironment, \
     TemplateEnvMixin, AssetEntity, OperationArgument
 from email_mgmt_app.context import GeneratorContext, FormContext
 from email_mgmt_app.entity import EntityFormView
@@ -64,16 +64,6 @@ class BaseProcessor:
     @pcontext.setter
     def pcontext(self, new):
         self._pcontext = new
-
-
-class Asset:
-    def __init__(self, disc, open=True) -> None:
-        """
-
-        :param disc: A discriminator for the asset. Used to construct the asset path. Should be a tuple of values.
-        :param open:
-        """
-        super().__init__()
 
 
 class AbstractAsset(os.PathLike, metaclass=abc.ABCMeta):

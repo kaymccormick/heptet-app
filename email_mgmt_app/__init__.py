@@ -327,6 +327,7 @@ class ResourceManager:
         :return:
         """
         args[0:0] = self.implicit_args()
+        # code smell
         op = ResourceOperation(name=name, view=view, args=args, renderer=renderer)
         self._ops.append(op)
         self._ops_dict[op.name] = op

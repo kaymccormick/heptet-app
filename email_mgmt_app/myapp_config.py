@@ -15,10 +15,9 @@ from zope.interface import implementer
 from email_mgmt_app import Resource, RootResource, _get_root, EntryPointSchema
 from email_mgmt_app.impl import NamespaceStore
 from email_mgmt_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
+from email_mgmt_app.process import ProcessViewsConfig
 from email_mgmt_app.process import process_view, ProcessContext, VirtualAssetManager
 from email_mgmt_app.util import _dump
-from email_mgmt_app.webapp_main import logger
-from email_mgmt_app.process import ProcessViewsConfig
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +57,8 @@ def on_before_render(event):
 
 def on_context_found(event):
     """
-    Routine for overriding the renderer, called by pyramid event subscription
+    Routine for overriding the renderer, called by pyramid event subscription. This does important things like provide the template
+    environment via the context object (bad practice, though).
     :param event: the event
     :return:
     """
@@ -94,6 +94,7 @@ def on_context_found(event):
         entity_type = context.entity_type
         renderer = None
 
+        # template selection
         if entity_type is not None:
             renderer = "templates/entity/%s.jinja2" % context.__name__
 
@@ -136,7 +137,7 @@ def entry_point_content(context, request):
                  entry_point=entry_point)
 
     logger.critical("v = %r", vam.assets[entry_point].content)
-    #(v,) = vam.asset_content.values()
+    # (v,) = vam.asset_content.values()
 
     return Response(vam.assets[entry_point].content)
 
@@ -146,7 +147,8 @@ def entry_points_json(context, request):
     eps = list(map(lambda x: x[1], utilities_for))
     vam = VirtualAssetManager()
     for ep in eps:
-        process_view(request.registry, config=ProcessViewsConfig(), proc_context=ProcessContext({}, context.template_env, vam),
+        process_view(request.registry, config=ProcessViewsConfig(),
+                     proc_context=ProcessContext({}, context.template_env, vam),
                      entry_point=ep);
         ep.content = vam.assets[ep].content
     s = EntryPointSchema()
@@ -166,6 +168,7 @@ def includeme(config: Configurator):
     config.add_request_method(
         lambda request: request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME),
         'template_env')
+
 
     # what is the difference between posting an action versus registering the viwe in the cofnig??\\
     config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))

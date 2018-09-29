@@ -24,8 +24,9 @@ def make_wsgi_app():
         :return: A WSGI application.
         """
         config = Configurator(
-            settings=settings, root_factory=get_root,
-            package=email_mgmt_app
+            settings=settings,
+            root_factory=get_root,
+            package=email_mgmt_app,
         )
         config.include(myapp_config)
         config.include(model_package)

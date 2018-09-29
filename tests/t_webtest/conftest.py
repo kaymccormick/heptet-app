@@ -4,7 +4,8 @@ import pytest
 from webtest import TestApp
 
 import email_mgmt_app.webapp_main
-from tests.conftest import logger
+import logging
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture  # sqlalchemy_engine, tm_session,
