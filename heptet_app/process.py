@@ -454,7 +454,12 @@ def includeme(config: Configurator):
 
     # load our pre-processed info
 
-    process = load_process_struct()  # type: ProcessStruct
+    try:
+        process = load_process_struct()  # type: ProcessStruct
+    except:
+        logger.warning("unable to blah")
+        return
+
     config.add_request_method(lambda r: process, 'process_struct')
     for mapper in process.mappers:
         wrapper = MapperWrapper(mapper)

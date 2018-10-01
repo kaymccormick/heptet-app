@@ -6,7 +6,7 @@ import sys
 import pytest
 
 from heptet_app import get_root, ResourceSchema
-from heptet_app.model import email_mgmt
+
 
 
 # make_wsgi_app is a fixture, not our application!!
@@ -17,7 +17,7 @@ def test_my_config_model_package(
         webapp_settings
 ):
     settings = copy.copy(webapp_settings)
-    settings['model_package'] = email_mgmt
+    settings['model_package'] = TypeError
     app = make_wsgi_app({}, **settings)
 
 

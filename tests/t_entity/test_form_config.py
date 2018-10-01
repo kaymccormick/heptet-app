@@ -6,7 +6,7 @@ from sqlalchemy import inspect
 import heptet_app.field_renderer
 from heptet_app.entity import EntityFormConfiguration, EntityFormViewEntryPointGenerator
 from heptet_app.model import map_column, get_column_map
-from heptet_app.model.email_mgmt import Domain
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,9 @@ def test_form_config(generator_context_mock, process_struct_real):
     generator_context_mock.entity_form_config = c
     x = EntityFormViewEntryPointGenerator(generator_context_mock)
 
-    organization = inspect(Domain).relationships.organization
-    map_column(organization, field_renderer.Select)
-    logger.warning("%s", get_column_map(organization))
+    #organization = inspect(Domain).relationships.organization
+#    map_column(organization, field_renderer.Select)
+#    logger.warning("%s", get_column_map(organization))
 
     # for x in process_struct.mappers:
     #     c = EntityFormConfiguration(x.entity,

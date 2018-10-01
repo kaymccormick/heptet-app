@@ -56,16 +56,19 @@ def wsgi_app(global_config, **settings):
         config.setup_registry(settings=settings, root_factory=get_root)
 
     # include our sql alchemy model.
-    pkg = 'heptet_app.model.email_mgmt'
-    pkg2 = 'model.email_mgmt'
-    model_mod = None
-    if pkg in sys.modules:
-        model_mod = sys.modules[pkg]
-    elif pkg2 in sys.modules:
-        model_mod = sys.modules[pkg2]
-    else:
-        model_mod = importlib.import_module(pkg)
-    config.include(model_mod)
+    try:
+        pkg = 'heptet_app.model.email_mgmt'
+        pkg2 = 'model.email_mgmt'
+        model_mod = None
+        if pkg in sys.modules:
+            model_mod = sys.modules[pkg]
+        elif pkg2 in sys.modules:
+            model_mod = sys.modules[pkg2]
+        else:
+            model_mod = importlib.import_module(pkg)
+        config.include(model_mod)
+    except Exception as ex:
+        logger.warning(ex)
 
     # config.include('.viewderiver')
     config.include('.process')

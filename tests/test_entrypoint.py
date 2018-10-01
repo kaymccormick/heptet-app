@@ -29,7 +29,6 @@ def test_entrypoint_init_generator(
         jinja2_env_mock,
         make_entity_form_view_entry_point_generator,
     )
-    app_registry_mock.assert_has_calls([call.getAdapter()])
     assert generator
     # TODO
 
