@@ -10,7 +10,7 @@ const devConfig = {
     output: {
         filename: '[name].js',
         // output things to here so they become part of our dist
-        path: path.resolve(__dirname, 'email_mgmt_app/build/dist'),
+        path: path.resolve(__dirname, 'heptet_app/build/dist'),
         publicPath: '/build/dist',
     },
     devServer: {

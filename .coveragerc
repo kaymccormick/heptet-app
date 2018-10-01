@@ -1,3 +1,3 @@
 [run]
-source = email_mgmt_app
-omit = email_mgmt_app/test*
+source = heptet_app
+omit = heptet_app/test*
