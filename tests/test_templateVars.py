@@ -1,6 +1,6 @@
 import logging
 
-from email_mgmt_app.tvars import TemplateVars
+from heptet_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 

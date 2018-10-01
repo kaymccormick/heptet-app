@@ -1,4 +1,4 @@
-from email_mgmt_app.impl import MapperWrapper
+from heptet_app.impl import MapperWrapper
 
 
 def test_mapperwrapper_init(mapper_info_mock):

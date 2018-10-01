@@ -1,7 +1,7 @@
 import logging
 
 import pytest
-from email_mgmt_app import _add_resmgr_action
+from heptet_app import _add_resmgr_action
 
 logger = logging.getLogger(__name__)
 

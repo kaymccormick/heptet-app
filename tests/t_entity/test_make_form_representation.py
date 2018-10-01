@@ -2,7 +2,7 @@ import logging
 import sys
 
 import lxml
-from email_mgmt_app.entity import MakeFormRepresentation, FormRelationshipMapper
+from heptet_app.entity import MakeFormRepresentation, FormRelationshipMapper
 
 logger = logging.getLogger(__name__)
 

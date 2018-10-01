@@ -30,7 +30,7 @@ tests_require = [
 ]
 
 setup(
-    name='email_mgmt_app',
+    name='heptet_app',
     version='0.4',
     description='Pyramid Scaffold',
     classifiers=[
@@ -52,12 +52,12 @@ setup(
     install_requires=requires,
     entry_points={
         'paste.app_factory': [
-            'main = email_mgmt_app.webapp_main:wsgi_app',
+            'main = heptet_app.webapp_main:wsgi_app',
         ],
         'console_scripts': [
-            'initialize_email_mgmt_app_db = email_mgmt_app.scripts.initializedb:main',
-            'process_model = email_mgmt_app.scripts.process_model:main',
-            'process_views = email_mgmt_app.process_views:main',
+            'initialize_heptet_app_db = heptet_app.scripts.initializedb:main',
+            'process_model = heptet_app.scripts.process_model:main',
+            'process_views = heptet_app.process_views:main',
         ],
     },
 )

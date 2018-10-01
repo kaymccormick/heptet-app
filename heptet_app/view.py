@@ -3,9 +3,9 @@ import logging
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPNotFound
 
-from email_mgmt_app import ExceptionView, OperationArgumentExceptionView, EntryPoint
-from email_mgmt_app.exceptions import OperationArgumentException
-from email_mgmt_app.util import get_exception_entry_point_key
+from heptet_app import ExceptionView, OperationArgumentExceptionView, EntryPoint
+from heptet_app.exceptions import OperationArgumentException
+from heptet_app.util import get_exception_entry_point_key
 
 logger = logging.getLogger(__name__)
 

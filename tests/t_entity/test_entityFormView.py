@@ -2,9 +2,9 @@ import sys
 
 import pytest
 
-from email_mgmt_app.entity import EntityFormView
-from email_mgmt_app.util import _dump
-from email_mgmt_app.myapp_config import on_context_found
+from heptet_app.entity import EntityFormView
+from heptet_app.util import _dump
+from heptet_app.myapp_config import on_context_found
 from pyramid.events import ContextFound
 from tests import dump_mock_calls
 

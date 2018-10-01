@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock, call, PropertyMock
 
 from lxml import html
 
-from email_mgmt_app.form import FormOptionElement
+from heptet_app.form import FormOptionElement
 
 
 class MyMagic(MagicMock):

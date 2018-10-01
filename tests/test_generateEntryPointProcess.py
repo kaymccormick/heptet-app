@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from email_mgmt_app.process import GenerateEntryPointProcess, ProcessContext
+from heptet_app.process import GenerateEntryPointProcess, ProcessContext
 
 logger = logging.getLogger(__name__)
 

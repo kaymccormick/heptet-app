@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from email_mgmt_app import default_entry_point, IEntryPoint
+from heptet_app import default_entry_point, IEntryPoint
 from pyramid.config import Configurator
 
 

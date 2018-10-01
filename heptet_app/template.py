@@ -1,8 +1,8 @@
 import logging
 from typing import AnyStr
 
-from email_mgmt_app.interfaces import *
-from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
+from heptet_app.interfaces import *
+from heptet_app.myapp_config import TEMPLATE_ENV_NAME
 from jinja2 import TemplateNotFound, BaseLoader
 from pyramid.config import Configurator
 from pyramid.renderers import RendererHelper
@@ -93,7 +93,7 @@ class TemplateManager:
     def add_template(self, path: AnyStr):
         logging.debug("path = %s", path)
         self._rs[path] = RendererHelper(name=path,
-                                        package='email_mgmt_app',
+                                        package='heptet_app',
                                         registry=self._config.registry)
         logging.debug("renderer = %s", self._rs[path])
 
@@ -117,12 +117,12 @@ def register_components(components: Components):
 
 def includeme(config: Configurator):
     config.include('pyramid_jinja2')
-    # intr = config.introspectable('email_mgmt_app',
+    # intr = config.introspectable('heptet_app',
     #                              TEMPLATE_ENV_NAME,
     #                              'template-env renderer',
     #                              'template renderer')
 
 #    logger.critical("inclusion of template")
-    config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='email_mgmt_app.jinja2.')
+    config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='heptet_app.jinja2.')
 
-    # config.action(('email_mgmt_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)
+    # config.action(('heptet_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)

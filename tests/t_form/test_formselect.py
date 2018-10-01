@@ -1,6 +1,6 @@
 import sys
 
-from email_mgmt_app.form import FormSelect, FormOptionElement
+from heptet_app.form import FormSelect, FormOptionElement
 
 
 def test_formselect_init():

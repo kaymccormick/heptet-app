@@ -7,9 +7,9 @@ from zope.component import IFactory
 from zope.component.factory import Factory
 from zope.interface import implementer
 
-from email_mgmt_app.interfaces import ISqlAlchemySession, IResource
-from email_mgmt_app.model.meta import Base
-from email_mgmt_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
+from heptet_app.interfaces import ISqlAlchemySession, IResource
+from heptet_app.model.meta import Base
+from heptet_app.sqlalchemy_integration import get_tm_session, get_session_factory, get_engine
 
 logger = logging.getLogger(__name__)
 mappers = {}
@@ -234,7 +234,7 @@ def includeme(config):
     """
     Initialize the model for a Pyramid app.
 
-    Activate this setup using ``config.include('email_mgmt_app.models')``.
+    Activate this setup using ``config.include('heptet_app.models')``.
 
     """
 
@@ -257,7 +257,7 @@ def includeme(config):
 
     # make request.dbsession available for use in Pyramid
     #
-    # EP-5: config.registry.email_mgmt_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
+    # EP-5: config.registry.heptet_app.dbsession = lambda r: get_tm_session(session_factory, r.tm),
     config.add_request_method(
         # r.tm is the transaction manager used by pyramid_tm
         lambda r: get_tm_session(r.registry.getUtility(IFactory, 'sqlalchemy_session'), r.tm),

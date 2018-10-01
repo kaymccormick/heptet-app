@@ -18,14 +18,14 @@ from zope.interface import implementer, Interface
 
 from db_dump import get_process_schema
 from db_dump.info import ProcessStruct
-from email_mgmt_app import ResourceManager, EntryPoint, _add_resmgr_action, TemplateEnvironment, \
+from heptet_app import ResourceManager, EntryPoint, _add_resmgr_action, TemplateEnvironment, \
     TemplateEnvMixin, AssetEntity, OperationArgument
-from email_mgmt_app.context import GeneratorContext, FormContext
-from email_mgmt_app.entity import EntityFormView
-from email_mgmt_app.impl import MapperWrapper, NamespaceStore
-from email_mgmt_app.impl import MixinBase
-from email_mgmt_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-from email_mgmt_app.tvars import TemplateVars
+from heptet_app.context import GeneratorContext, FormContext
+from heptet_app.entity import EntityFormView
+from heptet_app.impl import MapperWrapper, NamespaceStore
+from heptet_app.impl import MixinBase
+from heptet_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
+from heptet_app.tvars import TemplateVars
 from marshmallow import ValidationError
 
 logger = logging.getLogger(__name__)

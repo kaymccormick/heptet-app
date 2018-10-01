@@ -1,7 +1,7 @@
 import json
 import logging
 
-from email_mgmt_app.myapp_config import entry_points_json
+from heptet_app.myapp_config import entry_points_json
 
 logger = logging.getLogger(__name__)
 

@@ -5,9 +5,9 @@ from typing import Generic, TypeVar, AnyStr
 from zope.component import adapter
 from zope.interface import implementer
 
-from email_mgmt_app.exceptions import NamespaceCollision
-from email_mgmt_app.interfaces import ITemplateVariable, ICollector, IMapperInfo, INamespaceStore
-from email_mgmt_app.tvars import TemplateVars
+from heptet_app.exceptions import NamespaceCollision
+from heptet_app.interfaces import ITemplateVariable, ICollector, IMapperInfo, INamespaceStore
+from heptet_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 

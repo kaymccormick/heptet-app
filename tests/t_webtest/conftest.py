@@ -3,7 +3,7 @@ import sys
 import pytest
 from webtest import TestApp
 
-import email_mgmt_app.webapp_main
+import heptet_app.webapp_main
 import logging
 logger = logging.getLogger(__name__)
 
@@ -79,4 +79,4 @@ def webapp(webapp_factory, webapp_settings):
 
 @pytest.fixture
 def webapp_factory():
-    return email_mgmt_app.webapp_main.wsgi_app
+    return heptet_app.webapp_main.wsgi_app

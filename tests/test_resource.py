@@ -2,7 +2,7 @@ import json
 import logging
 
 import pytest
-from email_mgmt_app import Resource, get_root, ResourceSchema
+from heptet_app import Resource, get_root, ResourceSchema
 
 logger = logging.getLogger(__name__)
 

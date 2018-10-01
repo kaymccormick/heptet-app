@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import MagicMock, call
 
 import pytest
-from email_mgmt_app.entity import EntityFormViewEntryPointGenerator
+from heptet_app.entity import EntityFormViewEntryPointGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def test_generate_2(make_generator_context,
                     generator_context_mock):
     gctx = generator_context_mock
     new = MagicMock()
-    with unittest.mock.patch('email_mgmt_app.entity.EntityFormViewEntryPointGenerator.form_representation', new):
+    with unittest.mock.patch('heptet_app.entity.EntityFormViewEntryPointGenerator.form_representation', new):
         x = EntityFormViewEntryPointGenerator(generator_context_mock)
 
         x.generate()

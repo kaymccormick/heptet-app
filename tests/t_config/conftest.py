@@ -6,12 +6,12 @@ from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
 from pyramid_ldap3 import groupfinder
 
-import email_mgmt_app
-from email_mgmt_app import myapp_config
-from email_mgmt_app import get_root
-from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import INamespaceStore
-from email_mgmt_app.myapp_config import on_context_found, on_before_render, on_new_request, on_application_created
+import heptet_app
+from heptet_app import myapp_config
+from heptet_app import get_root
+from heptet_app.impl import NamespaceStore
+from heptet_app.interfaces import INamespaceStore
+from heptet_app.myapp_config import on_context_found, on_before_render, on_new_request, on_application_created
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def make_wsgi_app():
         config = Configurator(
             settings=settings,
             root_factory=get_root,
-            package=email_mgmt_app,
+            package=heptet_app,
         )
         config.include(myapp_config)
         config.include(model_package)
@@ -39,7 +39,7 @@ def make_wsgi_app():
         config.include('.viewderiver')
 
         config.set_authentication_policy(
-            AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
+            AuthTktAuthenticationPolicy(settings['heptet_app.secret'],
                                         callback=groupfinder)
         )
         config.set_authorization_policy(

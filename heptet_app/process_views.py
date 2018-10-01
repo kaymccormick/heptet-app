@@ -15,11 +15,11 @@ from pyramid.paster import setup_logging, get_appsettings
 from pyramid_jinja2 import IJinja2Environment
 
 import db_dump.args
-from email_mgmt_app import get_root, ResourceManagerSchema, EntryPointSchema
-from email_mgmt_app.interfaces import IEntryPoint
-from email_mgmt_app.process import ProcessViewsConfig
-from email_mgmt_app.process import VirtualAssetManager, process_view
-from email_mgmt_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
+from heptet_app import get_root, ResourceManagerSchema, EntryPointSchema
+from heptet_app.interfaces import IEntryPoint
+from heptet_app.process import ProcessViewsConfig
+from heptet_app.process import VirtualAssetManager, process_view
+from heptet_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
     AbstractAssetManager
 from marshmallow import Schema, fields
 
@@ -115,7 +115,7 @@ def main(input_args=None):
     config_uri = args.config_uri
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
-    config = ProcessViewsConfig(output_path=settings['email_mgmt_app.process_views_output_path'])
+    config = ProcessViewsConfig(output_path=settings['heptet_app.process_views_output_path'])
 
     # we need to do this automatically
     setup = setup_jsonencoder()
@@ -126,11 +126,11 @@ def main(input_args=None):
     config = Configurator(
         settings=settings,
         root_factory=get_root,
-        package="email_mgmt_app",
+        package="heptet_app",
     )
 
     config.include('.myapp_config')
-    config.include('email_mgmt_app.model.email_mgmt')
+    config.include('heptet_app.model.email_mgmt')
     config.include('.process')
 
     config.add_renderer(None, 'pyramid_jinja2.renderer_factory')

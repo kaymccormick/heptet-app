@@ -7,8 +7,8 @@ import pytest
 from lxml import html
 
 from db_dump.info import RelationshipInfo
-from email_mgmt_app.entity import FormRelationshipMapper
-from email_mgmt_app.tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar, TemplateVars
+from heptet_app.entity import FormRelationshipMapper
+from heptet_app.tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar, TemplateVars
 
 logger = logging.getLogger(__name__)
 

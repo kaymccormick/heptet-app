@@ -7,11 +7,11 @@ from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr
 from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
-from email_mgmt_app import EntryPointMixin, TemplateEnvironment
-from email_mgmt_app.form import Form
-from email_mgmt_app.impl import NamespaceStore, TemplateEnvMixin, MixinBase
-from email_mgmt_app.interfaces import IFormContext, IGeneratorContext
-from email_mgmt_app.tvars import TemplateVars
+from heptet_app import EntryPointMixin, TemplateEnvironment
+from heptet_app.form import Form
+from heptet_app.impl import NamespaceStore, TemplateEnvMixin, MixinBase
+from heptet_app.interfaces import IFormContext, IGeneratorContext
+from heptet_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 

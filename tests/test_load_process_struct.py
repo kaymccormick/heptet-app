@@ -1,4 +1,4 @@
-from email_mgmt_app.process import load_process_struct
+from heptet_app.process import load_process_struct
 
 
 def test_load_process_struct():

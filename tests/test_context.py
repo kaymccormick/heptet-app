@@ -1,4 +1,4 @@
-from email_mgmt_app.context import FormContextMixin
+from heptet_app.context import FormContextMixin
 
 
 def test_formcontextmixin():

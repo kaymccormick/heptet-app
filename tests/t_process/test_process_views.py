@@ -1,9 +1,9 @@
 import logging
 
 import pytest
-from email_mgmt_app import AssetManagerSchema
-from email_mgmt_app.process import ProcessViewsConfig
-from email_mgmt_app.process import process_views, process_view
+from heptet_app import AssetManagerSchema
+from heptet_app.process import ProcessViewsConfig
+from heptet_app.process import process_views, process_view
 from tests.common import MakeEntryPoint
 
 logger = logging.getLogger()

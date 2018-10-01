@@ -1,12 +1,12 @@
 import logging
 
-from email_mgmt_app import field_renderer
+from heptet_app import field_renderer
 from sqlalchemy import inspect
 
-import email_mgmt_app.field_renderer
-from email_mgmt_app.entity import EntityFormConfiguration, EntityFormViewEntryPointGenerator
-from email_mgmt_app.model import map_column, get_column_map
-from email_mgmt_app.model.email_mgmt import Domain
+import heptet_app.field_renderer
+from heptet_app.entity import EntityFormConfiguration, EntityFormViewEntryPointGenerator
+from heptet_app.model import map_column, get_column_map
+from heptet_app.model.email_mgmt import Domain
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-from email_mgmt_app.process import config_process_struct
+from heptet_app.process import config_process_struct
 
 import logging
 

@@ -6,8 +6,8 @@ from unittest.mock import call
 import pytest
 import sys
 
-from email_mgmt_app import viewderiver
-from email_mgmt_app import BaseView, ResourceSchema
+from heptet_app import viewderiver
+from heptet_app import BaseView, ResourceSchema
 
 logger = logging.getLogger(__name__)
 

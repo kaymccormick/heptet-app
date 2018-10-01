@@ -19,29 +19,29 @@ from pyramid_tm.tests import DummyRequest
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.interface.registry import Components
 
-import email_mgmt_app
-import email_mgmt_app.myapp_config
+import heptet_app
+import heptet_app.myapp_config
 from db_dump import RelationshipSchema, ColumnInfo, LocalRemotePairInfo, TableColumnSpecInfo
 from db_dump.info import MapperInfo, TypeInfo, TableInfo, RelationshipInfo
-from email_mgmt_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
+from heptet_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
     EntryPointGenerator
-from email_mgmt_app.context import GeneratorContext, FormContext
-from email_mgmt_app.entity import EntityFormViewEntryPointGenerator
-from email_mgmt_app.entity import FormRelationshipMapper, RelationshipSelect
-from email_mgmt_app.form import Form
-from email_mgmt_app.impl import NamespaceStore, MapperWrapper, Separator
-from email_mgmt_app.myapp_config import TEMPLATE_ENV_NAME
-from email_mgmt_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
-from email_mgmt_app.process import VirtualAssetManager
-from email_mgmt_app.process import load_process_struct
-from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.viewderiver import entity_view
+from heptet_app.context import GeneratorContext, FormContext
+from heptet_app.entity import EntityFormViewEntryPointGenerator
+from heptet_app.entity import FormRelationshipMapper, RelationshipSelect
+from heptet_app.form import Form
+from heptet_app.impl import NamespaceStore, MapperWrapper, Separator
+from heptet_app.myapp_config import TEMPLATE_ENV_NAME
+from heptet_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
+from heptet_app.process import VirtualAssetManager
+from heptet_app.process import load_process_struct
+from heptet_app.tvars import TemplateVars
+from heptet_app.viewderiver import entity_view
 from tests import Property, dump_mock_calls, mock_wrap_config
 from tests.common import MakeEntryPoint
 
 logger = logging.getLogger(__name__)
 
-APP_PACKAGE = 'email_mgmt_app'
+APP_PACKAGE = 'heptet_app'
 
 
 #
@@ -52,19 +52,19 @@ APP_PACKAGE = 'email_mgmt_app'
 def webapp_settings():
     return {
         'sqlalchemy.url': 'sqlite:///:memory:',  # 'postgresql://flaskuser:FcQCPDM7%40RpRCsnO@localhost/email',
-        'email_mgmt_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
-        'email_mgmt_app.authsource': 'db',
-        'email_mgmt_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
-        'jinja2.directories': "email_mgmt_app/templates\nemail_mgmt_app\ntemplates\n.",
+        'heptet_app.secret': '9ZZFYHs5uo#ZzKBfXsdInGnxss2rxlbw',
+        'heptet_app.authsource': 'db',
+        'heptet_app.request_attrs': 'context, root, subpath, traversed, view_name, matchdict, virtual_root, virtual_root_path, exception, exc_info, authenticated_userid, unauthenticated_userid, effective_principals',
+        'jinja2.directories': "heptet_app/templates\nheptet_app\ntemplates\n.",
         'jinja2.autoescape': "false",
-        'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\nemail_mgmt_app\ntemplates\n.",
-        'email_mgmt_app.jinja2.autoescape': "false",
+        'heptet_app.jinja2.directories': "heptet_app/templates\nheptet_app\ntemplates\n.",
+        'heptet_app.jinja2.autoescape': "false",
 
     }
 
 
 # what is this?
-_data = {'secondary': None, 'argument': 'email_mgmt_app.model.email_mgmt.Person', 'direction': 'MANYTOONE',
+_data = {'secondary': None, 'argument': 'heptet_app.model.email_mgmt.Person', 'direction': 'MANYTOONE',
          'is_property': True, 'is_mapper': False, 'local_remote_pairs': [
         {'local': {'table': {'key': 'public_key'}, 'key': 'owner_id'},
          'remote': {'table': {'key': 'person'}, 'key': 'id'}}], 'mapper': {'local_table': {'key': 'person'}},
@@ -72,7 +72,7 @@ _data = {'secondary': None, 'argument': 'email_mgmt_app.model.email_mgmt.Person'
 _json = """
         {
           "secondary": null,
-          "argument": "email_mgmt_app.model.email_mgmt.Person",
+          "argument": "heptet_app.model.email_mgmt.Person",
           "direction": "MANYTOONE",
           "is_property": true,
           "is_mapper": false,
@@ -230,8 +230,8 @@ def config_fixture():
     maybe hopefully provides all of our configuration? Part test, part experiment.
     :return:
     """
-    config = Configurator(package="email_mgmt_app", root_package="email_mgmt_app")
-    config.include(email_mgmt_app.myapp_config)
+    config = Configurator(package="heptet_app", root_package="heptet_app")
+    config.include(heptet_app.myapp_config)
     logger.warning("config = %s", config)
     # _dump(config, name_prefix="config.", cb=lambda x, *args, **kwargs: print(x % args, file=sys.stderr))
     config.commit()
@@ -263,9 +263,9 @@ def make_jinja2_env(make_config):
     def _make_jinja2_env():
         # FIXME move this somewhere else
         config = make_config(
-            {'email_mgmt_app.jinja2.directories': "email_mgmt_app/templates\ntemplates\nemail_mgmt_apps\n."})
+            {'heptet_app.jinja2.directories': "heptet_app/templates\ntemplates\nheptet_apps\n."})
         config.include('.template')
-        config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='email_mgmt_app.jinja2.', package=email_mgmt_app)
+        config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='heptet_app.jinja2.', package=heptet_app)
         return config
 
     return _make_jinja2_env
@@ -313,10 +313,10 @@ def root_resource(app_request):
     :param app_request:
     :return:
     """
-    email_mgmt_app.reset_root(app_request)
+    heptet_app.reset_root(app_request)
     root = get_root(app_request)
     yield root
-    email_mgmt_app.reset_root(app_request)
+    heptet_app.reset_root(app_request)
     assert get_root(app_request) is not root
 
 
@@ -688,7 +688,7 @@ def entity_form_view_mock():
 
 @pytest.fixture
 def model_module():
-    pkg = 'email_mgmt_app.model.email_mgmt'
+    pkg = 'heptet_app.model.email_mgmt'
     if pkg in sys.modules:
         return sys.modules[pkg]
 
@@ -845,7 +845,7 @@ class MapperMock(MagicMock):
 @pytest.fixture
 def monkeypatch_form(monkeypatch):
     with monkeypatch.context() as mp:
-        form_orig = email_mgmt_app.form.Form.__new__
+        form_orig = heptet_app.form.Form.__new__
 
         def _form(cls,
                   namespace_id,  # this is used to make a namespace if not provided? messy!! what do we pass here ?!?!
@@ -856,7 +856,7 @@ def monkeypatch_form(monkeypatch):
             form__.__init__(namespace_id, root_namespace, namespace, outer_form, attr)
             return MagicMock(wraps=form__)
 
-        monkeypatch.setattr(email_mgmt_app.form.Form, "__new__", _form)
+        monkeypatch.setattr(heptet_app.form.Form, "__new__", _form)
         yield True
 
 

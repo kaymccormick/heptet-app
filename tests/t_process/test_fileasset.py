@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch, call
 import logging
-from email_mgmt_app.process import FileAsset
+from heptet_app.process import FileAsset
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ def test_fileasset_open():
         pass
 
     mock = MagicMock()
-    with patch("email_mgmt_app.process.FileAsset.open", mock):
+    with patch("heptet_app.process.FileAsset.open", mock):
 
         obj = MagicMock()
         asset = FileAsset(obj, "test.out")

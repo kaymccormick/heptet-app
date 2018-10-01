@@ -3,10 +3,10 @@ import logging
 import os
 import sys
 
-from email_mgmt_app import get_root
-from email_mgmt_app.exceptions import InvalidMode
-from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import INamespaceStore
+from heptet_app import get_root
+from heptet_app.exceptions import InvalidMode
+from heptet_app.impl import NamespaceStore
+from heptet_app.interfaces import INamespaceStore
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
@@ -46,8 +46,8 @@ def wsgi_app(global_config, **settings):
 
     # validate settings
     config = Configurator(
-        package="email_mgmt_app",
-        root_package="email_mgmt_app",
+        package="heptet_app",
+        root_package="heptet_app",
         registry=global_reg,
         settings=settings,
         root_factory=get_root)
@@ -56,7 +56,7 @@ def wsgi_app(global_config, **settings):
         config.setup_registry(settings=settings, root_factory=get_root)
 
     # include our sql alchemy model.
-    pkg = 'email_mgmt_app.model.email_mgmt'
+    pkg = 'heptet_app.model.email_mgmt'
     pkg2 = 'model.email_mgmt'
     model_mod = None
     if pkg in sys.modules:
@@ -77,7 +77,7 @@ def wsgi_app(global_config, **settings):
     config.include('.routes')
 
     # config.set_authentication_policy(
-    #     AuthTktAuthenticationPolicy(settings['email_mgmt_app.secret'],
+    #     AuthTktAuthenticationPolicy(settings['heptet_app.secret'],
     #                                 callback=groupfinder)
     # )
     # config.set_authorization_policy(

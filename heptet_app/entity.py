@@ -6,15 +6,15 @@ import sys
 from typing import Mapping, TypeVar, AnyStr
 
 import stringcase
-from email_mgmt_app import BaseView, EntryPointGenerator
-from email_mgmt_app.context import FormContextMixin, GeneratorContext, FormContext
-from email_mgmt_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, \
+from heptet_app import BaseView, EntryPointGenerator
+from heptet_app.context import FormContextMixin, GeneratorContext, FormContext
+from heptet_app.form import Form, DivElement, FormTextInputElement, FormLabel, FormButton, FormSelect, \
     FormOptionElement
-from email_mgmt_app.impl import NamespaceStore, EntityTypeMixin
-from email_mgmt_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, IEntryPointView, \
+from heptet_app.impl import NamespaceStore, EntityTypeMixin
+from heptet_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, IEntryPointView, \
     IEntryPointGenerator
-from email_mgmt_app.model import get_column_map
-from email_mgmt_app.tvars import TemplateVarsSchema, TemplateVars
+from heptet_app.model import get_column_map
+from heptet_app.tvars import TemplateVarsSchema, TemplateVars
 from lxml import html
 from pyramid.config import Configurator
 from pyramid.request import Request

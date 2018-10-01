@@ -19,14 +19,14 @@ from zope.component import adapter
 from zope.interface import implementer, Interface
 
 from db_dump import TypeField
-from email_mgmt_app.exceptions import MissingArgumentException
-from email_mgmt_app.impl import EntityTypeMixin, TemplateEnvMixin
-from email_mgmt_app.interfaces import IEntryPoint, IEntryPointGenerator
-from email_mgmt_app.interfaces import IEntryPointMapperAdapter
-from email_mgmt_app.interfaces import IEntryPointView, IResourceManager
-from email_mgmt_app.interfaces import IResource
-from email_mgmt_app.tvars import TemplateVars
-from email_mgmt_app.util import get_exception_entry_point_key
+from heptet_app.exceptions import MissingArgumentException
+from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin
+from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator
+from heptet_app.interfaces import IEntryPointMapperAdapter
+from heptet_app.interfaces import IEntryPointView, IResourceManager
+from heptet_app.interfaces import IResource
+from heptet_app.tvars import TemplateVars
+from heptet_app.util import get_exception_entry_point_key
 from marshmallow import Schema, fields
 
 
@@ -412,7 +412,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     #
     # ContainerResource is the result of the default factory method
     #
-    # Our parent is the "email_mgmt_app.resources" in our
+    # Our parent is the "heptet_app.resources" in our
     # app registry. That's the root resource!!
 
     # can we encapsulate this somehow?

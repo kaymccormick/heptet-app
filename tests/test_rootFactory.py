@@ -1,6 +1,6 @@
 import logging
 
-from email_mgmt_app import get_root, RootResource
+from heptet_app import get_root, RootResource
 
 logger = logging.getLogger(__name__)
 

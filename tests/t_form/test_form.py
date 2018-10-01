@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from email_mgmt_app.form import Form
+from heptet_app.form import Form
 
 logger = logging.getLogger(__name__)
 

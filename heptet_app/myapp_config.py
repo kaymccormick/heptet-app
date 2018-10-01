@@ -12,19 +12,19 @@ from zope.component import IFactory, adapter
 from zope.component.factory import Factory
 from zope.interface import implementer
 
-from email_mgmt_app import Resource, RootResource, _get_root, EntryPointSchema
-from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
-from email_mgmt_app.process import ProcessViewsConfig
-from email_mgmt_app.process import process_view, ProcessContext, VirtualAssetManager
-from email_mgmt_app.util import _dump
+from heptet_app import Resource, RootResource, _get_root, EntryPointSchema
+from heptet_app.impl import NamespaceStore
+from heptet_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
+from heptet_app.process import ProcessViewsConfig
+from heptet_app.process import process_view, ProcessContext, VirtualAssetManager
+from heptet_app.util import _dump
 
 logger = logging.getLogger(__name__)
 
 TEMPLATE_ENV_NAME = 'template-env'
 
 
-# jinja2_loader_template_path = settings['email_mgmt_app.jinja2_loader_template_path'].split(':')
+# jinja2_loader_template_path = settings['heptet_app.jinja2_loader_template_path'].split(':')
 # env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
 #                   autoescape=select_autoescape(default=False))
 # config.registry.registerUtility(env, IJinja2Environment, 'app_env')

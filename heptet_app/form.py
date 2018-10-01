@@ -2,8 +2,8 @@ import abc
 import logging
 from typing import AnyStr, Dict
 
-from email_mgmt_app.impl import NamespaceStore
-from email_mgmt_app.interfaces import INamespaceStore
+from heptet_app.impl import NamespaceStore
+from heptet_app.interfaces import INamespaceStore
 from lxml import html
 
 logger = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ import logging
 
 import pytest
 import sys
-from email_mgmt_app import get_root, ResourceManager
+from heptet_app import get_root, ResourceManager
 
 logger = logging.getLogger(__name__)
 

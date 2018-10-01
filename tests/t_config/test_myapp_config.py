@@ -7,9 +7,9 @@ from pyramid.config import Configurator
 from pyramid.events import ContextFound
 from sqlalchemy.ext.declarative import DeclarativeMeta
 
-import email_mgmt_app.myapp_config
-from email_mgmt_app.myapp_config import on_context_found
-from email_mgmt_app.process import config_process_struct, load_process_struct
+import heptet_app.myapp_config
+from heptet_app.myapp_config import on_context_found
+from heptet_app.process import config_process_struct, load_process_struct
 from tests import dump_mock_calls
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def test_config(config_fixture):
 @pytest.mark.integration
 def test_config_2():
     config = Configurator()
-    config.include(email_mgmt_app.myapp_config.includeme)
+    config.include(heptet_app.myapp_config.includeme)
 
 
 @pytest.fixture
