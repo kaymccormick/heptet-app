@@ -2,11 +2,14 @@ import logging
 import sys
 
 import lxml
+import pytest
+
 from heptet_app.entity import MakeFormRepresentation, FormRelationshipMapper
 
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.integration
 def test_make_form_representation_1(make_form_context, monkeypatch_html,
                                     make_generator_context, make_entry_point, mapper_info_real,
                                     mapper_wrapper_mock, jinja2_env, element_mock):

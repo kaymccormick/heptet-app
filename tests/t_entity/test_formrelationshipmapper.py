@@ -58,6 +58,7 @@ def my_form_relationship_mapper(make_form_relationship_mapper,
     return make_form_relationship_mapper(my_relationship_select)
 
 
+@pytest.mark.integration
 def test_map_relationship(make_form_context, my_form_relationship_mapper, jinja2_env, my_relationship_info, form_mock, mapper_info_real,
                           monkeypatch_html):
     form_context = make_form_context(template_env=jinja2_env, form=form_mock, mapper_info=mapper_info_real)

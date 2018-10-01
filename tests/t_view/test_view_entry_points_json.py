@@ -12,4 +12,4 @@ def test_view_entry_point_json_main(app_context_mock, app_request):
     r = entry_points_json(c, app_request)
     data = json.loads(r.text)
 
-    assert 0, repr(c.mock_calls) + "\n\n";
+
