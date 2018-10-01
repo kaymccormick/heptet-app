@@ -62,7 +62,7 @@ class AppPlugin {
                     const h = new HtmlWebpackPlugin({
                         title: '',
                         template: 'src/assets/entry_point_generic.html',
-                        filename: path.resolve(this.options.context, 'heptet_app/build/templates/entry_point/' + ep.key + '.jinja2'),
+                        filename: path.resolve(this.options.context, 'heptet_app/build/templates/entry_point/' + ep.key + '.jinja2'), // FIXME hardcodpied path
                         inject: false,
                         chunks: [ep.key],
                     });

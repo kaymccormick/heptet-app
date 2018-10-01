@@ -15,8 +15,6 @@ from zope.interface import implementer
 from heptet_app import Resource, RootResource, _get_root, EntryPointSchema
 from heptet_app.impl import NamespaceStore
 from heptet_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
-from heptet_app.process import ProcessViewsConfig
-from heptet_app.process import process_view, ProcessContext, VirtualAssetManager
 from heptet_app.util import _dump
 
 logger = logging.getLogger(__name__)

@@ -9,7 +9,8 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 
 import heptet_app.myapp_config
 from heptet_app.myapp_config import on_context_found
-from heptet_app.process import config_process_struct, load_process_struct
+from heptet_app.process import config_process_struct
+from heptet_app.process_custo import load_process_struct
 from tests import dump_mock_calls
 
 logger = logging.getLogger(__name__)

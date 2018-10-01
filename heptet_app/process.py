@@ -11,13 +11,9 @@ from typing import Iterable, Tuple, Mapping, AnyStr
 
 from pyramid.config import Configurator, PHASE3_CONFIG
 from pyramid.path import DottedNameResolver
-from sqlalchemy import Column, String
-from sqlalchemy.exc import InvalidRequestError
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
-from db_dump import get_process_schema
-from db_dump.info import ProcessStruct
 from heptet_app import ResourceManager, EntryPoint, _add_resmgr_action, TemplateEnvironment, \
     TemplateEnvMixin, AssetEntity, OperationArgument
 from heptet_app.context import GeneratorContext, FormContext
@@ -25,8 +21,8 @@ from heptet_app.entity import EntityFormView
 from heptet_app.impl import MapperWrapper, NamespaceStore
 from heptet_app.impl import MixinBase
 from heptet_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
+
 from heptet_app.tvars import TemplateVars
-from marshmallow import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -419,62 +415,6 @@ class ProcessStructLoader:
     def __call__(self):
         data = self._schema.load(self._data.get_data())
         return data
-
-
-def load_process_struct(json_file=None, json_str=None) -> ProcessStruct:
-    if not json_file and not json_str:
-        json_file = os.path.join(os.path.dirname(__file__), "heptet_db.json")
-
-    if json_file:
-        with open(json_file, 'r') as f:
-            json_str = ''.join(f.readlines())
-
-    process_schema = get_process_schema()
-    process = None  # type: ProcessStruct
-
-    # logger.debug("json for db is %s", email_db_json)
-    try:
-        process = process_schema.load(json.loads(json_str))
-        logger.debug("process = %s", repr(process))
-    except InvalidRequestError as ex:
-        logger.critical("Unable to load database json.")
-        logger.critical(ex)
-        raise ex
-    except ValidationError as ve:
-        # todo better error handling
-        for k, v in ve.messages.items():
-            logger.critical("input error in %s: %s", k, v)
-        raise ve
-    return process
-
-
-def includeme(config: Configurator):
-    def do_action():
-        config.registry.registerSubscriptionAdapter(GenerateEntryPointProcess)
-
-    # load our pre-processed info
-
-    try:
-        process = load_process_struct()  # type: ProcessStruct
-    except:
-        logger.warning("unable to blah")
-        return
-
-    config.add_request_method(lambda r: process, 'process_struct')
-    for mapper in process.mappers:
-        wrapper = MapperWrapper(mapper)
-        config.registry.registerUtility(wrapper, IMapperInfo, mapper.local_table.key)
-
-    config.include('.viewderiver')
-    config.include('.entity')
-
-    data = JsonFileData(os.path.join(os.path.dirname(__file__), "heptet_db.json"))
-    loader = ProcessStructLoader(get_process_schema(), data)
-    ps = loader()
-
-    config_process_struct(config, process)
-
-    config.action(None, do_action)
 
 
 def get_entry_point_generator(gctx: GeneratorContext, registry=None):

@@ -131,7 +131,7 @@ def main(input_args=None):
 
     config.include('.myapp_config')
 #    config.include('heptet_app.model.email_mgmt')
-    config.include('.process')
+    #config.include('.process') # fixme refactor
 
     config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
 

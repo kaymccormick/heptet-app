@@ -33,7 +33,7 @@ from heptet_app.impl import NamespaceStore, MapperWrapper, Separator
 from heptet_app.myapp_config import TEMPLATE_ENV_NAME
 from heptet_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
 from heptet_app.process import VirtualAssetManager
-from heptet_app.process import load_process_struct
+from heptet_app.process_custo import load_process_struct
 from heptet_app.tvars import TemplateVars
 from heptet_app.viewderiver import entity_view
 from tests import Property, dump_mock_calls, mock_wrap_config

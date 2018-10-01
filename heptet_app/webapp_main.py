@@ -71,7 +71,7 @@ def wsgi_app(global_config, **settings):
         logger.warning(ex)
 
     # config.include('.viewderiver')
-    config.include('.process')
+    # config.include('.process') fixme refactor
     config.include('.view')
 
     renderer_pkg = 'pyramid_jinja2.renderer_factory'

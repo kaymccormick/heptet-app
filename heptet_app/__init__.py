@@ -14,11 +14,9 @@ import stringcase
 from jinja2 import Environment
 from pyramid.config import Configurator
 from pyramid.request import Request
-from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
-from db_dump import TypeField
 from heptet_app.exceptions import MissingArgumentException
 from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin
 from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator
@@ -635,13 +633,13 @@ class AssetManagerSchema(Schema):
 class ResourceManagerSchema(Schema):
     mapper_key = fields.String()
     title = fields.String()
-    entity_type = TypeField()
+    #entity_type = TypeField()
     node_name = fields.String()
     pass
 
 
 class ResourceSchema(Schema):
-    type = TypeField(attribute='__class__')
+    #type = TypeField(attribute='__class__')
     manager = fields.Nested(ResourceManagerSchema)
     name = fields.String(attribute='__name__')  # function=lambda x: x.__name__)
     parent = fields.Nested('self', attribute='__parent__', only=[])  # functiona=lambda x: x.__parent__)

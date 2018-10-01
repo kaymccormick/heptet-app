@@ -13,17 +13,17 @@ from heptet_app.form import Form, DivElement, FormTextInputElement, FormLabel, F
 from heptet_app.impl import NamespaceStore, EntityTypeMixin
 from heptet_app.interfaces import IFormContext, IRelationshipSelect, IGeneratorContext, IEntryPointView, \
     IEntryPointGenerator
-from heptet_app.model import get_column_map
+
 from heptet_app.tvars import TemplateVarsSchema, TemplateVars
 from lxml import html
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.response import Response
-from sqlalchemy.ext.declarative import DeclarativeMeta
+
 from zope.component import adapter
 from zope.interface import Interface, implementer
 
-from db_dump.info import IRelationshipInfo
+
 from marshmallow import ValidationError
 
 GLOBAL_NAMESPACE = 'global'
@@ -166,18 +166,6 @@ def _map_column(context, column):
 
 class EntityFormRepresentation:
     pass
-
-
-# Only in test for now.
-class EntityFormConfiguration(EntityTypeMixin[DeclarativeMeta]):
-    def __init__(self, entity_type: DeclarativeMeta, field_renderers: Mapping[AnyStr, object]) -> None:
-        super().__init__()
-        self.entity_type = entity_type
-        self.field_renderers = field_renderers
-
-    def __repr__(self):
-        return "EntityFormConfiguration(%s, field_renderers=%s)" % (
-            repr(self.entity_type), repr(self.field_renderers))
 
 
 class IFormFieldMapper(Interface):
@@ -591,9 +579,7 @@ class EntityAddView(BaseEntityRelatedView):
 
 def includeme(config: Configurator):
     reg = config.registry.registerAdapter
-    reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect)
-    # reg(FormRelationshipMapper, [IRelationshipInfo, IFormContext], IFormRelationshipFieldMapper)
+    #reg(RelationshipSelect, [IRelationshipInfo], IRelationshipSelect) # removed because of weird dependency
+
     reg(EntityFormViewEntryPointGenerator, [IGeneratorContext], IEntryPointGenerator)
-    # reg(EntityFormView, [IJinja2Environment, IEntryPoint, ],
-    ##    IEntryPointView)
     pass
