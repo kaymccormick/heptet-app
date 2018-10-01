@@ -19,7 +19,7 @@ class AppPlugin {
     constructor(options, app) {
         this.options = options;
         this.app = app
-        this.options.build_template_dir = "email_mgmt_app/build/templates";
+        this.options.build_template_dir = "heptet_app/build/templates";
     }
 
     apply(compiler) {
@@ -62,7 +62,7 @@ class AppPlugin {
                     const h = new HtmlWebpackPlugin({
                         title: '',
                         template: 'src/assets/entry_point_generic.html',
-                        filename: path.resolve(this.options.context, 'email_mgmt_app/build/templates/entry_point/' + ep.key + '.jinja2'),
+                        filename: path.resolve(this.options.context, 'heptet_app/build/templates/entry_point/' + ep.key + '.jinja2'),
                         inject: false,
                         chunks: [ep.key],
                     });
