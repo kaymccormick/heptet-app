@@ -2,7 +2,7 @@ import copy
 import json
 import sys
 
-import pinject
+#import pinject
 import pytest
 
 from email_mgmt_app import get_root, ResourceSchema
@@ -23,10 +23,10 @@ def test_my_config_model_package(
 
 @pytest.mark.integration
 def test_my_config_2(make_wsgi_app, webapp_settings):
-    obj_graph = pinject.new_object_graph(#only_use_explicit_bindings=True,
-                                         modules=None)
-    schema = obj_graph.provide(ResourceSchema)
-    assert 0
+#    obj_graph = pinject.new_object_graph(#only_use_explicit_bindings=True,
+#                                         modules=None)
+#    schema = obj_graph.provide(ResourceSchema)
+#    assert 0
     settings = copy.copy(webapp_settings)
     settings['model_package'] = email_mgmt
     app = make_wsgi_app({}, **settings)
