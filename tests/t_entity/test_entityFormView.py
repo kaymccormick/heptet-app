@@ -43,4 +43,3 @@ def test_entity_form_view(app_request, app_context, entity_form_view, webapp_set
     #     call.init_generator()
     # ])
     assert view
-    assert 0

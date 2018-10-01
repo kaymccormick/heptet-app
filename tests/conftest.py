@@ -933,3 +933,7 @@ def local_remote_pair_info_mock():
     type(m).remote = remote
     m.__iter__.return_value = [local, remote]
     return m
+
+@pytest.fixture
+def bare_config():
+    return Configurator(package="heptet_app")

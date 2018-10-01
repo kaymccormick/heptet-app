@@ -1,5 +1,5 @@
 import logging
-from unittest.mock import MagicMock, call
+from unittest.mock import call
 
 import pytest
 from pyramid.config import Configurator
@@ -19,17 +19,17 @@ def test_process_config_include(config_mock_wrap):
 
 
 @pytest.mark.integration
-def test_process_config_include(app_registry_mock):
-    config = MagicMock(Configurator)
-    mock = mock_wrap_config(None, app_registry_mock)
+def test_process_config_include(app_registry_mock, bare_config):
+    config = bare_config
+    mock = mock_wrap_config(config, app_registry_mock)
     heptet_app.process.includeme(mock)
     mock.assert_has_calls([call.include('.viewderiver'), call.include('.entity')])
     dump_mock_calls(mock, mock.mock_calls)
-    assert 0
+
 
 @pytest.mark.integration
-def test_process_config_include_2(app_registry_mock):
-    config = Configurator()
+def test_process_config_include_2(app_registry_mock, bare_config):
+    config = bare_config
     mock = mock_wrap_config(config, app_registry_mock)
     with pytest.raises(ModuleNotFoundError):
         heptet_app.process.includeme(mock)
@@ -38,11 +38,11 @@ def test_process_config_include_2(app_registry_mock):
         dump_mock_calls(mock, mock.mock_calls)
         assert "We should have experiened an error."
 
+
 def new_configurator(cls, *args, **kwargs):
     config = object.__new__(cls)
     mock = mock_wrap_config(config, None)
     return mock
-
 
 
 @pytest.mark.integration
@@ -53,10 +53,8 @@ def test_process_config_include_3(app_registry_mock, monkeypatch):
         oldattr = getattr(Configurator, '__new__')
         m.setattr(Configurator, '__new__', new_configurator)
         with pytest.raises(ModuleNotFoundError):
-
             mock.include(heptet_app.process.includeme)
             # we should never get here
-            #mock.assert_has_calls([call.include('.viewderiver'), call.include('.entity')])
+            # mock.assert_has_calls([call.include('.viewderiver'), call.include('.entity')])
             dump_mock_calls(mock, mock.mock_calls)
             assert "We should have experiened an error."
-

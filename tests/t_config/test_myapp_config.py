@@ -77,4 +77,3 @@ def test_on_context_found_with_entity_type(app_request, app_registry_mock, app_c
         template = jinja2_env.get_template(app_request.override_renderer)
 
     dump_mock_calls(entity_type_mock, entity_type_mock.mock_calls)
-    assert 0
