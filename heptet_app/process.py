@@ -463,7 +463,7 @@ def includeme(config: Configurator):
     config.include('.viewderiver')
     config.include('.entity')
 
-    data = JsonFileData(os.path.join(os.path.dirname(__file__), "email_db.json"))
+    data = JsonFileData(os.path.join(os.path.dirname(__file__), "heptet_db.json"))
     loader = ProcessStructLoader(get_process_schema(), data)
     ps = loader()
 

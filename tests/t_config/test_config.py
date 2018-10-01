@@ -27,7 +27,7 @@ def test_my_config_2(make_wsgi_app, webapp_settings):
     #                                         modules=None)
     #    schema = obj_graph.provide(ResourceSchema)
     #
-    assert 0
+
     settings = copy.copy(webapp_settings)
     settings['model_package'] = email_mgmt
     app = make_wsgi_app({}, **settings)

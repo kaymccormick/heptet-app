@@ -12,5 +12,4 @@ def test_webapp_main(webapp_settings):
     factory = registry.queryUtility(IRendererFactory, '')
 
     assert factory
-    assert 0
     assert app
