@@ -14,7 +14,7 @@ from pyramid.exceptions import ConfigurationExecutionError
 from pyramid.paster import setup_logging, get_appsettings
 from pyramid_jinja2 import IJinja2Environment
 
-import db_dump.args
+
 from heptet_app import get_root, ResourceManagerSchema, EntryPointSchema
 from heptet_app.interfaces import IEntryPoint
 from heptet_app.process import ProcessViewsConfig
@@ -22,8 +22,26 @@ from heptet_app.process import VirtualAssetManager, process_view
 from heptet_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
     AbstractAssetManager
 from marshmallow import Schema, fields
+import plaster
 
 logger = logging.getLogger()
+
+
+class ConfigAction(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        if nargs is not None:
+            raise ValueError("nargs not allowed")
+        super().__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        logger.debug("__caall__")
+        settings = plaster.get_settings(values, getattr(namespace, 'section'))
+        setattr(namespace, 'config_uri', values)
+
+        if hasattr(namespace, 'settings') is not None:
+            setattr(namespace, 'settings', {values: settings})
+        else:
+            getattr(namespace, 'settings')[values] = settings
 
 
 class CommandContext:
@@ -102,7 +120,10 @@ def main(input_args=None):
 
     atexit.register(do_at_exit)
 
-    parser = argparse.ArgumentParser(parents=[db_dump.args.argument_parser()])
+    parser = argparse.ArgumentParser(parents=[])#db_dump.args.argument_parser()])
+    parser.add_argument('--config-uri', '-c', help="Provide config_uri for configuration via plaster.",
+                        action=ConfigAction)
+    parser.add_argument('--section', default='app:main')
     parser.add_argument('--test-app', '-t', help="Test the application", action="store_true")
     parser.add_argument('--entry-point', '-e', help="Specify entry point", action="store")
     parser.add_argument('--list-entry-points', '-l', help="List entry points", action="store_true")

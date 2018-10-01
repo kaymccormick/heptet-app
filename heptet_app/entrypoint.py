@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from heptet_app import default_entry_point, IEntryPoint
 from pyramid.config import Configurator
+
+from heptet_app import IEntryPoint
 
 
 def register_entry_point(config, entry_point: IEntryPoint):
@@ -14,6 +15,5 @@ def includeme(config: 'Configurator'):
         # config.registry.registerAdapter(MyCollector, [ICollectorContext], ICollector)
 
     config.add_directive('register_entry_point', register_entry_point)
-    register_entry_point(config, default_entry_point())
 
     config.action(None, do_action)

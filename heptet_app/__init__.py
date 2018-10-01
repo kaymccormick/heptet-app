@@ -17,6 +17,7 @@ from pyramid.request import Request
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
+import heptet_app
 from heptet_app.exceptions import MissingArgumentException
 from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin
 from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator
@@ -41,12 +42,12 @@ def get_root(request: Request = None):
 
 def _get_root():
     lock.acquire()
-    if hasattr(sys.modules[__name__], "_root"):
+    if hasattr(heptet_app, "_root"):
         root = getattr(sys.modules[__name__], "_root")
         lock.release()
         return root
 
-    root = RootResource()
+    root = RootResource(entry_point=EntryPoint('root'))
     assert root.entry_point
     setattr(sys.modules[__name__], "_root", root)
     lock.release()
@@ -473,14 +474,12 @@ class RootResource(Resource):
     def __new__(cls, name: AnyStr = '', parent: Resource = None,
                 entry_point: EntryPoint = None,
                 title: AnyStr = None, template_env=None):
-        if not entry_point:
-            entry_point = default_entry_point()
+        assert entry_point
         return super().__new__(cls, name, parent, entry_point, title, template_env)
 
     def __init__(self, name: AnyStr = '', parent: Resource = None, entry_point: EntryPoint = None, title: AnyStr = None,
                  template_env=None) -> None:
-        if not entry_point:
-            entry_point = default_entry_point()
+        assert entry_point
         super().__init__(name, parent, entry_point, title, template_env)
         assert self._entry_point is entry_point
         self._subresource_type = Resource
@@ -762,14 +761,6 @@ class EntryPoint(AssetEntity):
         self._content = new
 
 
-def default_entry_point():
-    return _default_entry_point
-
-
-def default_manager():
-    return _default_manager
-
-
 class IEntryPoints(Interface):
     pass
 
@@ -781,25 +772,6 @@ class EntryPoints:
 
     def add_value(self, instance):
         self._entry_points.append(instance)
-
-
-class DefaultResourceManager(ResourceManager):
-    def __init__(self):
-        super().__init__('_default', '_default', None, '_default', None)
-
-
-_default_manager = DefaultResourceManager()
-
-
-class DefaultEntryPoint(EntryPoint):
-
-    def __init__(self, resource_manager=None):
-        key = "_default"
-
-        super().__init__(key, resource_manager)
-
-
-_default_entry_point = DefaultEntryPoint(_default_manager)
 
 
 class EntryPointConfiguration(dict):
