@@ -2,7 +2,6 @@ import json
 import logging
 
 import pytest
-
 from email_mgmt_app import Resource, get_root, ResourceSchema
 
 logger = logging.getLogger(__name__)
@@ -64,3 +63,36 @@ def test_resource_url(root_resource, app_request):
     with pytest.raises(AssertionError):
         path = app_request.resource_path(root_resource, _host='localhost')
         assert '/' == path
+
+
+def _thread(root_resource):
+    num = 1000
+    i = 0
+    while i < num:
+        resource = root_resource.sub_resource("%04d" % i, None)
+        logger.critical("resource = %r", resource)
+        import time
+        i = i + 1
+
+
+
+#
+#
+# def test_add_resource_threaded(root_resource):
+#     import threading
+#     num_threads = 100
+#     i = 0
+#     threads = []
+#     while i < num_threads:
+#         thread = threading.Thread(target=_thread, args=[root_resource])
+#         thread.start()
+#         threads.append(thread)
+#
+#         i = i + 1
+#
+#     while threads:
+#         threads.pop().join()
+#
+#     assert 0
+#
+#

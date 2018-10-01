@@ -422,6 +422,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     mapper_wrapper = manager.mapper_wrappers[key]
     assert mapper_wrapper, "no mapper wrapper %s in %s" % (key, manager.mapper_wrappers)
 
+    # code smell
     container_entry_point = EntryPoint(key, manager, mapper=manager.mapper_wrapper.get_one_mapper_info())
     m = config.registry.getAdapter(container_entry_point, IEntryPointMapperAdapter)
     m.mapper = mapper_wrapper
@@ -656,6 +657,7 @@ class AssetEntity(AppBase, os.PathLike):
 
 @interface.implementer(IEntryPoint)
 class EntryPoint(AssetEntity):
+
     """
     Encapsulation of an "entry point" to the application; specifically used for javascript entry points
     for bundling purposes (i.e. webpack).
