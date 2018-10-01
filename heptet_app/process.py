@@ -423,7 +423,7 @@ class ProcessStructLoader:
 
 def load_process_struct(json_file=None, json_str=None) -> ProcessStruct:
     if not json_file and not json_str:
-        json_file = os.path.join(os.path.dirname(__file__), "email_db.json")
+        json_file = os.path.join(os.path.dirname(__file__), "heptet_db.json")
 
     if json_file:
         with open(json_file, 'r') as f:
