@@ -42,21 +42,7 @@ const commonConfig = {
                     'file-loader'
                 ]
 
-            },
-            {
-                test: /\.pug$/,
-                use: ['pug-loader']
             }
-            ,
-            {
-                test: /\.twig$/,
-                loader: "twig-loader",
-                options: {
-                    // See options section below
-                },
-            }
-            ,
-
         ]
 
     }
