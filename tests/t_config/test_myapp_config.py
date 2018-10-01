@@ -5,12 +5,11 @@ import pytest
 from jinja2 import TemplateNotFound
 from pyramid.config import Configurator
 from pyramid.events import ContextFound
-from sqlalchemy.ext.declarative import DeclarativeMeta
 
 import heptet_app.myapp_config
 from heptet_app.myapp_config import on_context_found
 from heptet_app.process import config_process_struct
-from heptet_app.process_custo import load_process_struct
+
 from tests import dump_mock_calls
 
 logger = logging.getLogger(__name__)
@@ -21,9 +20,6 @@ def test_config_process_struct(process_struct_real, config_fixture):
     config_process_struct(config_fixture, process_struct_real)
 
 
-@pytest.mark.integration
-def test_load_process_struct():
-    load_process_struct()
 
 
 @pytest.mark.integration

@@ -4,9 +4,7 @@ import logging
 from typing import Mapping, AnyStr, Tuple
 
 import pytest
-from lxml import html
 
-from db_dump.info import RelationshipInfo
 from heptet_app.entity import FormRelationshipMapper
 from heptet_app.tvars import TemplateVar, StringTemplateVar, MutableSequenceTemplateVar, MappingTemplateVar, TemplateVars
 
@@ -29,14 +27,6 @@ def vars_mapping():
 
 def test_vars_mapping(vars_mapping):
     logger.critical("%s", vars_mapping)
-
-
-@pytest.fixture
-def make_relationship_info():
-    def _make_relationship_info(**kwargs):
-        return RelationshipInfo(**kwargs)
-
-    return _make_relationship_info
 
 
 # @pytest.fixture

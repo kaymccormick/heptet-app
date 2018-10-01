@@ -12,17 +12,14 @@ from lxml import html
 from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.registry import Registry
-from pyramid.request import Request
 from pyramid.response import Response
 from pyramid_jinja2 import IJinja2Environment
 from pyramid_tm.tests import DummyRequest
-from sqlalchemy.ext.declarative import DeclarativeMeta
 from zope.interface.registry import Components
 
 import heptet_app
 import heptet_app.myapp_config
-from db_dump import RelationshipSchema, ColumnInfo, LocalRemotePairInfo, TableColumnSpecInfo
-from db_dump.info import MapperInfo, TypeInfo, TableInfo, RelationshipInfo
+
 from heptet_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
     EntryPointGenerator
 from heptet_app.context import GeneratorContext, FormContext
@@ -33,7 +30,7 @@ from heptet_app.impl import NamespaceStore, MapperWrapper, Separator
 from heptet_app.myapp_config import TEMPLATE_ENV_NAME
 from heptet_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
 from heptet_app.process import VirtualAssetManager
-from heptet_app.process_custo import load_process_struct
+
 from heptet_app.tvars import TemplateVars
 from heptet_app.viewderiver import entity_view
 from tests import Property, dump_mock_calls, mock_wrap_config
@@ -427,7 +424,7 @@ def entity_view_deriver_with_mocks(view_test, view_deriver_info_mock):
 #
 @pytest.fixture
 def entity_type_mock():
-    return MagicMock(spec=DeclarativeMeta,name='entity_type_mock')
+    return MagicMock(name='entity_type_mock')
 
 
 @pytest.fixture
@@ -435,48 +432,6 @@ def element_mock():
     element = html.Element('elem')
     m = MagicMock(element, name="element_mock")
     return m
-
-
-@pytest.fixture
-def mapper_info_mock(local_remote_pair_info_mock):
-    top_mock = MagicMock(MapperInfo, name='mapper_info')
-
-    type(top_mock).entity = PropertyMock()
-
-    col_info_mock = MagicMock(ColumnInfo, name='col_info')
-    type(col_info_mock).key = PropertyMock(name='key', return_value='child_id')
-    type(col_info_mock).name = PropertyMock(name='name', return_value='child_id')
-    type(col_info_mock).table = PropertyMock(name='table', return_value='table1')
-    type(col_info_mock).__visit_name__ = PropertyMock(return_value='column')
-    type_mock = MagicMock(name='type')
-
-    type(col_info_mock).type = PropertyMock(name='type', return_value=type_mock)
-
-    # type(m).type = PropertyMock(return_value=TypeInfo())
-    type(top_mock).columns = PropertyMock(list, return_value=[col_info_mock])
-
-    class LocalTableMock(MagicMock):
-        pass
-
-    magic_mock = MagicMock(name='local_table')
-    type(magic_mock).key = PropertyMock(name='key', return_value='table1')
-    property_mock = PropertyMock(TableInfo, return_value=magic_mock)
-    type(top_mock).local_table = property_mock
-
-    rel_mock = MagicMock(RelationshipInfo, name='relationship_info')
-    type(rel_mock).key = PropertyMock(return_value='key1')
-    pair_mock = local_remote_pair_info_mock
-    type(rel_mock).local_remote_pairs = PropertyMock(list, return_value=[pair_mock])
-    type(rel_mock).direction = PropertyMock(return_value='MANYTOONE')
-    type(rel_mock).argument = PropertyMock()
-    type(rel_mock).secondary = PropertyMock(return_value=None)
-    type(rel_mock).mapper = PropertyMock()
-
-    rel_prop_mock = PropertyMock(list, name='relationships', return_value=[rel_mock])
-    type(top_mock).relationships = rel_prop_mock
-
-    # mock.local_table.key.side_effect = 'table1x'
-    return top_mock
 
 
 @pytest.fixture
@@ -587,7 +542,7 @@ def my_gen_context(
 
 @pytest.fixture
 def process_struct_real():
-    return load_process_struct()
+    return None
 
 
 @pytest.fixture
@@ -920,19 +875,6 @@ def wrap_make_html(make_element_mock):
 
     return _wrap_make_html
 
-
-@pytest.fixture
-def local_remote_pair_info_mock():
-    m = MagicMock(LocalRemotePairInfo)
-    local = MagicMock(TableColumnSpecInfo, wraps=TableColumnSpecInfo(table='table1', column='child_id'))
-    type(local).table = PropertyMock(return_value='table1')
-    type(local).column = PropertyMock(return_value='child_id')
-
-    type(m).local = local
-    remote = MagicMock(TableColumnSpecInfo)
-    type(m).remote = remote
-    m.__iter__.return_value = [local, remote]
-    return m
 
 @pytest.fixture
 def bare_config():
