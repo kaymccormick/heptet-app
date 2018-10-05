@@ -18,8 +18,9 @@ const {
 class AppPlugin {
     constructor(options, app) {
         this.options = options;
+        const package_root = options.package_root;
         this.app = app
-        this.options.build_template_dir = "heptet_app/build/templates";
+        this.options.build_template_dir = package_root + "/build/templates";
     }
 
     apply(compiler) {
