@@ -3,31 +3,29 @@ from __future__ import annotations
 import abc
 import logging
 import os
+import pyramid
+import stringcase
 import sys
 from abc import ABCMeta, abstractmethod
+from jinja2 import Environment
+from marshmallow import Schema, fields
+from pyramid.config import Configurator
+from pyramid.request import Request
 from threading import Lock
 from typing import AnyStr, Generic, TypeVar, Type
 from zope import interface
-
-import pyramid
-import stringcase
-from jinja2 import Environment
-from pyramid.config import Configurator
-from pyramid.request import Request
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
 import heptet_app
 from heptet_app.exceptions import MissingArgumentException
-from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin
-from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator
+from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin, NamespaceStore
+from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator, INamespaceStore
 from heptet_app.interfaces import IEntryPointMapperAdapter
 from heptet_app.interfaces import IEntryPointView, IResourceManager
 from heptet_app.interfaces import IResource
 from heptet_app.tvars import TemplateVars
 from heptet_app.util import get_exception_entry_point_key
-from marshmallow import Schema, fields
-
 
 T = TypeVar('T')
 
@@ -490,7 +488,6 @@ class RootResource(Resource):
         assert self.manager is not None
 
     def __repr__(self):
-
         items = self._data.items()
         # use of 'compact' format
         i = map(lambda item: "{0}={1:compact}".format(*item), items)
@@ -632,13 +629,13 @@ class AssetManagerSchema(Schema):
 class ResourceManagerSchema(Schema):
     mapper_key = fields.String()
     title = fields.String()
-    #entity_type = TypeField()
+    # entity_type = TypeField()
     node_name = fields.String()
     pass
 
 
 class ResourceSchema(Schema):
-    #type = TypeField(attribute='__class__')
+    # type = TypeField(attribute='__class__')
     manager = fields.Nested(ResourceManagerSchema)
     name = fields.String(attribute='__name__')  # function=lambda x: x.__name__)
     parent = fields.Nested('self', attribute='__parent__', only=[])  # functiona=lambda x: x.__parent__)
@@ -654,7 +651,6 @@ class AssetEntity(AppBase, os.PathLike):
 
 @interface.implementer(IEntryPoint)
 class EntryPoint(AssetEntity):
-
     """
     Encapsulation of an "entry point" to the application; specifically used for javascript entry points
     for bundling purposes (i.e. webpack).
@@ -959,3 +955,16 @@ class SubpathArgumentGetter(OperationArgumentGetter):
         val = request.subpath[arg_context.subpath_index]
         arg_context.subpath_index = arg_context.subpath_index + 1
         return val
+
+
+def includeme(config: Configurator):
+    config.include('.myapp_config')
+    config.include('.view')
+
+    renderer_pkg = 'pyramid_jinja2.renderer_factory'
+    config.add_renderer(None, renderer_pkg)
+
+    config.include('.routes')
+
+    config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
+    config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')

@@ -49,7 +49,7 @@ def on_before_render(event):
     # what happens if we clobber this? it also gets set for the form view
     entry_point = event['context'].entry_point
     if entry_point:
-        val['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % entry_point.key
+        val['entry_point_template'] = 'heptet_app:build/templates/entry_point/%s.jinja2' % entry_point.key
     logger.debug("VAL=%s", val)
 
 
@@ -167,9 +167,8 @@ def includeme(config: Configurator):
         lambda request: request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME),
         'template_env')
 
-
     # what is the difference between posting an action versus registering the viwe in the cofnig??\\
-    config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
+    config.action(None, config.add_view, kw=dict(context=RootResource, renderer="heptet_app:templates/main_child.jinja2"))
     #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
 
     epj = _get_root().sub_resource('entry_points_json', None)

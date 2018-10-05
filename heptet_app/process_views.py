@@ -9,20 +9,19 @@ from datetime import datetime
 from logging import Formatter
 from pathlib import PurePath, Path
 
+import plaster
+from marshmallow import Schema, fields
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationExecutionError
 from pyramid.paster import setup_logging, get_appsettings
 from pyramid_jinja2 import IJinja2Environment
 
-
-from heptet_app import get_root, ResourceManagerSchema, EntryPointSchema
+from heptet_app import get_root, EntryPointSchema
 from heptet_app.interfaces import IEntryPoint
 from heptet_app.process import ProcessViewsConfig
 from heptet_app.process import VirtualAssetManager, process_view
 from heptet_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
     AbstractAssetManager
-from marshmallow import Schema, fields
-import plaster
 
 logger = logging.getLogger()
 
@@ -67,13 +66,13 @@ def cmd_entry_points_json(registry, proc_context, line):
     entry_points = list(registry.getUtilitiesFor(IEntryPoint))
     eps = map(lambda x: x[1], entry_points)
     s1 = EntryPointSchema()
-    json.dump(s1.dump(eps,many=True), fp=sys.stdout)
+    json.dump(s1.dump(eps, many=True), fp=sys.stdout)
     exit(0)
     out = []
     for name, ep in entry_points:
         out.append(s.dump(ep))
 
-    json.dump(out,fp=sys.stdout)
+    json.dump(out, fp=sys.stdout)
 
 
 def cmd_process_view(registry, proc_context: ProcessContext, line, *args, **kwargs):
@@ -120,30 +119,36 @@ def main(input_args=None):
 
     atexit.register(do_at_exit)
 
-    parser = argparse.ArgumentParser(parents=[])#db_dump.args.argument_parser()])
+    parser = argparse.ArgumentParser(parents=[])  # db_dump.args.argument_parser()])
     parser.add_argument('--config-uri', '-c', help="Provide config_uri for configuration via plaster.",
                         action=ConfigAction)
     parser.add_argument('--section', default='app:main')
-    parser.add_argument('--test-app', '-t', help="Test the application", action="store_true")
+    #    parser.add_argument('--test-app', '-t', help="Test the application", action="store_true")
     parser.add_argument('--entry-point', '-e', help="Specify entry point", action="store")
     parser.add_argument('--list-entry-points', '-l', help="List entry points", action="store_true")
     parser.add_argument('--virtual-assets', action="store_true")
     parser.add_argument('--pipe', action="store_true")
     parser.add_argument('--cmd', action="append")
+    parser.add_argument('--package', action="store")
 
     args = parser.parse_args(input_args)
 
     config_uri = args.config_uri
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
-    config = ProcessViewsConfig(output_path=settings['heptet_app.process_views_output_path'])
+    output_path = settings.get('heptet_app.process_views_output_path', '.')
+    config = ProcessViewsConfig(output_path=output_path)
 
     # we need to do this automatically
     setup = setup_jsonencoder()
     setup()
 
-    # this has the potential to be sticky because we aren't creating the wsgi app as it would be created at runtime
-    # FIXME
+    package = "heptet_app"
+    if args.package:
+        logger.info("selecting package %r", args.package)
+        # this doesn't seem to help us right now
+        package = args.package
+
     config = Configurator(
         settings=settings,
         root_factory=get_root,
@@ -151,8 +156,10 @@ def main(input_args=None):
     )
 
     config.include('.myapp_config')
-#    config.include('heptet_app.model.email_mgmt')
-    #config.include('.process') # fixme refactor
+    # we need a way to include the model, duh!
+
+    #    config.include('heptet_app.model.email_mgmt')
+    # config.include('.process') # fixme refactor
 
     config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
 
@@ -169,10 +176,13 @@ def main(input_args=None):
         exit(1)
     registry = config.registry
 
-    asset_mgr, proc_context, template_env = initialize(args, registry, config, settings)
+    asset_mgr, proc_context, template_env = initialize(args, registry, config)
 
     # here we get our entry points
     entry_points = list(registry.getUtilitiesFor(IEntryPoint))
+    if not entry_points:
+        logger.critical("Configuration error: no entry points.")
+        exit(255)
 
     if args.list_entry_points:
         for name, ep in entry_points:
@@ -226,7 +236,7 @@ def _run_pipe(registry, proc_context):
         exec_command(registry, proc_context, line)
 
 
-def initialize(args, registry, config, settings):
+def initialize(args, registry, config):
     template_env = registry.queryUtility(IJinja2Environment, 'template-env')
     assert template_env
     # specify path

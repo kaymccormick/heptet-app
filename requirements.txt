@@ -1,16 +1,6 @@
 plaster_pastedeploy
 pyramid >= 1.9a
-pyramid_debugtoolbar
 pyramid_jinja2
 pyramid_retry
 pyramid_tm
-SQLAlchemy
-transaction
-zope.sqlalchemy
 waitress
-psycopg2
-pyramid_ldap3
-lxml
-bcrypt stringcase
-kazoo
-db_dump

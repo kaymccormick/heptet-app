@@ -10,7 +10,6 @@ from heptet_app.interfaces import INamespaceStore
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
-from pyramid_ldap3 import groupfinder
 from zope.component import getGlobalSiteManager
 
 DEV_MODE = 'development'

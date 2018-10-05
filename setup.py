@@ -7,17 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 requires = [
     'plaster_pastedeploy',
     'pyramid >= 1.9a',
-    'pyramid_debugtoolbar',
     'pyramid_jinja2',
-    'pyramid_retry',
-    'pyramid_tm',
-    'transaction',
-    'waitress',
-    'pyramid_ldap3',
-    'lxml',
-    'bcrypt', 'stringcase',
-    'kazoo',
-    'wheel'
 ]
 
 tests_require = [
