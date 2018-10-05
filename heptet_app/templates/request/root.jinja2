@@ -1,8 +1,0 @@
-<table class="table">
-    {% for (key, val) in request.root.items() %}
-        <tr>
-            <th>{{ key|pprint(True) }}</th>
-            <td>{{ val }}</td>
-        </tr>
-    {% endfor %}
-</table>
