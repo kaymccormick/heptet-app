@@ -359,7 +359,7 @@ class GenerateEntryPointProcess(BaseProcessor):
         asset = self._context.asset_manager.create_asset(self._ep)
         with asset.open('w') as f:
             # FIXME embedded template filename
-            content = self._context.template_env.get_template('entry_point.js.jinja2').render(
+            content = self._context.template_env.get_template('heptet_app:templates/entry_point.js.jinja2').render(
                 **data
             )
 

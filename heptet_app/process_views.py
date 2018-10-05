@@ -13,6 +13,7 @@ import plaster
 from marshmallow import Schema, fields
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationExecutionError
+from pyramid.interfaces import IRootFactory
 from pyramid.paster import setup_logging, get_appsettings
 from pyramid_jinja2 import IJinja2Environment
 
@@ -149,37 +150,45 @@ def main(input_args=None):
         # this doesn't seem to help us right now
         package = args.package
 
-    config = Configurator(
-        settings=settings,
-        root_factory=get_root,
-        package="heptet_app",
-    )
+    loader = plaster.get_loader(config_uri)
 
-    config.include('.myapp_config')
-    # we need a way to include the model, duh!
+    app = loader.get_wsgi_app()
 
-    #    config.include('heptet_app.model.email_mgmt')
-    # config.include('.process') # fixme refactor
+    # config = Configurator(
+    #     settings=settings,
+    #     root_factory=get_root,
+    #     package="heptet_app",
+    # )
+    #
+    # config.include('.myapp_config')
+    # # we need a way to include the model, duh!
+    #
+    # #    config.include('heptet_app.model.email_mgmt')
+    # # config.include('.process') # fixme refactor
+    #
+    # config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
+    #
+    # try:
+    #     config.commit()
+    # except ConfigurationExecutionError:
+    #     msg = "Application error. Can't commit pyramid configuration. %s" % sys.exc_info()[1]
+    #     logger.critical(msg)
+    #     print(msg, file=sys.stderr)
+    #     import traceback
+    #     traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
+    #     print(sys.exc_info()[1], file=sys.stderr)
+    #
+    #     exit(1)
 
-    config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
-
-    try:
-        config.commit()
-    except ConfigurationExecutionError:
-        msg = "Application error. Can't commit pyramid configuration. %s" % sys.exc_info()[1]
-        logger.critical(msg)
-        print(msg, file=sys.stderr)
-        import traceback
-        traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
-        print(sys.exc_info()[1], file=sys.stderr)
-
-        exit(1)
-    registry = config.registry
+    registry = app.registry
+    root_factory = registry.queryUtility(IRootFactory)
+    root = root_factory()
 
     asset_mgr, proc_context, template_env = initialize(args, registry, config)
 
     # here we get our entry points
     entry_points = list(registry.getUtilitiesFor(IEntryPoint))
+    #entry_points.append((root.__name__, root.entry_point))
     if not entry_points:
         logger.critical("Configuration error: no entry points.")
         exit(255)

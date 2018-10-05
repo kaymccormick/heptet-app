@@ -12,7 +12,7 @@ from zope.component import IFactory, adapter
 from zope.component.factory import Factory
 from zope.interface import implementer
 
-from heptet_app import Resource, RootResource, _get_root, EntryPointSchema
+from heptet_app import Resource, RootResource, _get_root, EntryPointSchema, EntryPoint
 from heptet_app.impl import NamespaceStore
 from heptet_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
 from heptet_app.process import VirtualAssetManager, process_view, ProcessViewsConfig, ProcessContext
@@ -157,6 +157,7 @@ def entry_points_json(context, request):
 
 def includeme(config: Configurator):
     config.include('.template')
+    config.include('.viewderiver')
 
     # we dont use this but its useful to remember how to do it
     # desc = 'request method template_env'
@@ -170,6 +171,9 @@ def includeme(config: Configurator):
 
     # what is the difference between posting an action versus registering the viwe in the cofnig??\\
     config.action(None, config.add_view, kw=dict(context=RootResource, renderer="heptet_app:templates/main_child.jinja2"))
+    # this duplicates code
+    root_entry = EntryPoint("root")
+    config.registry.registerUtility(root_entry, IEntryPoint, 'root')
     #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
 
     epj = _get_root().sub_resource('entry_points_json', None)

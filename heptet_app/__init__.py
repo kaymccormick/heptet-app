@@ -3,17 +3,18 @@ from __future__ import annotations
 import abc
 import logging
 import os
-import pyramid
-import stringcase
 import sys
 from abc import ABCMeta, abstractmethod
+from threading import Lock
+from typing import AnyStr, Generic, TypeVar, Type
+from zope import interface
+
+import pyramid
+import stringcase
 from jinja2 import Environment
 from marshmallow import Schema, fields
 from pyramid.config import Configurator
 from pyramid.request import Request
-from threading import Lock
-from typing import AnyStr, Generic, TypeVar, Type
-from zope import interface
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
@@ -45,6 +46,8 @@ def _get_root():
         lock.release()
         return root
 
+    # THIS REFERENCES AN ENTRY POINT THAT THEN ISNT FOUND, BECAUSE
+    # ITS NOT "REGISTERED"
     root = RootResource(entry_point=EntryPoint('root'))
     assert root.entry_point
     setattr(sys.modules[__name__], "_root", root)
@@ -961,10 +964,10 @@ def includeme(config: Configurator):
     config.include('.myapp_config')
     config.include('.view')
 
-#    renderer_pkg = 'pyramid_jinja2.renderer_factory'
-#    config.add_renderer(None, renderer_pkg)
+    #    renderer_pkg = 'pyramid_jinja2.renderer_factory'
+    #    config.add_renderer(None, renderer_pkg)
 
-    config.include('.routes')
+#    config.include('.routes')
 
     config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
