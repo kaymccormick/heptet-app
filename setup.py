@@ -17,7 +17,7 @@ tests_require = [
 ]
 
 setup(
-    name='heptet_app',
+    name='heptet-app',
     version='0.4',
     description='Pyramid Scaffold',
     classifiers=[
@@ -30,7 +30,7 @@ setup(
     author_email='kay@kaymccormick.com',
     url='',
     keywords='web pyramid pylons',
-    packages=find_packages(),
+    packages=find_packages(exclude=["node_modules"]),
     include_package_data=True,
     zip_safe=False,
     extras_require={

@@ -961,8 +961,8 @@ def includeme(config: Configurator):
     config.include('.myapp_config')
     config.include('.view')
 
-    renderer_pkg = 'pyramid_jinja2.renderer_factory'
-    config.add_renderer(None, renderer_pkg)
+#    renderer_pkg = 'pyramid_jinja2.renderer_factory'
+#    config.add_renderer(None, renderer_pkg)
 
     config.include('.routes')
 

@@ -15,6 +15,7 @@ from zope.interface import implementer
 from heptet_app import Resource, RootResource, _get_root, EntryPointSchema
 from heptet_app.impl import NamespaceStore
 from heptet_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
+from heptet_app.process import VirtualAssetManager, process_view, ProcessViewsConfig, ProcessContext
 from heptet_app.util import _dump
 
 logger = logging.getLogger(__name__)
@@ -122,7 +123,7 @@ class MapperProperty:
     def mapper(self, new):
         self._mapper = new
 
-
+# test ?
 def entry_point_content(context, request):
     entry_point = request.registry.getUtility(IEntryPoint, request.subpath[0])
     vam = VirtualAssetManager()
