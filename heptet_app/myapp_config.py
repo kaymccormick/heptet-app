@@ -48,9 +48,14 @@ def on_before_render(event):
     request = val['request'] = event['request']
     #    logger.critical("renderer = %s", request.renderer)
     # what happens if we clobber this? it also gets set for the form view
-    entry_point = event['context'].entry_point
-    if entry_point:
-        val['entry_point_template'] = 'heptet_app:build/templates/entry_point/%s.jinja2' % entry_point.key
+    try:
+        entry_point = event['context'].entry_point
+        if entry_point:
+            val['entry_point_template'] = 'heptet_app:build/templates/entry_point/%s.jinja2' % entry_point.key
+    except:
+        logger.critical(sys.exc_info()[2])
+        pass
+
     logger.debug("VAL=%s", val)
 
 

@@ -18,13 +18,13 @@ const {
 class AppPlugin {
     constructor(options, app) {
         this.options = options;
-        const package_root = options.package_root;
+        console.log(options);
         this.app = app
-        this.options.build_template_dir = package_root + "/build/templates";
     }
 
     apply(compiler) {
         const appPlugin = this;
+        const options = this.options;
 
         const entryOption = (context, entry) => {
             //console.log(plugin, "[1] entryOption: ", context, ", ", entry);
@@ -60,10 +60,11 @@ class AppPlugin {
             const entry_points = appPlugin.app.entry_points
             if (entry_points) {
                 for (let ep of entry_points) {
+                    console.log("path = " + options.templateOutputPath);
                     const h = new HtmlWebpackPlugin({
                         title: '',
                         template: 'src/assets/entry_point_generic.html',
-                        filename: path.resolve(this.options.context, 'heptet_app/build/templates/entry_point/' + ep.key + '.jinja2'), // FIXME hardcodpied path
+                        filename: path.resolve(options.templateOutputPath,  'entry_point/' + ep.key + '.jinja2'),
                         inject: false,
                         chunks: [ep.key],
                     });
