@@ -123,6 +123,6 @@ def includeme(config: Configurator):
     #                              'template renderer')
 
 #    logger.critical("inclusion of template")
-    config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='heptet_app.jinja2.')
+    config.add_jinja2_renderer(TEMPLATE_ENV_NAME, settings_prefix='jinja2.')
 
     # config.action(('heptet_app', 'template-env'), do_action, introspectables=(intr,), order=PHASE0_CONFIG)
