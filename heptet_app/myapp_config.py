@@ -51,7 +51,7 @@ def on_before_render(event):
     try:
         entry_point = event['context'].entry_point
         if entry_point:
-            val['entry_point_template'] = 'heptet_app:build/templates/entry_point/%s.jinja2' % entry_point.key
+            val['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % entry_point.key
     except:
         logger.critical(sys.exc_info()[2])
         pass
@@ -99,12 +99,17 @@ def on_context_found(event):
         renderer = None
 
         # template selection
+        override_renderer = None
         if entity_type is not None:
             renderer = "templates/entity/%s.jinja2" % context.__name__
 
             if renderer:
                 logger.debug("selecting %s for %s", renderer, request.path_info)
-                request.override_renderer = renderer
+                override_renderer = renderer
+
+        if override_renderer is not None:
+            logger.info("override renderer set to %r", override_renderer)
+            request.override_renderer =override_renderer
 
         return True
 
@@ -175,7 +180,7 @@ def includeme(config: Configurator):
         'template_env')
 
     # what is the difference between posting an action versus registering the viwe in the cofnig??\\
-    config.action(None, config.add_view, kw=dict(context=RootResource, renderer="heptet_app:templates/main_child.jinja2"))
+    config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
     # this duplicates code
     root_entry = EntryPoint("root")
     config.registry.registerUtility(root_entry, IEntryPoint, 'root')
