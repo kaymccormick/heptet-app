@@ -4,4 +4,6 @@ pyramid_jinja2
 pyramid_retry
 pyramid_tm
 waitress
+zope.interface
+zope.component
 git+https://github.com/kaymccormick/marshmallow.git
