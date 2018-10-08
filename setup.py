@@ -18,7 +18,7 @@ tests_require = [
 
 setup(
     name='heptet-app',
-    version='0.4',
+    version='0.43.0',
     description='Pyramid Scaffold',
     classifiers=[
         'Programming Language :: Python',
