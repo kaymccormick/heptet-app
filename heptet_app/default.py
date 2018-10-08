@@ -1,4 +1,5 @@
 from heptet_app import EntryPoint, ResourceManager
+# this is crufty and should go away
 
 
 class DefaultEntryPoint(EntryPoint):
