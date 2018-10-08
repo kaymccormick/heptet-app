@@ -4,3 +4,4 @@ pyramid_jinja2
 pyramid_retry
 pyramid_tm
 waitress
+git+https://github.com/kaymccormick/marshmallow.git
