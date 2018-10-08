@@ -59,6 +59,7 @@ def on_before_render(event):
     logger.debug("VAL=%s", val)
 
 
+# we need a lot of work here.
 def on_context_found(event):
     """
     Routine for overriding the renderer, called by pyramid event subscription. This does important things like provide the template
@@ -109,7 +110,7 @@ def on_context_found(event):
 
         if override_renderer is not None:
             logger.info("override renderer set to %r", override_renderer)
-            request.override_renderer =override_renderer
+            request.override_renderer = override_renderer
 
         return True
 
@@ -132,6 +133,7 @@ class MapperProperty:
     @mapper.setter
     def mapper(self, new):
         self._mapper = new
+
 
 # test ?
 def entry_point_content(context, request):

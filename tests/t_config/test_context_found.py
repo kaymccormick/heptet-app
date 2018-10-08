@@ -21,7 +21,10 @@ def context_found_event(app_request, app_context, app_registry_mock):
 
 
 @pytest.mark.integration
-def test_on_context_found(app_request, app_registry_mock, app_context, jinja2_env_mock,
+def test_on_context_found(app_request,
+                          app_registry_mock,
+                          app_context,
+                          jinja2_env_mock,
                           context_found_event):
     on_context_found(context_found_event)
     assert jinja2_env_mock is app_context.template_env
@@ -50,7 +53,8 @@ def test_on_context_found_with_entity_type(app_request, app_registry_mock, app_c
         template = jinja2_env.get_template(app_request.override_renderer)
 
 
-@pytest.fixture(params=["test"])
-def app_context(request, root_resource, entry_point_mock):
-    # this template wont exist...
-    return root_resource.sub_resource('app-context-%s' % request.param, entry_point_mock)
+# problem is we lack ability to customize this "app_context" - it always comes with the mock
+# @pytest.fixture
+# def app_context(request, root_resource, entry_point_mock):
+#     # this template wont exist...
+#     return root_resource.sub_resource('app-context-%s' % request.param, entry_point_mock)
