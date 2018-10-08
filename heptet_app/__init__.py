@@ -287,7 +287,7 @@ class ResourceManager:
             self,
             mapper_key: AnyStr = None,
             title: AnyStr = None,
-            entity_type: DeclarativeMeta = None,
+            entity_type = None,
             node_name: AnyStr = None,
             mapper_wrapper: 'MapperWrapper' = None,
             operation_factory=None,
