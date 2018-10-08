@@ -8,6 +8,8 @@ requires = [
     'plaster_pastedeploy',
     'pyramid >= 1.9a',
     'pyramid_jinja2',
+    'stringcase',
+    'lxml',
 ]
 
 tests_require = [
