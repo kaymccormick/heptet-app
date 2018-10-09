@@ -154,7 +154,7 @@ def entry_point_content(context, request):
 
 
 def entry_points_json(context, request):
-    utilities_for = request.registry.getUtilitiesFor(IEntryPoint)
+    utilities_for = request.entry_points
     eps = list(map(lambda x: x[1], utilities_for))
     vam = VirtualAssetManager()
     for ep in eps:

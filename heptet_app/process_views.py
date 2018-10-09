@@ -154,32 +154,6 @@ def main(input_args=None):
 
     app = loader.get_wsgi_app()
 
-    # config = Configurator(
-    #     settings=settings,
-    #     root_factory=get_root,
-    #     package="heptet_app",
-    # )
-    #
-    # config.include('.myapp_config')
-    # # we need a way to include the model, duh!
-    #
-    # #    config.include('heptet_app.model.email_mgmt')
-    # # config.include('.process') # fixme refactor
-    #
-    # config.add_renderer(None, 'pyramid_jinja2.renderer_factory')
-    #
-    # try:
-    #     config.commit()
-    # except ConfigurationExecutionError:
-    #     msg = "Application error. Can't commit pyramid configuration. %s" % sys.exc_info()[1]
-    #     logger.critical(msg)
-    #     print(msg, file=sys.stderr)
-    #     import traceback
-    #     traceback.print_tb(sys.exc_info()[2], file=sys.stderr)
-    #     print(sys.exc_info()[1], file=sys.stderr)
-    #
-    #     exit(1)
-
     registry = app.registry
     root_factory = registry.queryUtility(IRootFactory)
     root = root_factory()
@@ -188,7 +162,6 @@ def main(input_args=None):
 
     # here we get our entry points
     entry_points = list(registry.getUtilitiesFor(IEntryPoint))
-    #entry_points.append((root.__name__, root.entry_point))
     if not entry_points:
         logger.critical("Configuration error: no entry points.")
         exit(255)
@@ -197,8 +170,6 @@ def main(input_args=None):
         for name, ep in entry_points:
             print(name)
         exit(0)
-
-    # ctx = CommandContext(config)
 
     if args.cmd:
         for cmd in args.cmd:

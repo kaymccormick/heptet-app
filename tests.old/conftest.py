@@ -1,6 +1,5 @@
 import importlib
 import inspect
-import json
 import logging
 import sys
 from typing import AnyStr
@@ -15,12 +14,12 @@ from pyramid.registry import Registry
 from pyramid.response import Response
 from pyramid.testing import DummyRequest
 from pyramid_jinja2 import IJinja2Environment
-
+from tests import Property, dump_mock_calls, mock_wrap_config
+from tests.common import MakeEntryPoint
 from zope.interface.registry import Components
 
 import heptet_app
 import heptet_app.myapp_config
-
 from heptet_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
     EntryPointGenerator
 from heptet_app.context import GeneratorContext, FormContext
@@ -31,15 +30,11 @@ from heptet_app.impl import NamespaceStore, MapperWrapper, Separator
 from heptet_app.myapp_config import TEMPLATE_ENV_NAME
 from heptet_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
 from heptet_app.process import VirtualAssetManager
-
 from heptet_app.tvars import TemplateVars
 from heptet_app.viewderiver import entity_view
-from tests import Property, dump_mock_calls, mock_wrap_config
-from tests.common import MakeEntryPoint
-
-logger = logging.getLogger(__name__)
 
 APP_PACKAGE = 'heptet_app'
+logger = logging.getLogger(__name__)
 
 
 #
@@ -59,57 +54,6 @@ def webapp_settings():
         'heptet_app.jinja2.autoescape': "false",
 
     }
-
-
-# what is this?
-_data = {'secondary': None, 'argument': 'heptet_app.model.email_mgmt.Person', 'direction': 'MANYTOONE',
-         'is_property': True, 'is_mapper': False, 'local_remote_pairs': [
-        {'local': {'table': {'key': 'public_key'}, 'key': 'owner_id'},
-         'remote': {'table': {'key': 'person'}, 'key': 'id'}}], 'mapper': {'local_table': {'key': 'person'}},
-         'is_attribute': False, 'key': 'owner'}
-_json = """
-        {
-          "secondary": null,
-          "argument": "heptet_app.model.email_mgmt.Person",
-          "direction": "MANYTOONE",
-          "is_property": true,
-          "is_mapper": false,
-          "local_remote_pairs": [
-            {
-              "local": {
-                "table": {
-                  "key": "public_key"
-                },
-                "key": "owner_id"
-              },
-              "remote": {
-                "table": {
-                  "key": "person"
-                },
-                "key": "id"
-              }
-            }
-          ],
-          "mapper": {
-            "local_table": {
-              "key": "person"
-            }
-          },
-          "is_attribute": false,
-          "key": "owner"
-        }"""
-
-
-@pytest.fixture
-def my_json():
-    return _json
-
-
-@pytest.fixture
-def my_data(my_json):
-    d = json.loads(my_json)
-    print(repr(d), file=sys.stderr)
-    return d
 
 
 #
@@ -435,7 +379,6 @@ def element_mock():
     return m
 
 
-
 @pytest.fixture
 def mapper_wrapper_real(mapper_info_real):
     return MapperWrapper(mapper_info_real)
@@ -540,7 +483,6 @@ def my_gen_context(
 @pytest.fixture
 def process_struct_real():
     return None
-
 
 
 #

@@ -1,7 +1,7 @@
 #
 # Primary application related fixtures
 #
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
 from jinja2 import Environment, Template
@@ -33,10 +33,16 @@ def app_registry_mock(jinja2_env_mock):
     return x
 
 
+#
+# how do we want to 'select' the entry points for the request?
+# through an 'add'?
+#
 @pytest.fixture
 def app_request(app_registry_mock):
     request = DummyRequest()
     request.registry = app_registry_mock
+    type(request).entry_points = PropertyMock()
+
     return request
 
 
@@ -77,3 +83,45 @@ def root_resource(app_request):
     yield root
     heptet_app.reset_root(app_request)
     assert heptet_app.get_root(app_request) is not root
+
+@pytest.fixture
+def app_registry_mock(jinja2_env_mock):
+    """
+    This mocks the registry and provides the primary instance we need. We
+    could mock the registry and return a non-mock jinja2 env - that would be useful
+    too.
+    :param jinja2_env_mock:
+    :return:
+    """
+    x = MagicMock(Registry, name="app_registry_mock")
+
+    def _se(i, name):
+        if i is IJinja2Environment and name == TEMPLATE_ENV_NAME:
+            return jinja2_env_mock
+        raise None
+
+    x.queryUtility.side_effect = _se
+    return x
+
+@pytest.fixture
+def jinja2_env_mock():
+    """
+    Mock the jinja2 env.
+    :return:
+    """
+    mock = MagicMock(Environment, name='jinja2_env')
+    # mock.mock_add_spec(Environment.__class__)
+    # mock.mock_add_spec(['get_template'])
+    _templates = {}
+
+    def _get_template(name):
+        if name in _templates:
+            return _templates[name]
+        tmock = Mock(Template)
+        _templates[name] = tmock
+        tmock.render.side_effect = lambda **kwargs: dict(**kwargs)
+        return tmock
+
+    mock.get_template.side_effect = _get_template
+    mock._templates = lambda: _templates
+    return mock
