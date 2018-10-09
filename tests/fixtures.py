@@ -15,7 +15,6 @@ from pyramid.response import Response
 from pyramid.testing import DummyRequest
 from pyramid_jinja2 import IJinja2Environment
 from tests import Property, dump_mock_calls, mock_wrap_config
-from tests.common import MakeEntryPoint
 from zope.interface.registry import Components
 
 import heptet_app
@@ -657,7 +656,7 @@ def mapper_wrapper_mock():
 
 
 @pytest.fixture
-def make_entry_point() -> MakeEntryPoint:
+def make_entry_point():
     """
     Returns a function which takes arguments manager, key, generator, mapper_wrapper
     :return:

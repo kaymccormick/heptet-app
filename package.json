@@ -1,6 +1,6 @@
 {
   "name": "heptet-app",
-  "version": "1.0.0",
+  "version": "0.43.0",
   "description": "Heptet App",
   "main": "index.js",
   "scripts": {
