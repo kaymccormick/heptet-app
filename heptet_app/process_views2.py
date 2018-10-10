@@ -1,3 +1,4 @@
+import json
 import logging
 import argparse
 import sys
@@ -5,6 +6,7 @@ import sys
 from pyramid.scripts.common import get_config_loader, parse_vars
 
 logger = logging.getLogger()
+
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -31,7 +33,7 @@ def main(argv):
         nargs='?',
         default=None,
         help='The URI to the configuration file.',
-        )
+    )
     parser.add_argument(
         'config_vars',
         nargs='*',
@@ -39,7 +41,7 @@ def main(argv):
         help="Variables required by the config file. For example, "
              "`http_port=%%(http_port)s` would expect `http_port=8080` to be "
              "passed here.",
-        )
+    )
 
     args = parser.parse_args(argv)
 
@@ -51,7 +53,7 @@ def main(argv):
     loader = get_config_loader(config_uri)
     loader.setup_logging(config_vars)
 
-    #pserve_file_config(loader, global_conf=config_vars)
+    # pserve_file_config(loader, global_conf=config_vars)
 
     server_name = args.server_name
     if args.server:
@@ -68,6 +70,17 @@ def main(argv):
     server = server_loader.get_wsgi_server(server_name, config_vars)
 
     app = loader.get_wsgi_app(app_name, config_vars)
+    environ = {'SCRIPT_NAME': '/entry_points_json',
+               'PATH_INFO': '/entry_points_json',
+               'SERVER_NAME': 'localhost',
+                'wsgi.url_scheme': 'http'}
+    with app.request_context(environ) as request:
+        response = app.handle_request(request);
+        data = json.loads(response.text)
+        print(repr(data))
+
+
+
 
 
 
