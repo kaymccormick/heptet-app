@@ -10,7 +10,7 @@ class IEntityTypeContainer(Interface):
 
 EntityType = TypeVar('EntityType')
 @implementer(IEntityTypeContainer)
-class EntityTypeContainer(EntityType]:
+class EntityTypeContainer:
 
     def __init__(self):
         super().__init__()

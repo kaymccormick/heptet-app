@@ -13,16 +13,9 @@ class IProcess(Interface):
     pass
 
 
-# class ICollectorContext(Interface):
-#     pass
-
-
 class IObject(Interface):
     pass
 
-
-class IVariableType(Interface):
-    pass
 
 
 class IEntryPoint(IObject):
@@ -44,9 +37,6 @@ class ITemplateVariable(Interface):
 class ICollector(Interface):
     pass
 
-
-class IBuilder(Interface):
-    pass
 
 
 class IRelationshipSelect(Interface):
