@@ -16,3 +16,13 @@ To use it, install the 'cookiecutter' package via pip install:
 
 	$ cookiecutter https://github.com/kaymccormick/heptet-app-cookiecutter.git
 
+What it provides
+----------------
+
+All the functionality I could separate and make to work on its own. There is
+a fair amount of leftover code that hasn't yet been removed - much of this
+will be modularized. For instance, I hope to not retain the 'lxml' dependency
+in this core module.
+
+There is no reason for anyone to use this module in its current state,
+except me.
