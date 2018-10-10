@@ -26,3 +26,8 @@ in this core module.
 
 There is no reason for anyone to use this module in its current state,
 except me.
+
+References
+==========
+
+[1] _README from cookiecutter: https://github.com/kaymccormick/heptet-app-cookiecutter/blob/master/%7B%7Bcookiecutter.repo_name%7D%7D/README.txt
