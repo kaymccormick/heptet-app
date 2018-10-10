@@ -20,7 +20,7 @@ from zope.interface import implementer, Interface
 
 from heptet_app.exceptions import MissingArgumentException
 from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin, NamespaceStore
-from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator, INamespaceStore
+from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator, INamespaceStore, IEntryPointFactory, IResourceRoot
 from heptet_app.interfaces import IEntryPointMapperAdapter
 from heptet_app.interfaces import IEntryPointView, IResourceManager
 from heptet_app.interfaces import IResource
@@ -35,12 +35,14 @@ lock = Lock()
 
 
 def get_root(request: Request = None):
-    return _get_root()
+    def _register(root):
+        request.registry.registerUtility(root, IResourceRoot)
+    return _get_root(_register)
 
 
-def _get_root():
+def _get_root(on_create_cb=None):
     lock.acquire()
-    if hasattr(heptet_app, "_root"):
+    if hasattr(sys.modules[__name__], "_root"):
         root = getattr(sys.modules[__name__], "_root")
         lock.release()
         return root
@@ -49,6 +51,11 @@ def _get_root():
     # ITS NOT "REGISTERED"
     root = RootResource(entry_point=EntryPoint('root'))
     assert root.entry_point
+    if on_create_cb:
+        on_create_cb(root)
+    else:
+        logger.critical("no callback")
+
     setattr(sys.modules[__name__], "_root", root)
     lock.release()
     return root
@@ -256,6 +263,9 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
     def add_name(self, name):
         self._names.append(name)
 
+    def create_resource(self, *args, **kwargs):
+        return self.sub_resource(*args, **kwargs)
+
     def sub_resource(self, name: AnyStr, entry_point: EntryPoint, title=None):
         logger.debug("%r", self.__class__)
         if not title:
@@ -286,7 +296,7 @@ class ResourceManager:
             self,
             mapper_key: AnyStr = None,
             title: AnyStr = None,
-            entity_type = None,
+            entity_type=None,
             node_name: AnyStr = None,
             mapper_wrapper: 'MapperWrapper' = None,
             operation_factory=None,
@@ -470,6 +480,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     manager._resource = resource
 
 
+@implementer(IResourceRoot)
 class RootResource(Resource):
     def __new__(cls, name: AnyStr = '', parent: Resource = None,
                 entry_point: EntryPoint = None,
@@ -959,14 +970,23 @@ class SubpathArgumentGetter(OperationArgumentGetter):
         return val
 
 
+@implementer(IEntryPointFactory)
+class EntryPointFactory:
+    def __call__(self, *args, **kwargs):
+        return EntryPoint(*args, **kwargs)
+
+
 def includeme(config: Configurator):
+    ep_factory = EntryPointFactory()
+    config.registry.registerUtility(ep_factory, IEntryPointFactory)
+
     config.include('.myapp_config')
     config.include('.view')
 
     #    renderer_pkg = 'pyramid_jinja2.renderer_factory'
     #    config.add_renderer(None, renderer_pkg)
 
-#    config.include('.routes')
+    #    config.include('.routes')
 
     config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')

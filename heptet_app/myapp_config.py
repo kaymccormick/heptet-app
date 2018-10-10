@@ -12,7 +12,7 @@ from zope.component import IFactory, adapter
 from zope.component.factory import Factory
 from zope.interface import implementer
 
-from heptet_app import Resource, RootResource, _get_root, EntryPointSchema, EntryPoint
+from heptet_app import Resource, RootResource, _get_root, EntryPointSchema, EntryPoint, IResourceRoot
 from heptet_app.impl import NamespaceStore
 from heptet_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
 from heptet_app.process import VirtualAssetManager, process_view, ProcessViewsConfig, ProcessContext
@@ -168,6 +168,7 @@ def entry_points_json(context, request):
 
 
 def includeme(config: Configurator):
+
     config.include('.template')
     config.include('.viewderiver')
 
@@ -181,18 +182,19 @@ def includeme(config: Configurator):
         lambda request: request.registry.getUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME),
         'template_env')
 
-    # what is the difference between posting an action versus registering the viwe in the cofnig??\\
-    config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
-    # this duplicates code
-    root_entry = EntryPoint("root")
-    config.registry.registerUtility(root_entry, IEntryPoint, 'root')
-    #    config.action(disc, _add_request_method, introspectables=(intr,), order=0)
+    # # what is the difference between posting an action versus registering the viwe in the cofnig??\\
+    # config.action(None, config.add_view, kw=dict(context=RootResource, renderer="main_child.jinja2"))
+    # # this duplicates code
+    # root_entry = EntryPoint("root")
+    # config.registry.registerUtility(root_entry, IEntryPoint, 'root')
 
-    epj = _get_root().sub_resource('entry_points_json', None)
-    config.add_view(entry_points_json, context=type(epj), renderer='json')
-    _get_root().sub_resource('entry_points', None)
-    config.add_view(entry_point_content, name='content', context=type(_get_root().sub_resource('entry_point', None)),
-                    renderer='json')
+    root = _get_root(lambda root: config.registry.registerUtility(root, IResourceRoot))
+
+    # epj = _get_root().sub_resource('entry_points_json', None)
+    # config.add_view(entry_points_json, context=type(epj), renderer='json')
+    # _get_root().sub_resource('entry_points', None)
+    # config.add_view(entry_point_content, name='content', context=type(_get_root().sub_resource('entry_point', None)),
+    #                 renderer='json')
 
     config.include('.entrypoint')
     factory = Factory(Resource, 'resource',
@@ -200,6 +202,8 @@ def includeme(config: Configurator):
     config.registry.registerUtility(factory, IFactory, 'resource')
 
     config.registry.registerAdapter(MapperProperty, (IObject,), IEntryPointMapperAdapter)
+
+    config.include('.views')
 
     config.add_subscriber(on_context_found, ContextFound)
     config.add_subscriber(on_before_render, BeforeRender)

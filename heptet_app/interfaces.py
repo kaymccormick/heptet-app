@@ -1,7 +1,13 @@
 from zope.interface import Interface
 
+
+class IEntryPointFactory(Interface):
+    pass
+
+
 class IResourceRoot(Interface):
     pass
+
 
 class IGeneratorContext(Interface):
     pass
@@ -17,7 +23,6 @@ class IProcess(Interface):
 
 class IObject(Interface):
     pass
-
 
 
 class IEntryPoint(IObject):
@@ -38,7 +43,6 @@ class ITemplateVariable(Interface):
 
 class ICollector(Interface):
     pass
-
 
 
 class IRelationshipSelect(Interface):
