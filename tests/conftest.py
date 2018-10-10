@@ -127,5 +127,14 @@ def jinja2_env_mock():
     return mock
 
 
-from .fixtures import entry_point_mock, process_context_mock, entry_point_generator_mock, asset_manager_mock, make_entry_point, process_context, jinja2_env, make_jinja2_env, make_config, asset_manager_mock_wraps_virtual,\
+from .fixtures import entry_point_mock,\
+    process_context_mock,\
+    entry_point_generator_mock,\
+    asset_manager_mock,\
+    make_entry_point,\
+    process_context,\
+    jinja2_env,\
+    make_jinja2_env,\
+    make_config,\
+    asset_manager_mock_wraps_virtual,\
     virtual_asset_manager
