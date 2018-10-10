@@ -47,6 +47,7 @@ setup(
             'initialize_heptet_app_db = heptet_app.scripts.initializedb:main',
             'process_model = heptet_app.scripts.process_model:main',
             'process_views = heptet_app.process_views:main',
+            'entry_points_json = heptet_app.process_views2:main',
         ],
     },
 )

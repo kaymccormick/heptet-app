@@ -29,6 +29,12 @@ def main(argv):
         metavar='SERVER_TYPE',
         help="Use the named server.")
     parser.add_argument(
+        '-o', '--output-file',
+        dest='output_file',
+        metavar='OUTPUT_FILE',
+        help='Output the information to the named file.')
+
+    parser.add_argument(
         'config_uri',
         nargs='?',
         default=None,
@@ -76,8 +82,14 @@ def main(argv):
                 'wsgi.url_scheme': 'http'}
     with app.request_context(environ) as request:
         response = app.handle_request(request);
-        data = json.loads(response.text)
-        print(repr(data))
+        assert response.status_code == 200
+        if args.output_file:
+            with open(args.output_file, 'w') as f:
+                f.write(response.text)
+        else:
+            print(response.text)
+
+
 
 
 
