@@ -10,6 +10,8 @@ requires = [
     'pyramid_jinja2',
     'stringcase',
     'lxml',
+    'zope.component',
+    'zope.interface',
 ]
 
 tests_require = [
