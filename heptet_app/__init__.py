@@ -37,6 +37,7 @@ lock = Lock()
 def get_root(request: Request = None):
     def _register(root):
         request.registry.registerUtility(root, IResourceRoot)
+
     return _get_root(_register)
 
 
@@ -697,8 +698,6 @@ class EntryPoint(AssetEntity):
         except Exception as ex:
             x = ex
 
-        logger.debug("Entry Point is %s", x)
-
     def __repr__(self):
         """
         Return the value for the repr() of the object
@@ -972,8 +971,11 @@ class SubpathArgumentGetter(OperationArgumentGetter):
 
 @implementer(IEntryPointFactory)
 class EntryPointFactory:
-    def __call__(self, *args, **kwargs):
-        return EntryPoint(*args, **kwargs)
+    def __call__(self, registry, key, *args, **kwargs):
+        ep = EntryPoint(key, *args, **kwargs)
+        registry.registerUtility(ep, IEntryPoint, key)
+        return ep
+
 
 
 def includeme(config: Configurator):

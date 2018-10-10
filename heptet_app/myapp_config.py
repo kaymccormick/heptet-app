@@ -197,6 +197,7 @@ def includeme(config: Configurator):
     #                 renderer='json')
 
     config.include('.entrypoint')
+    # is this used ??
     factory = Factory(Resource, 'resource',
                       'ResourceFactory', (IResource,))
     config.registry.registerUtility(factory, IFactory, 'resource')
