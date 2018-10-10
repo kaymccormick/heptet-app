@@ -1,5 +1,7 @@
 from zope.interface import Interface
 
+class IResourceRoot(Interface):
+    pass
 
 class IGeneratorContext(Interface):
     pass

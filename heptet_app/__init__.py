@@ -18,7 +18,6 @@ from pyramid.request import Request
 from zope.component import adapter
 from zope.interface import implementer, Interface
 
-import heptet_app
 from heptet_app.exceptions import MissingArgumentException
 from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin, NamespaceStore
 from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator, INamespaceStore
