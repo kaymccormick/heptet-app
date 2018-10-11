@@ -24,8 +24,17 @@ a fair amount of leftover code that hasn't yet been removed - much of this
 will be modularized. For instance, I hope to not retain the 'lxml' dependency
 in this core module.
 
-There is no reason for anyone to use this module in its current state,
-except me.
+* Tight integration between webpack and pyramid configuration.
+* Api for registering new "entry points" (a la webpack)
+* Custom webpack plugin!
+* End-to-end template integration with jinja2 and hooks
+  for generating javascript to be included in static module
+  bundling
+* Location-aware resources for use in the Pyramid traversal process.
+* Resource factory enabling fine-grained use of context predicate in view definitions.
+
+The usual caveats apply - this is pre-release code and should not be confused with production-quality code. For demonstration purposes only. Use at your own risk.
+
 
 References
 ==========
