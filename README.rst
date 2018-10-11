@@ -1,6 +1,8 @@
 heptet-app
 ==========
 
+.. image:: https://heptet.us/jenkins/buildStatus/icon?job=heptet-app
+
 This repository represents a python package 'heptet-app' (hetpet_app) that
 can be used as the basis for Pyramid application development.
 
