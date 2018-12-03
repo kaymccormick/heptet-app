@@ -39,6 +39,11 @@ def app_registry_mock(jinja2_env_mock):
 #
 @pytest.fixture
 def app_request(app_registry_mock):
+    """
+    App request mock.
+    :param app_registry_mock:
+    :return:
+    """
     request = DummyRequest()
     request.registry = app_registry_mock
     type(request).entry_points = PropertyMock()

@@ -1,7 +1,8 @@
 import collections
 import logging
 import typing
-from typing import MutableMapping, Iterator, AnyStr
+from collections import MutableMapping
+from typing import Iterator, AnyStr
 
 from marshmallow import Schema, fields
 

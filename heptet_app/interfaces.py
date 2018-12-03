@@ -1,11 +1,16 @@
 from zope.interface import Interface
 
+class IResourceContext(Interface):
+    pass
 
 class IEntryPointFactory(Interface):
     pass
 
 
 class IResourceRoot(Interface):
+    """
+    Interface marking the resource root.
+    """
     pass
 
 
@@ -58,12 +63,11 @@ class IMapperInfo(Interface):
     pass
 
 
-class ISqlAlchemySession(object):
-    pass
-
-
 # @implementer(IInterface)
 class IResource(Interface):
+    """
+    Interface for a resource, i.e. something which is in the resource tree.
+    """
     pass
 
 
@@ -81,3 +85,8 @@ class IEntryPointGenerator(Interface):
 
 class IEntryPointMapperAdapter(Interface):
     pass
+
+
+class IEntryPoints(Interface):
+    pass
+

@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, PropertyMock
 
 import pytest
 from jinja2 import Environment, Template
-from lxml import html
+
 from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.registry import Registry
@@ -22,9 +22,7 @@ import heptet_app.myapp_config
 from heptet_app import get_root, Resource, ResourceManager, ResourceOperation, BaseView, EntryPoint, \
     EntryPointGenerator
 from heptet_app.context import GeneratorContext, FormContext
-from heptet_app.entity import EntityFormViewEntryPointGenerator
-from heptet_app.entity import FormRelationshipMapper, RelationshipSelect
-from heptet_app.form import Form
+
 from heptet_app.impl import NamespaceStore, MapperWrapper, Separator
 from heptet_app.myapp_config import TEMPLATE_ENV_NAME
 from heptet_app.process import FileAssetManager, ProcessContext, AbstractAssetManager
@@ -371,11 +369,11 @@ def entity_type_mock():
     return MagicMock(name='entity_type_mock')
 
 
-@pytest.fixture
-def element_mock():
-    element = html.Element('elem')
-    m = MagicMock(element, name="element_mock")
-    return m
+# @pytest.fixture
+# def element_mock():
+#     element = html.Element('elem')
+#     m = MagicMock(element, name="element_mock")
+#     return m
 
 
 @pytest.fixture

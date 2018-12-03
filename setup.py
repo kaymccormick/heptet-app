@@ -9,7 +9,6 @@ requires = [
     'pyramid >= 1.9a',
     'pyramid_jinja2',
     'stringcase',
-    'lxml',
     'zope.component',
     'zope.interface',
 ]
@@ -22,8 +21,8 @@ tests_require = [
 
 setup(
     name='heptet-app',
-    version='0.43.0',
-    description='Pyramid Scaffold',
+    version='0.45.0',
+    description='Heptet App Framework',
     classifiers=[
         'Programming Language :: Python',
         'Framework :: Pyramid',

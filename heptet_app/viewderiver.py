@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def entity_view(view, info):
     # pull entity type from options (out of date!!)
     operation = info.options.get('operation')
+    logger.critical("I am wrapping now! %r", info.original_view)
 
     def wrapper_view(context, request):
         logger.warning("original view = %s", repr(info.original_view))

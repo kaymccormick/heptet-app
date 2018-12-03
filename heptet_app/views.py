@@ -2,17 +2,19 @@ import json
 
 from pyramid.response import Response
 
-from heptet_app import EntryPointSchema
+from heptet_app.mschema import EntryPointSchema
 from heptet_app.interfaces import IResourceRoot, IEntryPointFactory
-from heptet_app.process import VirtualAssetManager, process_view, ProcessViewsConfig, ProcessContext
+from heptet_app.process import VirtualAssetManager, process_view, ProcessContext
+import marshmallow
 
 
 def entry_points_json(context, request):
+    assert marshmallow.__version__.startswith('3.')
     utilities_for = request.entry_points
     eps = list(map(lambda x: x[1], utilities_for))
     vam = VirtualAssetManager()
     for ep in eps:
-        process_view(request.registry, config=ProcessViewsConfig(),
+        process_view(request.registry, config={},
                      proc_context=ProcessContext({}, context.template_env, vam),
                      entry_point=ep);
         ep.content = vam.assets[ep].content

@@ -1,6 +1,5 @@
 import types
 import urllib
-from dataclasses import dataclass
 from typing import Callable, AnyStr
 
 from pyramid.renderers import get_renderer

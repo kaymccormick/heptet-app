@@ -1,6 +1,11 @@
 import abc
 import logging
+from abc import ABCMeta
 from typing import Generic, TypeVar, AnyStr
+try:
+    from typing import GenericMeta
+except ImportError:
+    class GenericMeta(type): pass
 
 from zope.component import adapter
 from zope.interface import implementer
@@ -63,7 +68,9 @@ class MapperWrapper:
         return self.mapper_info.local_table.key
 
 
-class NamespaceMeta(abc.ABCMeta):
+NamespaceMetabase = ABCMeta
+
+class NamespaceMeta(NamespaceMetabase):
     def __new__(cls, clsname, superclasses, attr_dict):
         new__ = super().__new__(cls, clsname, superclasses, attr_dict)
         return new__

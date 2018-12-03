@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import copy
 import logging
 from typing import Sequence, Generic, TypeVar, Callable, Any, AnyStr
@@ -8,7 +6,6 @@ from pyramid.path import DottedNameResolver
 from zope.interface import implementer
 
 from heptet_app import EntryPointMixin, TemplateEnvironment
-from heptet_app.form import Form
 from heptet_app.impl import NamespaceStore, TemplateEnvMixin, MixinBase
 from heptet_app.interfaces import IFormContext, IGeneratorContext
 from heptet_app.tvars import TemplateVars
@@ -24,11 +21,11 @@ class FormContextMixin(MixinBase):
         self._form_context = None  # type: FormContext
 
     @property
-    def form_context(self) -> FormContext:
+    def form_context(self) -> 'FormContext':
         return self._form_context
 
     @form_context.setter
-    def form_context(self, new: FormContext) -> None:
+    def form_context(self, new: 'FormContext') -> None:
         self._form_context = new
 
 
@@ -38,7 +35,7 @@ class GeneratorContextMixin(MixinBase):
         self._generator_context = None
 
     @property
-    def generator_context(self) -> GeneratorContext:
+    def generator_context(self) -> 'GeneratorContext':
         return self._generator_context
 
     @generator_context.setter
@@ -98,14 +95,14 @@ class MapperInfoMixin(MixinBase):
 class FormContextFactoryMixin(MixinBase):
     def __init__(self) -> None:
         super().__init__()
-        self._form_context_factory = None  # type: FormContextFactory
+        self._form_context_factory = None
 
     @property
-    def form_context_factory(self) -> FormContextFactory:
+    def form_context_factory(self):
         return self._form_context_factory
 
     @form_context_factory.setter
-    def form_context_factory(self, new: FormContextFactory):
+    def form_context_factory(self, new):
         self._form_context_factory = new
 
     def check_instance(self):
@@ -148,7 +145,7 @@ class GeneratorContext(
 
     # adding options here doesnt necessarily make things any clearer
 
-    def __init__(self, entry_point, template_vars, form_context_factory: FormContextFactory,
+    def __init__(self, entry_point, template_vars, form_context_factory,
                  root_namespace: NamespaceStore, template_env=None, **kwargs) -> None:
         super().__init__()
         # if mapper_info is not None:
@@ -191,11 +188,6 @@ class GeneratorContext(
 
 FormContextArgs = ()
 
-# CODE SMELL FIXME
-FormContextFactory = Callable[[GeneratorContext,
-                               TemplateEnvironment,
-                               NamespaceStore, NamespaceStore, 'FormContextFactory',
-                               Form, int, bool, Sequence, dict], 'FormContext']
 
 T = TypeVar('T')
 
@@ -292,7 +284,7 @@ class FormContext(
             form_context_factory=None,
             relationship_field_mapper: FieldMapper = None,
             resolver: DottedNameResolver = None,
-            form: Form = None,
+            form=None,
             nest_level: int = 0,
             do_modal: bool = False,
             builders: Sequence = None,

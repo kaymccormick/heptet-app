@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import abc
 import logging
 import os
@@ -7,20 +5,25 @@ import sys
 from abc import ABCMeta, abstractmethod
 from threading import Lock
 from typing import AnyStr, Generic, TypeVar, Type
+try:
+    from typing import GenericMeta
+except ImportError:
+    class GenericMeta(type): pass
+
 from zope import interface
 
 import pyramid
 import stringcase
 from jinja2 import Environment
-from marshmallow import Schema, fields
 from pyramid.config import Configurator
 from pyramid.request import Request
 from zope.component import adapter
-from zope.interface import implementer, Interface
+from zope.interface import implementer
 
-from heptet_app.exceptions import MissingArgumentException
+from heptet_app.exceptions import MissingArgumentException, AppException
 from heptet_app.impl import EntityTypeMixin, TemplateEnvMixin, NamespaceStore
-from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator, INamespaceStore, IEntryPointFactory, IResourceRoot
+from heptet_app.interfaces import IEntryPoint, IEntryPointGenerator, INamespaceStore, IEntryPointFactory, IResourceRoot, \
+    IEntryPoints, IResourceContext
 from heptet_app.interfaces import IEntryPointMapperAdapter
 from heptet_app.interfaces import IEntryPointView, IResourceManager
 from heptet_app.interfaces import IResource
@@ -35,6 +38,12 @@ lock = Lock()
 
 
 def get_root(request: Request = None):
+    """
+    The root factory for the application.
+    :param request:
+    :return: Resource root
+    """
+
     def _register(root):
         request.registry.registerUtility(root, IResourceRoot)
 
@@ -70,6 +79,9 @@ def reset_root(request: Request):
 
 
 class AppBase(object):
+    """
+    Base class for an object in the system. Allows for adding behaviors related to system integration.
+    """
     pass
 
 
@@ -87,7 +99,7 @@ class ArgumentContext:
         self._subpath_index = new
 
 
-class ResourceMeta(ABCMeta):
+class ResourceMeta(GenericMeta):
     count = 0
 
     def _serialize(cls, field, value, attr, obj):
@@ -149,11 +161,11 @@ class EntryPointMixin:
         self._entry_point = None  # type: EntryPoint
 
     @property
-    def entry_point(self) -> EntryPoint:
+    def entry_point(self) -> 'EntryPoint':
         return self._entry_point
 
     @entry_point.setter
-    def entry_point(self, new: EntryPoint):
+    def entry_point(self, new: 'EntryPoint'):
         self._entry_point = new
 
 
@@ -166,8 +178,8 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
     def __new__(
             cls,
             name: AnyStr,
-            parent: Resource,
-            entry_point: EntryPoint,
+            parent: 'Resource',
+            entry_point: 'EntryPoint',
             title: AnyStr = None,
             template_env=None,
     ):
@@ -200,7 +212,7 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
         x.__init__(name, parent, entry_point, title, template_env)
         return x
 
-    def __init__(self, name: AnyStr, parent: Resource, entry_point: EntryPoint, title: AnyStr = None,
+    def __init__(self, name: AnyStr, parent: 'Resource', entry_point: 'EntryPoint', title: AnyStr = None,
                  template_env=None) -> None:
         """
 
@@ -230,7 +242,7 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
         self.values = lambda: self._data.values()
         self.get = lambda x: self._data.get(x)
         self._entity_type = entry_point and entry_point.manager and entry_point.manager.entity_type
-        self._subresource_type = self.__class__
+        self._subresource_type = Resource
 
     def validate(self):
         """
@@ -267,7 +279,7 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
     def create_resource(self, *args, **kwargs):
         return self.sub_resource(*args, **kwargs)
 
-    def sub_resource(self, name: AnyStr, entry_point: EntryPoint, title=None):
+    def sub_resource(self, name: AnyStr, entry_point: 'EntryPoint'=None, title=None):
         logger.debug("%r", self.__class__)
         if not title:
             title = stringcase.sentencecase(name)
@@ -396,7 +408,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     :type config: Configurator
     :type manager: ResourceManager
     :param manager: ResourceManager instance
-    :param config: Configurator instance++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    :param config: Configurator instance
     :return:
     """
     op: ResourceOperation
@@ -411,9 +423,10 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     node_name = manager.node_name
 
     # alter interface to this?
-    root_resource = get_root()
+    presource = config.get_resource_context()
+
     # assert root_resource is not None and isinstance(root_resource, RootResource), root_resource
-    my_parent = root_resource
+    my_parent = presource
     assert my_parent is not None
 
     #
@@ -433,18 +446,11 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
     assert mapper_wrapper, "no mapper wrapper %s in %s" % (key, manager.mapper_wrappers)
 
     # code smell
-    container_entry_point = EntryPoint(key, manager, mapper=manager.mapper_wrapper.get_one_mapper_info())
+    container_entry_point = EntryPoint(key, manager, mapper=manager.mapper_wrapper)
     m = config.registry.getAdapter(container_entry_point, IEntryPointMapperAdapter)
     m.mapper = mapper_wrapper
 
-    resource = Resource(
-        name=node_name,
-        title=manager.title,
-        parent=my_parent,
-        entry_point=container_entry_point,
-    )
-    root_resource.__setitem__(node_name, resource)
-    assert type(resource) is not Resource
+    resource = presource.create_resource(node_name, container_entry_point, manager.title)
 
     # this makes a direct mapping between operations, entry points, and views.
     extra = {}
@@ -460,7 +466,7 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 
         entry_point_key = '%s_%s' % (node_name, op.name)
         d['view'] = op.view
-        entry_point = EntryPoint(entry_point_key, manager, mapper=mapper_wrapper.get_one_mapper_info())
+        entry_point = EntryPoint(entry_point_key, manager, mapper=mapper_wrapper)
         logger.debug("spawning sub resource for op %s, %s", op.name, node_name)
         op_resource = resource.sub_resource(op.name, entry_point)
         d['context'] = type(op_resource)
@@ -472,7 +478,14 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
         # d['decorator'] = view_decorator
 
         logger.debug("Adding view: %s", d)
-        config.add_view(**d)
+
+        def _action():
+            logger.info("adding view %r", d)
+            config.add_view(**d)
+
+        intr = config.introspectable('app view', '%s.%s' % (node_name, op.name),
+            'app view %s.%s' % (node_name, op.name), 'app view')
+        config.action(None, config.add_view, args=(), kw=d , introspectables=(intr,))
 
         reg_view = True
 
@@ -484,12 +497,13 @@ def _add_resmgr_action(config: Configurator, manager: ResourceManager):
 @implementer(IResourceRoot)
 class RootResource(Resource):
     def __new__(cls, name: AnyStr = '', parent: Resource = None,
-                entry_point: EntryPoint = None,
+                entry_point: 'EntryPoint' = None,
                 title: AnyStr = None, template_env=None):
+        # fixme remove - we also need a way to set this from the client module
         assert entry_point
         return super().__new__(cls, name, parent, entry_point, title, template_env)
 
-    def __init__(self, name: AnyStr = '', parent: Resource = None, entry_point: EntryPoint = None, title: AnyStr = None,
+    def __init__(self, name: AnyStr = '', parent: Resource = None, entry_point: 'EntryPoint' = None, title: AnyStr = None,
                  template_env=None) -> None:
         assert entry_point
         super().__init__(name, parent, entry_point, title, template_env)
@@ -511,7 +525,16 @@ class RootResource(Resource):
 
 
 class BaseView(Generic[T]):
+    """
+    Base class for a 'view' in the system.
+    """
+
     def __init__(self, context, request: Request = None) -> None:
+        """
+        Standard 2-argument pyramid view constructor.
+        :param context:
+        :param request:
+        """
         self._context = context
         self._request = request
         self._operation = None
@@ -522,6 +545,12 @@ class BaseView(Generic[T]):
         self._template_env = None
 
     def __call__(self, *args, **kwargs):
+        """
+        Default implementation of a view.
+        :param args:
+        :param kwargs:
+        :return:
+        """
         self.collect_args(self.request)
         entry_point = None
         if isinstance(self.context, Exception):
@@ -559,6 +588,11 @@ class BaseView(Generic[T]):
         self._operation = new
 
     def collect_args(self, request):
+        """
+        Collect arguments for the 'operation' associated with the view, if any.
+        :param request:
+        :return:
+        """
         if self.operation is None:
             logger.debug("operation is none! this could be bad.")
             return
@@ -607,55 +641,15 @@ class BaseView(Generic[T]):
 
 
 class ExceptionView(BaseView):
-    def __init__(self, context, request) -> None:
-        super().__init__(context, request)
-        # request.override_renderer = "templates/exception.jinja2"
+    """
+    Default exception view. Does nothing.
+    """
 
 
 class OperationArgumentExceptionView(ExceptionView):
     def __init__(self, context, request) -> None:
         super().__init__(context, request)
         request.override_renderer = "templates/args.jinja2"
-
-
-#
-# SCHEMA
-#
-class AppBaseSchema(Schema):
-    pass
-
-
-class AssetContentValue(Schema):
-    pass
-
-
-class EntryPointSchema(Schema):
-    key = fields.String()
-    fspath = fields.Function(lambda ep: ep.__fspath__())
-    manager = fields.Nested("ResourceManagerSchema")
-    content = fields.String()
-
-
-class AssetManagerSchema(Schema):
-    asset_content = fields.Dict()
-
-
-class ResourceManagerSchema(Schema):
-    mapper_key = fields.String()
-    title = fields.String()
-    # entity_type = TypeField()
-    node_name = fields.String()
-    pass
-
-
-class ResourceSchema(Schema):
-    # type = TypeField(attribute='__class__')
-    manager = fields.Nested(ResourceManagerSchema)
-    name = fields.String(attribute='__name__')  # function=lambda x: x.__name__)
-    parent = fields.Nested('self', attribute='__parent__', only=[])  # functiona=lambda x: x.__parent__)
-    data = fields.Dict(attribute='_data',
-                       keys=fields.String(), values=fields.Nested('ResourceSchema'))
-    url = fields.Url(function=lambda x: x.url())
 
 
 class AssetEntity(AppBase, os.PathLike):
@@ -725,7 +719,10 @@ class EntryPoint(AssetEntity):
         if cb:
             generator = cb(registry, generator_context)
         else:
-            generator = registry.getAdapter(generator_context, IEntryPointGenerator)
+            generator = registry.queryAdapter(generator_context, IEntryPointGenerator)
+            if generator is None:
+                logger.critical("No Entry point generator!!")
+                raise AppException("No entry point generator")
 
         return generator
 
@@ -767,10 +764,6 @@ class EntryPoint(AssetEntity):
     @content.setter
     def content(self, new: AnyStr):
         self._content = new
-
-
-class IEntryPoints(Interface):
-    pass
 
 
 @implementer(IEntryPoints)
@@ -822,7 +815,7 @@ TemplateEnvironment = Environment
 
 class OperationArgument:
     """
-    An argument to an operation.
+    Class representing an argument to an operation.
     """
 
     @staticmethod
@@ -843,15 +836,12 @@ class OperationArgument:
     def __init__(self, name: AnyStr, argtype, optional: bool = False, default=None, getter=None, has_value=None,
                  label=None, implicit_arg=False) -> None:
         """
-
-        :param name:
-        :param argtype:
-        :param optional:
-        :param default:
-        :param getter:
-        :param has_value:
-        :param label:
-        :param implicit_arg:
+        Constructor.
+        :param name: Name of the operation.
+        :param argtype: Type of argument.
+        :param optional:  Boolean value indicating if the argument is optional.
+        :param label:  Human-readable label for the argument.
+        :param implicit_arg: Boolean value indicated if the argument is "implicit," i.e. supplied by the view instance itself.
         """
         self._default = default
         self._name = name
@@ -912,7 +902,7 @@ class OperationArgument:
 
 class ResourceOperation:
     """
-    Class encapsulating an operation on a resource
+    Class encapsulating an operation on a resource.
     """
 
     def entry_point_js(self, request: Request, prefix: AnyStr = ""):
@@ -920,6 +910,7 @@ class ResourceOperation:
 
     def __init__(self, name, view, args, renderer=None) -> None:
         """
+        Constructor.
 
         :param name: name of the operation - add, view, etc
         :param view: associated view
@@ -971,16 +962,36 @@ class SubpathArgumentGetter(OperationArgumentGetter):
 
 @implementer(IEntryPointFactory)
 class EntryPointFactory:
+    """
+    Factory class to create entry points - handles automatic registration.
+    """
+
     def __call__(self, registry, key, *args, **kwargs):
         ep = EntryPoint(key, *args, **kwargs)
         registry.registerUtility(ep, IEntryPoint, key)
         return ep
 
 
+def _get_root_resource(config):
+    return config.registry.queryUtility(IResourceRoot)
+
+
+def _set_resource_context(config, context):
+    config.registry.registerUtility(context, IResourceContext)
+
+
+def _get_resource_context(config):
+    return config.registry.queryUtility(IResourceContext)
+
 
 def includeme(config: Configurator):
     ep_factory = EntryPointFactory()
     config.registry.registerUtility(ep_factory, IEntryPointFactory)
+
+    config.add_directive('get_root_resource', _get_root_resource)
+    config.add_directive('get_resource_context', _get_resource_context)
+    config.add_directive('set_resource_context', _set_resource_context)
+    # config.registry.registerUtility()
 
     config.include('.myapp_config')
     config.include('.view')

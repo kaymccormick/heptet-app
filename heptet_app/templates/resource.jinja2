@@ -1,0 +1,9 @@
+<li><a href="{{ request.resource_path(resource) }}">{{ resource.title }}</a></li>
+{% if resource.items()|length %}
+<ul>
+{% for k, v in resource.items() %}
+{% set resource = v %}
+{% include "resource.jinja2" with context %}
+{% endfor %}
+</ul>
+{% endif %}

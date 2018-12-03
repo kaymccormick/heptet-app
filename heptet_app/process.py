@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 from contextlib import contextmanager
-from dataclasses import dataclass
 from io import TextIOBase, StringIO
 from pathlib import Path
 from typing import Iterable, Tuple, Mapping, AnyStr
@@ -17,19 +16,14 @@ from zope.interface import implementer, Interface
 from heptet_app import ResourceManager, EntryPoint, _add_resmgr_action, TemplateEnvironment, \
     TemplateEnvMixin, AssetEntity, OperationArgument
 from heptet_app.context import GeneratorContext, FormContext
-from heptet_app.entity import EntityFormView
+
 from heptet_app.impl import MapperWrapper, NamespaceStore
 from heptet_app.impl import MixinBase
 from heptet_app.interfaces import IProcess, IEntryPoint, IMapperInfo, IEntryPointGenerator
-
 from heptet_app.tvars import TemplateVars
 
 logger = logging.getLogger(__name__)
 
-
-@dataclass
-class ProcessViewsConfig:
-    output_path: str = 'default_build'
 
 
 class FileType:
@@ -63,6 +57,11 @@ class BaseProcessor:
 
 
 class AbstractAsset(os.PathLike, metaclass=abc.ABCMeta):
+    """
+    Base abstract class for a generated asset.
+
+    """
+
     @abc.abstractmethod
     def open(self, mode='r', buffering=-1, encoding=None,
              errors=None, newline=None):
@@ -70,6 +69,10 @@ class AbstractAsset(os.PathLike, metaclass=abc.ABCMeta):
 
 
 class FileAsset(AbstractAsset):
+    """
+    Specialization of AbstractAssset which is a file written (or to be written) to disk.
+    """
+
     def __init__(self, obj, arg, mkdir=True) -> None:
         super().__init__()
         self._file_path = Path(arg)
@@ -85,6 +88,10 @@ class FileAsset(AbstractAsset):
 
 
 class AbstractAssetManager(metaclass=abc.ABCMeta):
+    """
+    Abstract base class for AssetManager
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self._asset_path = None
@@ -113,6 +120,9 @@ class AbstractAssetManager(metaclass=abc.ABCMeta):
 
 
 class VirtualAsset(AbstractAsset):
+    """
+    Specialization of AbstractAsset which is "virtual," i.e. not represented by a physical file.
+    """
 
     def __init__(self, obj) -> None:
         super().__init__()
@@ -142,6 +152,9 @@ class VirtualAsset(AbstractAsset):
 
 
 class VirtualAssetManager(AbstractAssetManager):
+    """
+    Specialization of AbstractAssetManager to manage virtual (non-physical or file-based) assets/
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -177,6 +190,10 @@ class VirtualAssetManager(AbstractAssetManager):
 
 
 class FileAssetManager(AbstractAssetManager):
+    """
+    Specialization of AbstractAssetManager to manage physical assets.
+    """
+
     def __init__(self, output_dir, mkdir=False) -> None:
         super().__init__()
         self._asset_path = {}
@@ -244,7 +261,6 @@ class FileAssetManager(AbstractAssetManager):
 
 # This is confusing because it seems like it could be some other random objet
 class RootNamespaceMixin(MixinBase):
-
     def __init__(self) -> None:
         super().__init__()
         self._root_namespace = None
@@ -373,7 +389,7 @@ def config_process_struct(config: Configurator, process):
         # code smell, EP-19
         wrapper = MapperWrapper(mapper)
         logger.debug("Registering mapper_wrapper %s", mapper)
-        # code smell - registry use. EP-20
+        # code smell - registry use. EP-20.
         config.registry.registerUtility(wrapper, IMapperInfo, wrapper.key)
         node_name = mapper.local_table.key
         # EP-19
@@ -421,7 +437,7 @@ def get_entry_point_generator(gctx: GeneratorContext, registry=None):
     return registry.getAdapter(gctx, IEntryPointGenerator)
 
 
-def process_views(registry, config: ProcessViewsConfig, proc_context: ProcessContext,
+def process_views(registry, config, proc_context: ProcessContext,
                   ep_iterable: Iterable[EntryPoint]):
     entry_point: EntryPoint
     for name, entry_point in ep_iterable:
@@ -448,7 +464,7 @@ def make_generator_context(registry, entry_point, root_namespace, template_env):
 #
 # This is probably better renamed to something else.
 #
-def process_view(registry, config: ProcessViewsConfig, proc_context: ProcessContext, entry_point: EntryPoint):
+def process_view(registry, config, proc_context: ProcessContext, entry_point: EntryPoint):
     gctx = make_generator_context(registry, entry_point, proc_context.root_namespace, proc_context.template_env)
     # abstract this away
     assert entry_point

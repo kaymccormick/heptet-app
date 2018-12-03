@@ -5,16 +5,19 @@
                 <span>Request is false!</span>
             {% else %}
                 {% for k, v in request.root.items() %}
-                    {% if not v.entity_type.info %}
-                        <li class="list-group-item tk-trajan-sans-pro">{{ v.title }}</li>
-                        {% for k2, v2 in v.items() %}
-                            {% set info = v2.entity_type.info %}
-                            {% if not info or not info['hide'] %}
-                            <li class="list-group-item" style="padding-left: 3.25rem"><a
-                                    href="{{ v2.url() }}">{{ v2.title }}</a></li>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
+                    {% set resource = v %}
+                    {% include "resource.jinja2" with context %}
+{#                    #}
+{#                    {% if not v.entity_type.info %}#}
+{#                        <li class="list-group-item tk-trajan-sans-pro">{{ v.title }}</li>#}
+{#                        {% for k2, v2 in v.items() %}#}
+{#                            {% set info = v2.entity_type.info %}#}
+{#                            {% if not info or not info['hide'] %}#}
+{#                            <li class="list-group-item" style="padding-left: 3.25rem"><a#}
+{#                                    href="{{ v2.url() }}">{{ v2.title }}</a></li>#}
+{#                            {% endif %}#}
+{#                        {% endfor %}#}
+{#                    {% endif %}#}
                 {% endfor %}
             {% endif %}
         </ul>

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pyramid.config import Configurator
 from pyramid.request import Request
 

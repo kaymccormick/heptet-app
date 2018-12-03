@@ -12,11 +12,12 @@ from zope.component import IFactory, adapter
 from zope.component.factory import Factory
 from zope.interface import implementer
 
-from heptet_app import Resource, RootResource, _get_root, EntryPointSchema, EntryPoint, IResourceRoot
+from heptet_app import Resource, _get_root, IResourceRoot
+from heptet_app.mschema import EntryPointSchema
 from heptet_app.impl import NamespaceStore
 from heptet_app.interfaces import IResource, INamespaceStore, IEntryPointMapperAdapter, IObject, IEntryPoint
-from heptet_app.process import VirtualAssetManager, process_view, ProcessViewsConfig, ProcessContext
-from heptet_app.util import _dump
+from heptet_app.process import VirtualAssetManager, process_view, ProcessContext
+from heptet_app.util import _dump, get_exception_entry_point_key
 
 logger = logging.getLogger(__name__)
 
@@ -48,15 +49,26 @@ def on_before_render(event):
     request = val['request'] = event['request']
     #    logger.critical("renderer = %s", request.renderer)
     # what happens if we clobber this? it also gets set for the form view
+    entry_point = None
     try:
         entry_point = event['context'].entry_point
-        if entry_point:
-            val['entry_point_template'] = 'build/templates/entry_point/%s.jinja2' % entry_point.key
     except:
-        logger.critical(sys.exc_info()[2])
         pass
 
-    logger.debug("VAL=%s", val)
+    if not entry_point and isinstance(event['context'], Exception):
+        entry_point = request.registry.queryUtility(IEntryPoint, get_exception_entry_point_key(event['context']))
+
+    ept = None
+
+    if entry_point:
+        ept = 'build/templates/entry_point/%s.jinja2' % entry_point.key
+    else:
+        logger.critical("No entry point.")
+
+    if ept is None:
+        logger.warning("no context entry point")
+
+    val['entry_point_template'] = ept
 
 
 # we need a lot of work here.
@@ -72,17 +84,8 @@ def on_context_found(event):
     assert context is not None
     context.template_env = request.registry.queryUtility(pyramid_jinja2.IJinja2Environment, TEMPLATE_ENV_NAME)
     assert context.template_env
-    if context.template_env is None:
-        _dump(request.registry, cb=lambda fmt, *args: print(fmt % args, file=sys.stderr))
 
-    import pprint
-    pp = pprint.PrettyPrinter(width=120, stream=sys.stderr)
-    pp.pprint(context)
-    # print(textwrap.fill(repr(context), 1201), file=sys.stderr)
-    # logger.critical("context is %r", context)
-
-    if isinstance(context, Exception):
-        return
+    # this is a mess
 
     if hasattr(context, "entity_type"):
         # sets incorrect template
@@ -140,7 +143,7 @@ def entry_point_content(context, request):
     entry_point = request.registry.getUtility(IEntryPoint, request.subpath[0])
     vam = VirtualAssetManager()
     process_view(request.registry,
-                 config=ProcessViewsConfig(),
+                 config={},
                  proc_context=ProcessContext({}, context.template_env,
 
                                              vam),
@@ -158,7 +161,7 @@ def entry_points_json(context, request):
     eps = list(map(lambda x: x[1], utilities_for))
     vam = VirtualAssetManager()
     for ep in eps:
-        process_view(request.registry, config=ProcessViewsConfig(),
+        process_view(request.registry, config={},
                      proc_context=ProcessContext({}, context.template_env, vam),
                      entry_point=ep);
         ep.content = vam.assets[ep].content
@@ -168,7 +171,6 @@ def entry_points_json(context, request):
 
 
 def includeme(config: Configurator):
-
     config.include('.template')
     config.include('.viewderiver')
 

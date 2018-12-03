@@ -17,9 +17,9 @@ from pyramid.interfaces import IRootFactory
 from pyramid.paster import setup_logging, get_appsettings
 from pyramid_jinja2 import IJinja2Environment
 
-from heptet_app import get_root, EntryPointSchema
+from heptet_app import get_root
+from heptet_app.mschema import EntryPointSchema
 from heptet_app.interfaces import IEntryPoint
-from heptet_app.process import ProcessViewsConfig
 from heptet_app.process import VirtualAssetManager, process_view
 from heptet_app.process import setup_jsonencoder, FileAssetManager, ProcessContext, process_views, \
     AbstractAssetManager
@@ -51,11 +51,11 @@ class CommandContext:
         self._config = config
 
     @property
-    def config(self) -> ProcessViewsConfig:
+    def config(self):
         return self._config
 
     @config.setter
-    def config(self, new: ProcessViewsConfig):
+    def config(self, new):
         self._config = new
 
 
@@ -138,7 +138,7 @@ def main(input_args=None):
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
     output_path = settings.get('heptet_app.process_views_output_path', '.')
-    config = ProcessViewsConfig(output_path=output_path)
+    config = {'output_path': output_path }
 
     # we need to do this automatically
     setup = setup_jsonencoder()

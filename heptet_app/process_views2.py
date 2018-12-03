@@ -76,8 +76,8 @@ def main(argv):
     server = server_loader.get_wsgi_server(server_name, config_vars)
 
     app = loader.get_wsgi_app(app_name, config_vars)
-    environ = {'SCRIPT_NAME': '/entry_points_json',
-               'PATH_INFO': '/entry_points_json',
+    environ = {'SCRIPT_NAME': '/entry_points/json',
+               'PATH_INFO': '/entry_points/json',
                'SERVER_NAME': 'localhost',
                 'wsgi.url_scheme': 'http'}
     with app.request_context(environ) as request:
