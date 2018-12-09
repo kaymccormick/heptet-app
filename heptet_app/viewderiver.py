@@ -15,32 +15,27 @@ logger = logging.getLogger(__name__)
 def entity_view(view, info):
     # pull entity type from options (out of date!!)
     operation = info.options.get('operation')
-    logger.critical("I am wrapping now! %r", info.original_view)
+    logger.debug("entity_view wrapping original view %r", info.original_view)
 
     def wrapper_view(context, request):
-        logger.warning("original view = %s", repr(info.original_view))
+        logger.debug("original view = %s", repr(info.original_view))
         original_view = info.original_view
 
-        # renderer = None
         if isinstance(original_view, type):
             if issubclass(original_view, BaseView):
                 original_view.operation = operation
                 original_view.entry_point = info.options['entry_point']
 
-            # if issubclass(original_view, BaseEntityRelatedView):
-            #     # is this still in effect? (why wouldn't it be in effect?)
-            #     logger.debug("setting entity_type to %s (orig = %s)", et, str(original_view.entity_type))
-            #     original_view.entity_type = et
-            #     original_view.mapper_info = mapper_info
-
-        # if renderer:
-
-        #     request.override_renderer = renderer
-
-        response = view(context, request)
+        try:
+            response = view(context, request)
+        except Exception as ex:
+            import traceback
+            traceback.print_exc()
+            raise ex
+            
         return response
 
-    # logger.info("returning wrapper_view = %s", wrapper_view)
+    logger.debug("returning wrapper_view = %s", wrapper_view)
     return wrapper_view
 
 

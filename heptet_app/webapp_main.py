@@ -69,8 +69,6 @@ def wsgi_app(global_config, **settings):
     except Exception as ex:
         logger.warning(ex)
 
-    # config.include('.viewderiver')
-    # config.include('.process') fixme refactor
     config.include('.view')
 
     renderer_pkg = 'pyramid_jinja2.renderer_factory'

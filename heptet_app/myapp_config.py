@@ -44,9 +44,14 @@ def on_application_created(event):
 
 
 def on_before_render(event):
-    logger.critical("on_before_render: event=%s", event)
+    logger.debug("on_before_render: event=%s", event)
+    rinfo = event['renderer_info']
+    logger.debug('renderer: %r', rinfo.get_renderer())
     val = event.rendering_val
-    request = val['request'] = event['request']
+    # we dont always want request because if we are serializing, its bad
+    if event['renderer_name'] != 'json':
+        request = val['request'] = event['request']
+
     #    logger.critical("renderer = %s", request.renderer)
     # what happens if we clobber this? it also gets set for the form view
     entry_point = None
@@ -60,6 +65,7 @@ def on_before_render(event):
 
     ept = None
 
+    # FIXME hardcoded path
     if entry_point:
         ept = 'build/templates/entry_point/%s.jinja2' % entry_point.key
     else:
@@ -67,6 +73,7 @@ def on_before_render(event):
 
     if ept is None:
         logger.warning("no context entry point")
+        # this is where we need to build resilience
 
     val['entry_point_template'] = ept
 
