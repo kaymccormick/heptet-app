@@ -27,6 +27,9 @@ def entity_view(view, info):
                 original_view.entry_point = info.options['entry_point']
 
         try:
+            logger.debug("view wrapper is %r", view)
+            logger.debug("view has %r", view.__dict__)
+
             response = view(context, request)
         except Exception as ex:
             import traceback

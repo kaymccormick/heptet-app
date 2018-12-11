@@ -3,6 +3,7 @@ import logging
 import sys
 
 import pyramid_jinja2
+from .tree import ITree
 from jinja2 import TemplateNotFound
 from pyramid.config import Configurator
 from pyramid.events import ContextFound, BeforeRender, NewRequest, ApplicationCreated
@@ -24,13 +25,6 @@ logger = logging.getLogger(__name__)
 TEMPLATE_ENV_NAME = 'template-env'
 
 
-# jinja2_loader_template_path = settings['heptet_app.jinja2_loader_template_path'].split(':')
-# env = Environment(loader=FileSystemLoader(jinja2_loader_template_path),
-#                   autoescape=select_autoescape(default=False))
-# config.registry.registerUtility(env, IJinja2Environment, 'app_env')
-# config.add_request_method(lambda x: env, 'template_env')
-
-
 def on_new_request(event):
     logger.debug("Resetting namespaces")
     registry = event.request.registry
@@ -49,16 +43,20 @@ def on_before_render(event):
     logger.debug('renderer: %r', rinfo.get_renderer())
     val = event.rendering_val
     # we dont always want request because if we are serializing, its bad
+    # this applies to whatever else we decide to add. i think we need to add
+    # stuff other places
     if event['renderer_name'] != 'json':
         request = val['request'] = event['request']
 
     #    logger.critical("renderer = %s", request.renderer)
     # what happens if we clobber this? it also gets set for the form view
     entry_point = None
+    logger.debug('context = %r', event['context'])
     try:
         entry_point = event['context'].entry_point
     except:
         pass
+    logger.debug('entry_point = %r', entry_point)
 
     if not entry_point and isinstance(event['context'], Exception):
         entry_point = request.registry.queryUtility(IEntryPoint, get_exception_entry_point_key(event['context']))
@@ -77,6 +75,21 @@ def on_before_render(event):
 
     val['entry_point_template'] = ept
 
+    trees = {}
+    tree_json = {}
+    def _json_dump(node, context=''):
+        context = "%s%s" % (context, node.__name__)
+        return dict(title=node.title,children=[_json_dump(child, context) for child in node.children],key=event['request'].resource_url(node))
+    for x, y in request.registry.getUtilitiesFor(ITree):
+        trees[x] = y
+        toplevel = []
+        for child in y.root.children:
+            toplevel.append(_json_dump(child, context=child.__name__))
+        tree_json[x] = json.dumps(toplevel)
+            
+    val['trees'] = trees
+    val['tree_json'] = tree_json
+    
 
 # we need a lot of work here.
 def on_context_found(event):
@@ -110,6 +123,7 @@ def on_context_found(event):
         renderer = None
 
         # template selection
+        # FIXME outdated cruft
         override_renderer = None
         if entity_type is not None:
             renderer = "templates/entity/%s.jinja2" % context.__name__
@@ -214,6 +228,12 @@ def includeme(config: Configurator):
     config.registry.registerAdapter(MapperProperty, (IObject,), IEntryPointMapperAdapter)
 
     config.include('.views')
+    # i think we need this default renderer to avoid bugs, right now
+    renderer_pkg = 'pyramid_jinja2.renderer_factory'
+    config.add_renderer(None, renderer_pkg)
+
+    config.include('.tree')
+    nav_tree = config.register_tree('navtree')
 
     config.add_subscriber(on_context_found, ContextFound)
     config.add_subscriber(on_before_render, BeforeRender)

@@ -1,43 +1,11 @@
 {
   "name": "heptet-app",
-  "version": "0.44.",
+  "version": "0.46.0",
   "description": "Heptet App",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build-dev": "webpack-cli --config webpack.dev.js -d  --display verbose",
-    "build-prod": "webpack --config webpack.prod.js"
-  },
-  "author": "",
-  "license": "ISC",
+  "author": "Kay McCormick <kay@kaymccormick.us>",
+  "license": "MIT",
   "devDependencies": {
-    "autoprefixer": "^9.1.5",
-    "clean-webpack-plugin": "^0.1.19",
-    "copy-webpack-plugin": "^4.5.2",
-    "css-loader": "^1.0.0",
-    "file-loader": "^2.0.0",
-    "grunt": "^1.0.3",
-    "html-webpack-plugin": "^3.2.0",
-    "imports-loader": "^0.8.0",
-    "postcss-loader": "^3.0.0",
-    "request": "^2.88.0",
-    "script-loader": "^0.7.2",
-    "style-loader": "^0.21.0",
-    "uglify-js": "^3.4.6",
-    "webpack": "^4.16.3",
-    "webpack-cli": "^3.1.1",
-    "webpack-dashboard": "^2.0.0",
-    "webpack-dev-server": "^3.1.6",
-    "webpack-merge": "^4.1.4"
   },
   "dependencies": {
-    "axios": "^0.18.0",
-    "bootstrap": "^4.1.3",
-    "enhanced-resolve": "^4.1.0",
-    "fine-uploader": "^5.16.2",
-    "jquery": "^3.3.1",
-    "loader-utils": "^1.1.0",
-    "popper.js": "^1.14.3",
-    "uglifyjs-webpack-plugin": "^2.0.1"
   }
 }

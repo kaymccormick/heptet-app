@@ -11,6 +11,7 @@ requires = [
     'stringcase',
     'zope.component',
     'zope.interface',
+    'stringcase'
 ]
 
 tests_require = [
@@ -21,7 +22,7 @@ tests_require = [
 
 setup(
     name='heptet-app',
-    version='0.45.0',
+    version='0.46.0',
     description='Heptet App Framework',
     classifiers=[
         'Programming Language :: Python',

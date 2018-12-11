@@ -58,7 +58,7 @@ def _get_root(on_create_cb=None):
         return root
 
     # THIS REFERENCES AN ENTRY POINT THAT THEN ISNT FOUND, BECAUSE
-    # ITS NOT "REGISTERED"
+    # ITS NOT "REGISTERED" - FIXME
     root = RootResource(entry_point=EntryPoint('root'))
     assert root.entry_point
     if on_create_cb:
@@ -80,7 +80,8 @@ def reset_root(request: Request):
 
 class AppBase(object):
     """
-    Base class for an object in the system. Allows for adding behaviors related to system integration.
+    Base class for an object in the system. Allows for adding behaviors related
+    to system integration.
     """
     pass
 
@@ -98,33 +99,15 @@ class ArgumentContext:
         logging.info("setting subpath_index to %s", new)
         self._subpath_index = new
 
-
+# it looks like we dont even need the metaclass .. ? FIXME
 class ResourceMeta(GenericMeta):
-    count = 0
-
     def _serialize(cls, field, value, attr, obj):
         return str(type(value))
 
     def __new__(cls, *args, **kwargs):
-        # logger.debug("meta in new %s %s %s", cls, args, kwargs)
-        x = super().__new__(cls, *args, **kwargs)
-        # logger.debug("meta x = %s", x)
-        return x
-    # if '__count__' not in cls.__dict__:
-    #     setattr(cls, '__count__', 0)
-    # dict__ = sys.modules[cls.__module__].__dict__
-    # # superclasses = list(superclasses)
-    # # superclasses.insert(0, _Resource)
-    # # superclasses = tuple(superclasses)
-    # #superclasses = list(_Resource, superclasses)
-    # clsname = "%s%04X" % (clsname, getattr(cls, '__count__'))
-    # setattr(cls, '__count__', getattr(cls, '__count__') + 1)
-    # logger.warning("name is %s", clsname)
-    # new__ = type.__new__(cls, clsname, superclasses, attributedict)
-    # logger.warning("__new = %s", new__)
-    # return new__
+        return super().__new__(cls, *args, **kwargs)
 
-
+# this is kind of hackish, because getitem has hardcoded verboten keys
 class ResourceMagic(AppBase):
     def __setitem__(self, key, value):
         self._data.__setitem__(key, value)
@@ -199,10 +182,7 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
             clsname = "%s_%04X" % (cls.__name__, count)
             setattr(cls, "__count__", count)
             meta = ResourceMeta(clsname, (cls,), {})
-            # logger.debug("meta = %s", meta)
-            inst = meta(name, parent, entry_point, title, template_env)
-            # inst.__init__(manager, name, parent, entry_point, title)
-            return inst
+            return meta(name, parent, entry_point, title, template_env)
 
         x = super().__new__(cls)
         if not title:
@@ -280,14 +260,21 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
         return self.sub_resource(*args, **kwargs)
 
     def sub_resource(self, name: AnyStr, entry_point: 'EntryPoint'=None, title=None):
-        logger.debug("%r", self.__class__)
+        logger.debug("sub_resource(%r, %r, %r)", name, entry_point, title)
         if not title:
             title = stringcase.sentencecase(name)
-        logger.debug("%s", title)
         sub = self._subresource_type.__new__(self._subresource_type, name, self, entry_point, title,
                                              self.template_env)
         self[name] = sub
         return sub
+
+    @property
+    def children(self) -> 'Sequence':
+        r = []
+        for v in self.values():
+            r.append(v)
+        logger.warning("children = %r", r)
+        return r
 
 
 class Resource(_Resource, metaclass=ResourceMeta):
@@ -297,7 +284,7 @@ class Resource(_Resource, metaclass=ResourceMeta):
 @implementer(IResourceManager)
 class ResourceManager:
     """
-    ResourceManager class. Provides access to res operations.
+    ResourceManager class. Provides access to resource operations.
     """
 
     # templates = [ResourceOperationTemplate('view'),
@@ -991,15 +978,10 @@ def includeme(config: Configurator):
     config.add_directive('get_root_resource', _get_root_resource)
     config.add_directive('get_resource_context', _get_resource_context)
     config.add_directive('set_resource_context', _set_resource_context)
-    # config.registry.registerUtility()
 
     config.include('.myapp_config')
+    # this "looks" redundant, but we have "views" and "view" - fun. FIXME
     config.include('.view')
-
-    #    renderer_pkg = 'pyramid_jinja2.renderer_factory'
-    #    config.add_renderer(None, renderer_pkg)
-
-    #    config.include('.routes')
 
     config.registry.registerUtility(NamespaceStore('form_name'), INamespaceStore, 'form_name')
     config.registry.registerUtility(NamespaceStore('namespace'), INamespaceStore, 'namespace')
