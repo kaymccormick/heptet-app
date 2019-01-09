@@ -16,7 +16,6 @@ def on_before_render_event(config_fixture):
     ctx = app.request_context(environ)
     request = ctx.begin()
     event = MagicMock(wraps=BeforeRender(request), name='before_render_event')
-    d = dict(
     # type-wide property mock, okay for request of course
     type(event).request = PropertyMock(return_value=request)
     return event
@@ -24,4 +23,3 @@ def on_before_render_event(config_fixture):
 def test_on_before_render(on_before_render_event, caplog):
     caplog.set_level(logging.DEBUG)
     on_before_render(on_before_render_event)
-x
