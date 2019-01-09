@@ -1,6 +1,10 @@
 heptet-app
 ==========
 
+.. image:: https://badges.greenkeeper.io/kaymccormick/heptet-app.svg
+   :alt: Greenkeeper badge
+   :target: https://greenkeeper.io/
+
 .. image:: https://heptet.us/jenkins/buildStatus/icon?job=heptet-app
 
 This repository represents a python package 'heptet-app' (hetpet_app) that
