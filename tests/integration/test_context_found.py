@@ -35,23 +35,23 @@ def setup_context_found(context_found_event):
     return context_found_event
 
 
-@pytest.mark.integration
-def test_on_context_found_with_entity_type(app_request, app_registry_mock, app_context, jinja2_env_mock,
-                                           context_found_event, jinja2_env,
-                                           entity_type_mock):
-    app_context.entity_type = entity_type_mock
-
-    on_context_found(context_found_event)
-
-    assert jinja2_env_mock is app_context.template_env
-    assert hasattr(app_request, "override_renderer")
-    assert app_request.override_renderer
-
-    # ??
-    with pytest.raises(TemplateNotFound):
-        logger.critical("override renderer is %s", app_request.override_renderer)
-        template = jinja2_env.get_template(app_request.override_renderer)
-
+#@pytest.mark.integration
+#def test_on_context_found_with_entity_type(app_request, app_registry_mock, app_context, jinja2_env_mock,
+#                                           context_found_event, jinja2_env,
+#                                           entity_type_mock):
+#    app_context.entity_type = entity_type_mock
+#
+#    on_context_found(context_found_event)
+#
+#    assert jinja2_env_mock is app_context.template_env
+#    assert hasattr(app_request, "override_renderer")
+#    assert app_request.override_renderer
+#
+#    # ??
+#    with pytest.raises(TemplateNotFound):
+#        logger.critical("override renderer is %s", app_request.override_renderer)
+#        template = jinja2_env.get_template(app_request.override_renderer)
+#
 
 # problem is we lack ability to customize this "app_context" - it always comes with the mock
 # @pytest.fixture

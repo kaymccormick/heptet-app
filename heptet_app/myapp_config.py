@@ -212,6 +212,7 @@ def includeme(config: Configurator):
     # config.registry.registerUtility(root_entry, IEntryPoint, 'root')
 
     root = _get_root(lambda root: config.registry.registerUtility(root, IResourceRoot))
+    logger.debug("root is %r", root)
 
     # epj = _get_root().sub_resource('entry_points_json', None)
     # config.add_view(entry_points_json, context=type(epj), renderer='json')

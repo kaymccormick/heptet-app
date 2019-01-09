@@ -142,4 +142,7 @@ from .fixtures import entry_point_mock,\
     make_jinja2_env,\
     make_config,\
     asset_manager_mock_wraps_virtual,\
-    virtual_asset_manager
+    virtual_asset_manager,\
+    root_namespace_store,\
+    resource_manager_mock,\
+    config_fixture

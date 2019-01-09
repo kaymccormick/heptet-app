@@ -113,7 +113,7 @@ def entry_point_mock():
     entry_point_mock pytest fixture
     :return:
     """
-    mock = Mock(EntryPoint)  # , name='entry_point')  # do we need to name this??
+    mock = Mock(EntryPoint, name='entry_point_mock')
     # this is sort of a "hack" to get it to work (_default)
     default = '_default'
     type(mock).key = PropertyMock(return_value=default)
@@ -123,8 +123,12 @@ def entry_point_mock():
     return mock
 
 
+@pytest.fixture
+def resource_manager_mock():
+    return MagicMock(ResourceManager)
+
 @pytest.fixture(params=["test"])
-def app_context(request, root_resource, resource_manager, entry_point_mock):
+def app_context(request, root_resource, resource_manager_mock, entry_point_mock):
     # this template wont exist...
     return root_resource.sub_resource('app-context-%s' % request.param, entry_point_mock)
 
@@ -165,12 +169,13 @@ def config_mock():
 @pytest.fixture
 def config_fixture():
     """
-    This is our basic "config fixture" for the application. Includes "myapp_config" which
+    This is our basic "config fixture" for the application.
+    Includes "myapp_config" which
     maybe hopefully provides all of our configuration? Part test, part experiment.
     :return:
     """
     config = Configurator(package="heptet_app", root_package="heptet_app")
-    config.include(heptet_app.myapp_config)
+    config.include(heptet_app)
     logger.warning("config = %s", config)
     # _dump(config, name_prefix="config.", cb=lambda x, *args, **kwargs: print(x % args, file=sys.stderr))
     config.commit()
@@ -274,11 +279,10 @@ def resource_operation(view_test):
 
 
 @pytest.fixture
-def resource_manager(config_fixture, entity_type_mock, mapper_wrapper_real):
+def resource_manager(config_fixture, mapper_wrapper_real):
     return ResourceManager(
         mapper_wrapper_real.key,
         title="",
-        entity_type=entity_type_mock,
         mapper_wrapper=mapper_wrapper_real
     )
 
@@ -622,7 +626,10 @@ def asset_manager_mock_wraps_virtual(virtual_asset_manager):
 
     mock = _AbstractManagerMock(spec=VirtualAssetManager, wraps=virtual_asset_manager,
                                 name="asset_manager_mock_wraps_virtual")
+    
     type(mock).asset_content = PropertyMock(wraps=inspect.getattr_static(virtual_asset_manager, 'asset_content'))
+    assets_property = Property(virtual_asset_manager, 'assets', virtual_asset_manager.assets)
+    type(mock).assets = PropertyMock(wraps=assets_property)
     return mock
 
 
@@ -630,7 +637,7 @@ def asset_manager_mock_wraps_virtual(virtual_asset_manager):
 def asset_manager_mock():
     return MagicMock(AbstractAssetManager, name="asset_manager_mock")
 
-
+# we migth want to just fill a regular object with mocks
 @pytest.fixture
 def process_context_mock():
     return MagicMock(ProcessContext)
@@ -638,6 +645,7 @@ def process_context_mock():
 
 @pytest.fixture
 def process_context(jinja2_env, asset_manager_mock_wraps_virtual):
+    # fix me should not be none!
     return ProcessContext({}, jinja2_env, asset_manager_mock_wraps_virtual, None)
 
 
@@ -665,11 +673,6 @@ def make_entry_point():
         return EntryPoint(key, manager, mapper=mapper)
 
     return _make_entry_point
-
-
-@pytest.fixture
-def resource_manager_mock():
-    return MagicMock(ResourceManager)
 
 
 @pytest.fixture

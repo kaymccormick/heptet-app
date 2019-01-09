@@ -39,9 +39,11 @@ lock = Lock()
 
 def get_root(request: Request = None):
     """
-    The root factory for the application.
-    :param request:
+    :param Request request: Associated request
     :return: Resource root
+    :rtype: ResourceRoot
+
+    The root factory for the application.
     """
 
     def _register(root):
@@ -79,10 +81,6 @@ def reset_root(request: Request):
 
 
 class AppBase(object):
-    """
-    Base class for an object in the system. Allows for adding behaviors related
-    to system integration.
-    """
     pass
 
 
@@ -158,6 +156,9 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
     Base resource type. Implements functionality common to all resource types.
     """
 
+    test1 = ""
+    "Documenting this as a test"
+
     def __new__(
             cls,
             name: AnyStr,
@@ -168,11 +169,11 @@ class _Resource(ResourceMagic, EntityTypeMixin, TemplateEnvMixin, EntryPointMixi
     ):
         """
 
-        :param name:
-        :param parent:
-        :param entry_point:
-        :param title:
-        :param template_env:
+        :param str name: Name of resource. This becomes the url component.
+        :param Resource parent: Parent resouce. Cannot be None
+        :param EntryPoint entry_point: Entry point
+        :param str title: Title for resource
+        :param Environment template_env: Template environment
         :return:
         """
         # fixme not thread safe
@@ -576,9 +577,9 @@ class BaseView(Generic[T]):
 
     def collect_args(self, request):
         """
+        :param Request request: associated request
+
         Collect arguments for the 'operation' associated with the view, if any.
-        :param request:
-        :return:
         """
         if self.operation is None:
             logger.debug("operation is none! this could be bad.")
@@ -640,6 +641,7 @@ class OperationArgumentExceptionView(ExceptionView):
 
 
 class AssetEntity(AppBase, os.PathLike):
+    "Representation of an entity-related Asset."
     def __init__(self) -> None:
         super().__init__()
 
@@ -647,8 +649,7 @@ class AssetEntity(AppBase, os.PathLike):
 @interface.implementer(IEntryPoint)
 class EntryPoint(AssetEntity):
     """
-    Encapsulation of an "entry point" to the application; specifically used for javascript entry points
-    for bundling purposes (i.e. webpack).
+    Encapsulation of an "entry point" to the application; specifically used for javascript entry points for bundling purposes (i.e. webpack).
     """
 
     def __init__(
@@ -658,10 +659,11 @@ class EntryPoint(AssetEntity):
             **kwargs,
     ) -> None:
         """
+        :param ResourceManager resource_manager: Associated resource manager
+        :param str key: dictionary key to identify the entry point
+        :param dict kwargs: other keyword arguments, especially mapper
+
         Initialize the entry point
-        :param resource_manager: Associated resource manager
-        :param key: dictionary key to identify the entry point
-        :param kwargs: other keyword arguments, especially mapper
         """
         super().__init__()
         self._key = key
@@ -680,10 +682,6 @@ class EntryPoint(AssetEntity):
             x = ex
 
     def __repr__(self):
-        """
-        Return the value for the repr() of the object
-        :return: value for the repr() of the object
-        """
         s = "EntryPoint(" + repr(self.key)
         if self.manager:
             s = s + ", manager=%r" % self.manager
@@ -695,13 +693,11 @@ class EntryPoint(AssetEntity):
 
     def init_generator(self, registry, root_namespace, template_env, cb=None, generator_context=None):
         """
-        Initiailize the generator?
-        :param registry:
-        :param root_namespace:
-        :param template_env:
-        :param cb:
-        :param generator_context:
-        :return:
+        :param pyramid.config.Registry registry:
+        :param NamespaceStore root_namespace:
+        :param Environment template_env:
+        :param callback cb:
+        :param GeneratorContext generator_context:
         """
         if cb:
             generator = cb(registry, generator_context)
@@ -976,6 +972,7 @@ def includeme(config: Configurator):
     config.registry.registerUtility(ep_factory, IEntryPointFactory)
 
     config.add_directive('get_root_resource', _get_root_resource)
+#    config.add_directive('get_resource_root', _get_root_resource)
     config.add_directive('get_resource_context', _get_resource_context)
     config.add_directive('set_resource_context', _set_resource_context)
 

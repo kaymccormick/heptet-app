@@ -1,0 +1,1 @@
+diff -x .travis.yml -x makediff -x htmlcov -x .coverage -x dist -x .pytest\* -x __pycache__ -x .pc -x .pybuild -x .idea -x \*.egg-info -x tests.old -x env -x \*~ -x .git -urN . ~/p4work/app/heptet-app 

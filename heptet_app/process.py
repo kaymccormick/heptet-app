@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 from contextlib import contextmanager
+from jinja2.exceptions import TemplateNotFound
 from io import TextIOBase, StringIO
 from pathlib import Path
 from typing import Iterable, Tuple, Mapping, AnyStr
@@ -131,7 +132,6 @@ class VirtualAsset(AbstractAsset):
         self._obj = obj
 
     def __repr__(self):
-
         return 'VirtualAsset(%r%s)' % (self._obj, self._content and ', content=%r' % self._content or '')
 
     @contextmanager
@@ -164,6 +164,7 @@ class VirtualAssetManager(AbstractAssetManager):
         self._assets = {}
 
     def create_asset(self, asset_entity: AssetEntity):
+        logger.debug("Create asset (%r)", asset_entity)
         asset = VirtualAsset(asset_entity)
         self._assets[asset_entity] = asset
         return asset
@@ -281,7 +282,7 @@ class ProcessContext(RootNamespaceMixin, TemplateEnvMixin):
         super().__init__()
 
         self._settings = settings
-        self.template_env = template_env
+        self._template_env = template_env
 
         self._asset_manager = asset_manager
         self._root_namespace = root_namespace
@@ -291,13 +292,21 @@ class ProcessContext(RootNamespaceMixin, TemplateEnvMixin):
         return self._settings
 
     def __repr__(self):
-        return 'ProcessContext)%r, %r, %r, %r)' % (
+        return 'ProcessContext(%r, %r, %r, %r)' % (
             self.settings, self.template_env, self.asset_manager, self.root_namespace)
 
     @property
     def asset_manager(self) -> AbstractAssetManager:
         return self._asset_manager
 
+    @property
+    def template_env(self):
+        return self._template_env
+
+    @property
+    def root_namespace(self):
+        return self._root_namespace
+    
 
 def setup_jsonencoder():
     def do_setup():
@@ -337,6 +346,7 @@ class GenerateEntryPointProcess(BaseProcessor):
         self._context = context
 
     def process(self):
+        logger.debug("in process")
         resolver = DottedNameResolver()
         ep = self._ep
 
@@ -375,9 +385,13 @@ class GenerateEntryPointProcess(BaseProcessor):
         asset = self._context.asset_manager.create_asset(self._ep)
         with asset.open('w') as f:
             # FIXME embedded template filename
-            content = self._context.template_env.get_template('entry_point.js.jinja2').render(
-                **data
-            )
+            try:
+                template_name = 'entry_point/%s.js.jinja2' % self._ep.key
+                logger.debug('trying template %r for entry point %r', template_name, self._ep.key)
+                content = self._context.template_env.get_template(template_name).render(**data)
+            except TemplateNotFound as ex:
+                logger.info('template %r not found', ex.name)
+                content = self._context.template_env.get_template('entry_point.js.jinja2').render(**data)
 
             f.write(str(content))
 
@@ -440,6 +454,7 @@ def get_entry_point_generator(gctx: GeneratorContext, registry=None):
 def process_views(registry, config, proc_context: ProcessContext,
                   ep_iterable: Iterable[EntryPoint]):
     entry_point: EntryPoint
+    logger.debug("in process_views")
     for name, entry_point in ep_iterable:
         # this is random as fickle
         process_view(registry, config, proc_context, entry_point)
@@ -465,10 +480,14 @@ def make_generator_context(registry, entry_point, root_namespace, template_env):
 # This is probably better renamed to something else.
 #
 def process_view(registry, config, proc_context: ProcessContext, entry_point: EntryPoint):
+    logger.debug("in process_view(%r, %r, %r, %r)", registry, config, proc_context, entry_point)
     gctx = make_generator_context(registry, entry_point, proc_context.root_namespace, proc_context.template_env)
+    logger.debug("gctx = %r", gctx)
     # abstract this away
     assert entry_point
+    # weird, we throw away this result!!
     subscribers = registry.subscribers((proc_context, entry_point), IProcess)
+    logger.critical("subscribers = %r", subscribers)
     subscribers = [GenerateEntryPointProcess(proc_context, entry_point)]
     assert subscribers, "No subscribers for processing"
     for s in subscribers:

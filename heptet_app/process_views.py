@@ -137,6 +137,7 @@ def main(input_args=None):
     config_uri = args.config_uri
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
+    # what's this ??
     output_path = settings.get('heptet_app.process_views_output_path', '.')
     config = {'output_path': output_path }
 
@@ -179,6 +180,7 @@ def main(input_args=None):
     if args.pipe:
         _run_pipe(registry, proc_context)
 
+    # handle a specified entry point (untested)
     if args.entry_point:
         for name, ep in entry_points:
             if name == args.entry_point:
@@ -186,7 +188,7 @@ def main(input_args=None):
 
         for k, v in asset_mgr.asset_path.items():
             logger.critical("%r = %s", k[0].key, v)
-
+            
         exit(0)
 
     # we should be able to remove request and registry?
@@ -224,6 +226,7 @@ def initialize(args, registry, config):
     if args.virtual_assets:
         asset_mgr = VirtualAssetManager()
     else:
+        # fixme hardcoded here.
         asset_mgr = FileAssetManager("build/assets", mkdir=True)
     proc_context = ProcessContext(config, template_env, asset_mgr)
     registry.registerUtility(proc_context)
