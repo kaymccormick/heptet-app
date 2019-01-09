@@ -3,6 +3,6 @@ python:
  - "3.6"
 script: pytest
 install:
- - pip uninstall pytest
+ - pip uninstall -y pytest
  - pip install -v -r requirements.txt
  - pip install -v -e ".[testing]"
