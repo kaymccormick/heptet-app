@@ -1,7 +1,8 @@
 language: python
 python:
  - "3.6"
-script: pytest --no-cov
+script: pytest
 install:
+ - pip uninstall pytest
  - pip install -v -r requirements.txt
  - pip install -v -e ".[testing]"
