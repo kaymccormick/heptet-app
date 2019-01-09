@@ -3,5 +3,5 @@ python:
  - "3.6"
 script: pytest
 install:
- - pip install -r requirements.txt
- - pip install -e ".[testing]"
+ - pip install -v -r requirements.txt
+ - pip install -v -e ".[testing]"
