@@ -1,5 +1,5 @@
+language: python
+version: "3.6"
 script: pytest
 install:
- - python -m venv ../env
- - . ../env/bin/activate
  - pip install -r requirements.txt -e ".[testing]"
