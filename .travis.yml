@@ -2,4 +2,5 @@ language: python
 version: "3.6"
 script: pytest
 install:
- - pip install -r requirements.txt -e ".[testing]"
+ - pip install -r requirements.txt
+ - pip install -e ".[testing]"
